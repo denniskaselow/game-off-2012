@@ -25,11 +25,11 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
   }
 
   bool isWithtinXRange(Position pos, CameraPosition camPos) {
-    return ((camPos.x - pos.x).abs() < (MAXWIDTH * 2) || (camPos.x - pos.x).abs() > UNIVERSE_WIDTH - (MAXWIDTH * 2));
+    return ((camPos.x - pos.x).abs() < (MAXWIDTH + 50) || (camPos.x - pos.x).abs() > UNIVERSE_WIDTH - (MAXWIDTH + 50));
   }
 
   bool isWithtinYRange(Position pos, CameraPosition camPos) {
-    return ((camPos.y - pos.y).abs() < (MAXHEIGHT * 2) || (camPos.y - pos.y).abs() > UNIVERSE_HEIGHT - (MAXHEIGHT * 2));
+    return ((camPos.y - pos.y).abs() < (MAXHEIGHT + 50) || (camPos.y - pos.y).abs() > UNIVERSE_HEIGHT - (MAXHEIGHT + 50 ));
   }
 
   void processEntityOnScreen(Entity entity);
@@ -66,17 +66,13 @@ class PositionalRenderingSystem extends OnScreenProcessingSystem {
     context2d.beginPath();
     num x, y;
 
-    if (cameraPos.x - UNIVERSE_WIDTH > -MAXWIDTH && pos.x < MAXWIDTH) {
-      x = pos.x + (UNIVERSE_WIDTH - cameraPos.x);
-    } else {
-      x = pos.x - cameraPos.x;
+    if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && pos.x < MAXWIDTH) {
+      context2d.translate(UNIVERSE_WIDTH, 0);
     }
-    if (cameraPos.y - UNIVERSE_WIDTH > -MAXHEIGHT && pos.y < MAXHEIGHT) {
-      y = pos.y + (UNIVERSE_HEIGHT - cameraPos.y);
-    } else {
-      y = pos.y - cameraPos.y;
+    if (cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT && pos.y < MAXHEIGHT) {
+      context2d.translate(0, UNIVERSE_HEIGHT);
     }
-    context2d.arc(x, y, 10, 0, FastMath.TWO_PI, false);
+    context2d.arc(pos.x, pos.y, 10, 0, FastMath.TWO_PI, false);
 
     context2d.closePath();
     context2d.fill();
@@ -85,22 +81,36 @@ class PositionalRenderingSystem extends OnScreenProcessingSystem {
 
 class BackgroundRenderSystem extends VoidEntitySystem {
   CanvasRenderingContext2D context2d;
+  ComponentMapper<CameraPosition> cameraPositionMapper;
+  TagManager tagManager;
 
   BackgroundRenderSystem(this.context2d);
 
+  void initialize() {
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    tagManager = world.getManager(new TagManager().runtimeType);
+  }
+
   void processSystem() {
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+
+    context2d.setTransform(1, 0, 0, 1, 0, 0);
+
     context2d.save();
     try {
       context2d.fillStyle = "black";
 
       context2d.beginPath();
-      context2d.rect(0, 0, MAXWIDTH, MAXHEIGHT + HUDHEIGHT);
+      context2d.rect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT);
       context2d.closePath();
 
       context2d.fill();
     } finally {
       context2d.restore();
     }
+
+    context2d.translate(-cameraPos.x, -cameraPos.y);
   }
 }
 
@@ -118,7 +128,7 @@ class HudRenderSystem extends VoidEntitySystem {
       context2d.fillStyle = "#555";
 
       context2d.beginPath();
-      context2d.rect(0, MAXHEIGHT, MAXWIDTH, MAXHEIGHT + HUDHEIGHT);
+      context2d.rect(0, 0, MAXWIDTH, HUDHEIGHT);
       context2d.closePath();
 
       context2d.fill();

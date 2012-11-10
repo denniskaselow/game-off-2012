@@ -10,7 +10,14 @@
     <h1>Multiverse</h1>
 
     <div id="canvascontainer">
-      <canvas id="gamecontainer" width="800px" height="500px"></canvas>
+      <canvas id="gamecontainer" width="800px" height="400px"></canvas>
+      <canvas id="hudcontainer" width="800px" height="100px"></canvas>
+    </div>
+    <div id="debug">
+      <ul>
+      <li>FPS: <span id="fps" /></li>
+      <li>CameraPosition: <span id="cameraPos" /></li>
+      <li>PlayerPosition: <span id="playerPos" /></li>
     </div>
 
     <script type="application/dart" src="web/multiverse.dart"></script>
