@@ -127,7 +127,7 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
       }
       context2d.translate(pos.x, pos.y);
       context2d.rotate(pos.angle);
-      context2d.drawImage(image, -15, -15, 30, 30);
+      context2d.drawImage(image, -image.width ~/2, -image.height ~/ 2, image.width, image.height);
 
       context2d.closePath();
       context2d.fill();

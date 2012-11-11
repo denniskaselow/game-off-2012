@@ -60,6 +60,7 @@ class Game {
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
+      star.addComponent(new Spatial('resources/star_0${random.nextInt(5)}.png'));
       star.addToWorld();
     }
 
@@ -82,7 +83,7 @@ class Game {
     world.addSystem(new MovementSystem());
     world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
-    world.addSystem(new PositionalRenderingSystem(gameContext));
+//    world.addSystem(new PositionalRenderingSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new HudRenderSystem(hudContext));
     world.addSystem(new DebugSystem());
