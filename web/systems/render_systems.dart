@@ -99,17 +99,18 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
     Spatial spatial = spatialMapper.get(entity);
     ImageElement image = loadedImages[spatial.resource];
     if (null == image) {
-      image = new ImageElement(src: spatial.resource);
+      image = new ImageElement();
       image.on.load.add((event) {
         loadedImages[spatial.resource] = image;
-        drawSpatial(pos, cameraPos, image);
+        drawSpatial(pos, cameraPos, image, spatial);
       });
+      image.src = spatial.resource;
     } else {
-      drawSpatial(pos, cameraPos, image);
+      drawSpatial(pos, cameraPos, image, spatial);
     }
   }
 
-  void drawSpatial(Transform pos, CameraPosition cameraPos, ImageElement image) {
+  void drawSpatial(Transform pos, CameraPosition cameraPos, ImageElement image, Spatial spatial) {
     context2d.save();
 
     try {
@@ -126,8 +127,13 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
         context2d.translate(0, UNIVERSE_HEIGHT);
       }
       context2d.translate(pos.x, pos.y);
-      context2d.rotate(pos.angle);
-      context2d.drawImage(image, -image.width ~/2, -image.height ~/ 2, image.width, image.height);
+      if (spatial.isSprite) {
+        num width = spatial.width * spatial.scale;
+        num height = spatial.height * spatial.scale;
+        context2d.drawImage(image, spatial.x + (pos.angle.round() * 128) % 8192, spatial.y, spatial.width, spatial.height, -width ~/2, -height ~/ 2, width, height);
+      } else {
+        context2d.drawImage(image, -image.width ~/2, -image.height ~/ 2, image.width, image.height);
+      }
 
       context2d.closePath();
       context2d.fill();

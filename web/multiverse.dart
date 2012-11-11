@@ -66,9 +66,9 @@ class Game {
 
     for (int i = 0; i < 500; i++) {
       Entity asteroid = world.createEntity();
-      asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: random.nextDouble() * 0.1));
+      asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.5, 1.5));
-      asteroid.addComponent(new Spatial('resources/asteroid_dummy.png'));
+      asteroid.addComponent(new Spatial.asSprite('resources/asteroid_strip64.png', 0, 0, 128, 128, scale : generateRandom(0.2, 0.5)));
       asteroid.addToWorld();
     }
 
@@ -110,12 +110,15 @@ class Game {
 }
 
 Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
-  return new Velocity(generateRandom(minSpeed, maxSpeed), generateRandom(minSpeed, maxSpeed));
+  num velx = generateRandom(minSpeed, maxSpeed);
+  velx = velx * (random.nextBool() ? 1 : -1);
+  num vely = generateRandom(minSpeed, maxSpeed);
+  vely = vely * (random.nextBool() ? 1 : -1);
+  return new Velocity(velx, vely);
 }
 
 num generateRandom(num min, num max) {
   num randomNumber = min + max * random.nextDouble();
-  randomNumber = randomNumber * (random.nextBool() ? 1 : -1);
   return randomNumber;
 }
 
@@ -232,5 +235,13 @@ class Spatial extends Component {
   Spatial.hack();
 
   String resource;
-  Spatial(this.resource);
+  bool isSprite;
+  num width, height, x, y;
+  num scale;
+  Spatial(this.resource, {this.scale : 1}) {
+    isSprite = false;
+  }
+  Spatial.asSprite(this.resource, this.x, this.y, this.width, this.height, {this.scale : 1}) {
+    isSprite = true;
+  }
 }
