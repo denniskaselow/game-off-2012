@@ -11,8 +11,8 @@ part 'systems/input_systems.dart';
 const int MAXWIDTH = 800;
 const int MAXHEIGHT = 400;
 const int HUDHEIGHT = 100;
-const int UNIVERSE_HEIGHT = 8000;
-const int UNIVERSE_WIDTH = 8000;
+const int UNIVERSE_HEIGHT = 10000;
+const int UNIVERSE_WIDTH = 10000;
 const String TAG_CAMERA = "CAMERA";
 const String TAG_PLAYER = "PLAYER";
 
@@ -49,7 +49,7 @@ class Game {
     world = new World();
 
     Entity player = world.createEntity();
-    player.addComponent(new Position(100, 4000));
+    player.addComponent(new Transform(100, 4000));
     player.addComponent(new Velocity(0, 0));
     player.addToWorld();
 
@@ -59,16 +59,18 @@ class Game {
 
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
-      star.addComponent(new Position(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
+      star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       star.addToWorld();
     }
 
     for (int i = 0; i < 500; i++) {
       Entity asteroid = world.createEntity();
-      asteroid.addComponent(new Position(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
+      asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: random.nextDouble() * 0.1));
       asteroid.addComponent(generateRandomVelocity(0.5, 1.5));
+      asteroid.addComponent(new Spatial('resources/asteroid_dummy.png'));
       asteroid.addToWorld();
     }
+
 
     TagManager tagManager = new TagManager();
     tagManager.register(TAG_CAMERA, camera);
@@ -81,6 +83,7 @@ class Game {
     world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new PositionalRenderingSystem(gameContext));
+    world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new HudRenderSystem(hudContext));
     world.addSystem(new DebugSystem());
 
@@ -131,34 +134,35 @@ class GravitationalSystem extends EntityProcessingSystem {
 }
 
 class MovementSystem extends EntityProcessingSystem {
-  ComponentMapper<Position> positionMapper;
+  ComponentMapper<Transform> positionMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  MovementSystem() : super(Aspect.getAspectForAllOf(new Position.hack().runtimeType, [new Velocity.hack().runtimeType]));
+  MovementSystem() : super(Aspect.getAspectForAllOf(new Transform.hack().runtimeType, [new Velocity.hack().runtimeType]));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Position>(new Position.hack().runtimeType, world);
+    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
   }
 
   void processEntity(Entity entity) {
-    Position pos = positionMapper.get(entity);
+    Transform transform = positionMapper.get(entity);
     Velocity vel = velocityMapper.get(entity);
 
-    pos.x += vel.x;
-    pos.y += vel.y;
+    transform.x += vel.x;
+    transform.y += vel.y;
+    transform.angle += transform.rotationRate;
   }
 }
 
 class CameraSystem extends VoidEntitySystem {
-  ComponentMapper<Position> positionMapper;
+  ComponentMapper<Transform> positionMapper;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
   CameraSystem();
 
   void initialize() {
-    positionMapper = new ComponentMapper<Position>(new Position.hack().runtimeType, world);
+    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
@@ -166,7 +170,7 @@ class CameraSystem extends VoidEntitySystem {
   void processSystem() {
     Entity player = tagManager.getEntity(TAG_PLAYER);
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Position playerPos = positionMapper.get(player);
+    Transform playerPos = positionMapper.get(player);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
     cameraPos.x = playerPos.x - MAXWIDTH ~/ 2;
@@ -179,12 +183,12 @@ class DebugSystem extends VoidEntitySystem {
   SpanElement playerPosElement = query("#playerPos");
   SpanElement cameraPosElement = query("#cameraPos");
   ComponentMapper<CameraPosition> cameraPositionMapper;
-  ComponentMapper<Position> positionMapper;
+  ComponentMapper<Transform> positionMapper;
   TagManager tagManager;
 
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
-    positionMapper = new ComponentMapper<Position>(new Position.hack().runtimeType, world);
+    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
@@ -192,7 +196,7 @@ class DebugSystem extends VoidEntitySystem {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     Entity player = tagManager.getEntity(TAG_PLAYER);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
-    Position playerPos = positionMapper.get(player);
+    Transform playerPos = positionMapper.get(player);
 
     num fps = 1000 ~/ world.delta;
     fpsElement.text = "${fps}";
@@ -202,17 +206,17 @@ class DebugSystem extends VoidEntitySystem {
 }
 
 
-class Position extends Component {
-  Position.hack();
-  num _x, _y;
-  Position(this._x, this._y);
+class Transform extends Component {
+  Transform.hack();
+  num _x, _y, angle, rotationRate;
+  Transform(this._x, this._y, {this.angle : 0, this.rotationRate : 0});
   num get x => _x;
   num get y => _y;
   set x(num x) => _x = x % UNIVERSE_WIDTH;
   set y(num y) => _y = y % UNIVERSE_HEIGHT;
 }
 
-class CameraPosition extends Position {
+class CameraPosition extends Transform {
   CameraPosition.hack() : super.hack();
   CameraPosition([num x = 0, num y = 0]) : super(x, y);
 }
@@ -221,4 +225,11 @@ class Velocity extends Component {
   Velocity.hack();
   num x, y;
   Velocity(this.x, this.y);
+}
+
+class Spatial extends Component {
+  Spatial.hack();
+
+  String resource;
+  Spatial(this.resource);
 }

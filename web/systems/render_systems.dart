@@ -2,21 +2,21 @@ part of multiverse;
 
 abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
-  ComponentMapper<Position> positionMapper;
+  ComponentMapper<Transform> positionMapper;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Position.hack().runtimeType));
+  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Transform.hack().runtimeType));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Position>(new Position.hack().runtimeType, world);
+    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
   void processEntity(Entity entity) {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Position pos = positionMapper.get(entity);
+    Transform pos = positionMapper.get(entity);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
     if (isWithtinXRange(pos, cameraPos) && isWithtinYRange(pos, cameraPos)) {
@@ -24,11 +24,11 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
     }
   }
 
-  bool isWithtinXRange(Position pos, CameraPosition camPos) {
+  bool isWithtinXRange(Transform pos, CameraPosition camPos) {
     return ((camPos.x - pos.x).abs() < (MAXWIDTH + 50) || (camPos.x - pos.x).abs() > UNIVERSE_WIDTH - (MAXWIDTH + 50));
   }
 
-  bool isWithtinYRange(Position pos, CameraPosition camPos) {
+  bool isWithtinYRange(Transform pos, CameraPosition camPos) {
     return ((camPos.y - pos.y).abs() < (MAXHEIGHT + 50) || (camPos.y - pos.y).abs() > UNIVERSE_HEIGHT - (MAXHEIGHT + 50 ));
   }
 
@@ -40,11 +40,11 @@ class PositionalRenderingSystem extends OnScreenProcessingSystem {
 
   CanvasRenderingContext2D context2d;
 
-  PositionalRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Position.hack().runtimeType));
+  PositionalRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Transform.hack().runtimeType));
 
   void processEntityOnScreen(Entity entity) {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Position pos = positionMapper.get(entity);
+    Transform pos = positionMapper.get(entity);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
     context2d.save();
@@ -62,7 +62,7 @@ class PositionalRenderingSystem extends OnScreenProcessingSystem {
     }
   }
 
-  void drawCirle(Position pos, CameraPosition cameraPos) {
+  void drawCirle(Transform pos, CameraPosition cameraPos) {
     context2d.beginPath();
     num x, y;
 
@@ -76,6 +76,66 @@ class PositionalRenderingSystem extends OnScreenProcessingSystem {
 
     context2d.closePath();
     context2d.fill();
+  }
+}
+
+class SpatialRenderingSystem extends OnScreenProcessingSystem {
+
+  CanvasRenderingContext2D context2d;
+  Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();
+  ComponentMapper<Spatial> spatialMapper;
+
+  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Spatial.hack().runtimeType,[new Transform.hack().runtimeType]));
+
+  void initialize() {
+    super.initialize();
+    spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+  }
+
+  void processEntityOnScreen(Entity entity) {
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    Transform pos = positionMapper.get(entity);
+    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+    Spatial spatial = spatialMapper.get(entity);
+    ImageElement image = loadedImages[spatial.resource];
+    if (null == image) {
+      image = new ImageElement(src: spatial.resource);
+      image.on.load.add((event) {
+        loadedImages[spatial.resource] = image;
+        drawSpatial(pos, cameraPos, image);
+      });
+    } else {
+      drawSpatial(pos, cameraPos, image);
+    }
+  }
+
+  void drawSpatial(Transform pos, CameraPosition cameraPos, ImageElement image) {
+    context2d.save();
+
+    try {
+      context2d.lineWidth = 0.5;
+      context2d.fillStyle = "white";
+      context2d.strokeStyle = "white";
+
+      context2d.beginPath();
+
+      if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && pos.x < MAXWIDTH) {
+        context2d.translate(UNIVERSE_WIDTH, 0);
+      }
+      if (cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT && pos.y < MAXHEIGHT) {
+        context2d.translate(0, UNIVERSE_HEIGHT);
+      }
+      context2d.translate(pos.x, pos.y);
+      context2d.rotate(pos.angle);
+      context2d.drawImage(image, -15, -15, 30, 30);
+
+      context2d.closePath();
+      context2d.fill();
+
+      context2d.stroke();
+    } finally {
+      context2d.restore();
+    }
   }
 }
 
