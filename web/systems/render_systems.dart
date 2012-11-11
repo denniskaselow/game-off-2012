@@ -2,6 +2,11 @@ part of multiverse;
 
 abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
+  static final num MAX_RENDER_DISTANCE_X = MAXWIDTH + 50;
+  static final num MAX_RENDER_DISTANCE_Y = MAXHEIGHT + 50;
+  static final num MIN_RENDER_DISTANCE_X_BORDER = UNIVERSE_WIDTH - MAX_RENDER_DISTANCE_X;
+  static final num MIN_RENDER_DISTANCE_Y_BORDER = UNIVERSE_HEIGHT - MAX_RENDER_DISTANCE_Y;
+
   ComponentMapper<Transform> positionMapper;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
@@ -25,11 +30,13 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
   }
 
   bool isWithtinXRange(Transform pos, CameraPosition camPos) {
-    return ((camPos.x - pos.x).abs() < (MAXWIDTH + 50) || (camPos.x - pos.x).abs() > UNIVERSE_WIDTH - (MAXWIDTH + 50));
+    num distanceX = (camPos.x - pos.x).abs();
+    return (distanceX < MAX_RENDER_DISTANCE_X || distanceX > MIN_RENDER_DISTANCE_X_BORDER);
   }
 
   bool isWithtinYRange(Transform pos, CameraPosition camPos) {
-    return ((camPos.y - pos.y).abs() < (MAXHEIGHT + 50) || (camPos.y - pos.y).abs() > UNIVERSE_HEIGHT - (MAXHEIGHT + 50 ));
+    num distanceY = (camPos.y - pos.y).abs();
+    return (distanceY < MAX_RENDER_DISTANCE_Y || distanceY > MIN_RENDER_DISTANCE_Y_BORDER);
   }
 
   void processEntityOnScreen(Entity entity);
