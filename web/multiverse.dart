@@ -15,6 +15,7 @@ const int UNIVERSE_HEIGHT = 10000;
 const int UNIVERSE_WIDTH = 10000;
 const String TAG_CAMERA = "CAMERA";
 const String TAG_PLAYER = "PLAYER";
+const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
 
 final Random random = new Random();
 
@@ -57,11 +58,14 @@ class Game {
     camera.addComponent(new CameraPosition());
     camera.addToWorld();
 
+    GroupManager groupManager = new GroupManager();
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       star.addComponent(new Spatial('resources/star_0${random.nextInt(5)}.png'));
+      star.addComponent(new Background());
       star.addToWorld();
+      groupManager.add(star, GROUP_BACKGROUND);
     }
 
     for (int i = 0; i < 500; i++) {
@@ -72,11 +76,11 @@ class Game {
       asteroid.addToWorld();
     }
 
-
     TagManager tagManager = new TagManager();
     tagManager.register(TAG_CAMERA, camera);
     tagManager.register(TAG_PLAYER, player);
     world.addManager(tagManager);
+    world.addManager(groupManager);
 
 //    world.addSystem(new GravitationalSystem());
     world.addSystem(new PlayerControlSystem(gameCanvas));
@@ -244,4 +248,9 @@ class Spatial extends Component {
   Spatial.asSprite(this.resource, this.x, this.y, this.width, this.height, {this.scale : 1}) {
     isSprite = true;
   }
+}
+
+class Background extends Component {
+  Background.hack();
+  Background();
 }

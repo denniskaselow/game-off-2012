@@ -1,6 +1,6 @@
 part of multiverse;
 
-class PlayerControlSystem extends IntervalEntitySystem {
+class PlayerControlSystem extends VoidEntitySystem {
   const int UP = 87;
   const int DOWN = 83;
   const int LEFT = 65;
@@ -20,7 +20,7 @@ class PlayerControlSystem extends IntervalEntitySystem {
 
   CanvasElement canvas;
 
-  PlayerControlSystem(this.canvas) : super(20, Aspect.getAspectForAllOf(new Velocity.hack().runtimeType));
+  PlayerControlSystem(this.canvas) : super();
 
   void initialize() {
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);

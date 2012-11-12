@@ -92,7 +92,7 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
   Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();
   ComponentMapper<Spatial> spatialMapper;
 
-  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Spatial.hack().runtimeType,[new Transform.hack().runtimeType]));
+  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Spatial.hack().runtimeType,[new Transform.hack().runtimeType]).exclude(new Background.hack().runtimeType));
 
   void initialize() {
     super.initialize();
@@ -153,6 +153,7 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
 }
 
 class BackgroundRenderSystem extends VoidEntitySystem {
+  CanvasElement bgCanvas;
   CanvasRenderingContext2D context2d;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
@@ -162,6 +163,31 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
+    initBackground();
+  }
+
+  void initBackground() {
+    GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
+    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH, height: UNIVERSE_HEIGHT);
+    var bgContext = bgCanvas.context2d;
+    bgContext..fillStyle = "black"
+             ..beginPath()
+             ..rect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT)
+             ..fill()
+             ..stroke()
+             ..closePath();
+
+    groupManager.getEntities(GROUP_BACKGROUND).forEach((entity) {
+      Transform transform = transformMapper.get(entity);
+      Spatial spatial = spatialMapper.get(entity);
+      ImageLoader.withImage(spatial.resource, (image) {
+        bgContext.beginPath();
+        bgContext.drawImage(image, transform.x - image.width ~/ 2, transform.y - image.height ~/ 2, image.width, image.height);
+        bgContext.closePath();
+      });
+    });
   }
 
   void processSystem() {
@@ -169,21 +195,29 @@ class BackgroundRenderSystem extends VoidEntitySystem {
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
     context2d.setTransform(1, 0, 0, 1, 0, 0);
+    context2d.translate(-cameraPos.x, -cameraPos.y);
 
     context2d.save();
     try {
-      context2d.fillStyle = "black";
-
       context2d.beginPath();
-      context2d.rect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT);
+      if (cameraPos.x < UNIVERSE_WIDTH - MAXWIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAXHEIGHT) {
+        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, MAXWIDTH, MAXHEIGHT, cameraPos.x, cameraPos.y, MAXWIDTH, MAXHEIGHT);
+      } else if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAXHEIGHT) {
+        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT);
+        context2d.drawImage(bgCanvas, 0, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT, UNIVERSE_WIDTH, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT);
+      } else if (cameraPos.x < UNIVERSE_WIDTH - MAXWIDTH && cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT) {
+        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, MAXWIDTH, UNIVERSE_HEIGHT - cameraPos.y, cameraPos.x, cameraPos.y, MAXWIDTH, UNIVERSE_HEIGHT - cameraPos.y);
+        context2d.drawImage(bgCanvas, cameraPos.x, 0, MAXWIDTH, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y), cameraPos.x, UNIVERSE_HEIGHT, MAXWIDTH, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y));
+      } else {
+        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, UNIVERSE_HEIGHT - cameraPos.y, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, UNIVERSE_HEIGHT - cameraPos.y);
+        context2d.drawImage(bgCanvas, 0, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), UNIVERSE_HEIGHT - cameraPos.y,UNIVERSE_WIDTH, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), UNIVERSE_HEIGHT - cameraPos.y);
+        context2d.drawImage(bgCanvas, cameraPos.x, 0, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y), cameraPos.x, UNIVERSE_HEIGHT, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y));
+        context2d.drawImage(bgCanvas, 0, 0, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y), UNIVERSE_WIDTH, UNIVERSE_HEIGHT, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y));
+      }
       context2d.closePath();
-
-      context2d.fill();
     } finally {
       context2d.restore();
     }
-
-    context2d.translate(-cameraPos.x, -cameraPos.y);
   }
 }
 
@@ -210,4 +244,23 @@ class HudRenderSystem extends VoidEntitySystem {
       context2d.restore();
     }
   }
+}
+
+class ImageLoader {
+  static final Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();
+
+  static void withImage(String imagePath, void action(ImageElement image)) {
+    ImageElement image = loadedImages[imagePath];
+    if (null == image) {
+      image = new ImageElement();
+      image.on.load.add((event) {
+        action(image);
+        loadedImages[imagePath] = image;
+      });
+      image.src = imagePath;
+    } else {
+      action(image);
+    }
+  }
+
 }
