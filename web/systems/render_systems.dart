@@ -43,49 +43,6 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
 }
 
-class PositionalRenderingSystem extends OnScreenProcessingSystem {
-
-  CanvasRenderingContext2D context2d;
-
-  PositionalRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Transform.hack().runtimeType));
-
-  void processEntityOnScreen(Entity entity) {
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Transform pos = positionMapper.get(entity);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    context2d.save();
-
-    try {
-      context2d.lineWidth = 0.5;
-      context2d.fillStyle = "white";
-      context2d.strokeStyle = "white";
-
-      drawCirle(pos, cameraPos);
-
-      context2d.stroke();
-    } finally {
-      context2d.restore();
-    }
-  }
-
-  void drawCirle(Transform pos, CameraPosition cameraPos) {
-    context2d.beginPath();
-    num x, y;
-
-    if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && pos.x < MAXWIDTH) {
-      context2d.translate(UNIVERSE_WIDTH, 0);
-    }
-    if (cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT && pos.y < MAXHEIGHT) {
-      context2d.translate(0, UNIVERSE_HEIGHT);
-    }
-    context2d.arc(pos.x, pos.y, 10, 0, FastMath.TWO_PI, false);
-
-    context2d.closePath();
-    context2d.fill();
-  }
-}
-
 class SpatialRenderingSystem extends OnScreenProcessingSystem {
 
   CanvasRenderingContext2D context2d;
