@@ -74,7 +74,7 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
     }
   }
 
-  void drawSpatial(Transform pos, CameraPosition cameraPos, ImageElement image, Spatial spatial) {
+  void drawSpatial(Transform transform, CameraPosition cameraPos, ImageElement image, Spatial spatial) {
     context2d.save();
 
     try {
@@ -84,19 +84,22 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
 
       context2d.beginPath();
 
-      if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && pos.x < MAX_WIDTH) {
+      if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && transform.x < MAX_WIDTH) {
         context2d.translate(UNIVERSE_WIDTH, 0);
       }
-      if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && pos.y < MAX_HEIGHT) {
+      if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && transform.y < MAX_HEIGHT) {
         context2d.translate(0, UNIVERSE_HEIGHT);
       }
-      context2d.translate(pos.x, pos.y);
+      context2d.translate(transform.x, transform.y);
       if (spatial.isSprite) {
         num width = spatial.width * spatial.scale;
         num height = spatial.height * spatial.scale;
-        context2d.drawImage(image, spatial.x + (pos.angle.round() * 128) % 8192, spatial.y, spatial.width, spatial.height, -width ~/2, -height ~/ 2, width, height);
+        context2d.drawImage(image, spatial.x + (transform.angle.round() * 128) % 8192, spatial.y, spatial.width, spatial.height, -width ~/2, -height ~/ 2, width, height);
       } else {
-        context2d.drawImage(image, -image.width ~/2, -image.height ~/ 2, image.width, image.height);
+        num width = image.width * spatial.scale;
+        num height = image.height * spatial.scale;
+        context2d.rotate(transform.angle);
+        context2d.drawImage(image, -width ~/2, -height ~/ 2, width, height);
       }
 
       context2d.closePath();

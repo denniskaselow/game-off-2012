@@ -1,21 +1,22 @@
 part of multiverse;
 
 class PlayerControlSystem extends VoidEntitySystem {
-  const int UP = 87;
-  const int DOWN = 83;
+  const int ACCELERATE = 87;
+  const int DECELERATE = 83;
   const int LEFT = 65;
   const int RIGHT = 68;
 
-  bool moveUp = false;
-  bool moveDown = false;
-  bool moveLeft = false;
-  bool moveRight = false;
+  bool accelerate = false;
+  bool decelerate = false;
+  bool turnLeft = false;
+  bool turnRight = false;
   bool shoot = false;
 
   num targetX = 0;
   num targetY = 0;
 
   ComponentMapper<Velocity> velocityMapper;
+  ComponentMapper<Transform> transformMapper;
   TagManager tagManager;
 
   CanvasElement canvas;
@@ -24,6 +25,7 @@ class PlayerControlSystem extends VoidEntitySystem {
 
   void initialize() {
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
 
     tagManager = world.getManager(new TagManager().runtimeType);
     window.on.keyDown.add(handleKeyDown);
@@ -35,46 +37,49 @@ class PlayerControlSystem extends VoidEntitySystem {
   void processEntities(ImmutableBag<Entity> entities) {
     Entity player = tagManager.getEntity(TAG_PLAYER);
     Velocity velocity = velocityMapper.get(player);
+    Transform transform = transformMapper.get(player);
 
-    if (moveUp) {
-      velocity.y -= 0.1;
-    } else if (moveDown) {
-      velocity.y += 0.1;
+    if (accelerate) {
+      velocity.x += 0.05 * TrigUtil.cos(transform.angle);
+      velocity.y += 0.05 * TrigUtil.sin(transform.angle);
+    } else if (decelerate) {
+      velocity.x *= 0.98;
+      velocity.y *= 0.98;
     }
-    if (moveLeft) {
-      velocity.x -= 0.1;
-    } else if(moveRight) {
-      velocity.x += 0.1;
+    if (turnLeft) {
+      transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;
+    } else if(turnRight) {
+      transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
     }
   }
 
   void handleKeyDown(KeyboardEvent e) {
     int keyCode = e.keyCode;
-    if (keyCode == UP) {
-      moveUp = true;
-      moveDown = false;
-    } else if (keyCode == DOWN) {
-      moveUp = false;
-      moveDown = true;
+    if (keyCode == ACCELERATE) {
+      accelerate = true;
+      decelerate = false;
+    } else if (keyCode == DECELERATE) {
+      accelerate = false;
+      decelerate = true;
     } else if (keyCode == LEFT) {
-      moveLeft = true;
-      moveRight = false;
+      turnLeft = true;
+      turnRight = false;
     } else if (keyCode == RIGHT) {
-      moveLeft = false;
-      moveRight = true;
+      turnLeft = false;
+      turnRight = true;
     }
   }
 
   void handleKeyUp(KeyboardEvent e) {
     int keyCode = e.keyCode;
-    if (keyCode == UP) {
-      moveUp = false;
-    } else if (keyCode == DOWN) {
-      moveDown = false;
+    if (keyCode == ACCELERATE) {
+      accelerate = false;
+    } else if (keyCode == DECELERATE) {
+      decelerate = false;
     } else if (keyCode == LEFT) {
-      moveLeft = false;
+      turnLeft = false;
     } else if (keyCode == RIGHT) {
-      moveRight = false;
+      turnRight = false;
     }
   }
 

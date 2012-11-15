@@ -53,6 +53,7 @@ class Game {
     Entity player = world.createEntity();
     player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
+    player.addComponent(new Spatial('resources/spaceship_dummy.png', scale: 0.5));
     player.addToWorld();
 
     Entity camera = world.createEntity();
