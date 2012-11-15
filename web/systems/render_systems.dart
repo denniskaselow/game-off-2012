@@ -2,8 +2,8 @@ part of multiverse;
 
 abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
-  static final num MAX_RENDER_DISTANCE_X = MAXWIDTH + 50;
-  static final num MAX_RENDER_DISTANCE_Y = MAXHEIGHT + 50;
+  static final num MAX_RENDER_DISTANCE_X = MAX_WIDTH + 50;
+  static final num MAX_RENDER_DISTANCE_Y = MAX_HEIGHT + 50;
   static final num MIN_RENDER_DISTANCE_X_BORDER = UNIVERSE_WIDTH - MAX_RENDER_DISTANCE_X;
   static final num MIN_RENDER_DISTANCE_Y_BORDER = UNIVERSE_HEIGHT - MAX_RENDER_DISTANCE_Y;
 
@@ -43,49 +43,6 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
 }
 
-class PositionalRenderingSystem extends OnScreenProcessingSystem {
-
-  CanvasRenderingContext2D context2d;
-
-  PositionalRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Transform.hack().runtimeType));
-
-  void processEntityOnScreen(Entity entity) {
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Transform pos = positionMapper.get(entity);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    context2d.save();
-
-    try {
-      context2d.lineWidth = 0.5;
-      context2d.fillStyle = "white";
-      context2d.strokeStyle = "white";
-
-      drawCirle(pos, cameraPos);
-
-      context2d.stroke();
-    } finally {
-      context2d.restore();
-    }
-  }
-
-  void drawCirle(Transform pos, CameraPosition cameraPos) {
-    context2d.beginPath();
-    num x, y;
-
-    if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && pos.x < MAXWIDTH) {
-      context2d.translate(UNIVERSE_WIDTH, 0);
-    }
-    if (cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT && pos.y < MAXHEIGHT) {
-      context2d.translate(0, UNIVERSE_HEIGHT);
-    }
-    context2d.arc(pos.x, pos.y, 10, 0, FastMath.TWO_PI, false);
-
-    context2d.closePath();
-    context2d.fill();
-  }
-}
-
 class SpatialRenderingSystem extends OnScreenProcessingSystem {
 
   CanvasRenderingContext2D context2d;
@@ -117,7 +74,7 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
     }
   }
 
-  void drawSpatial(Transform pos, CameraPosition cameraPos, ImageElement image, Spatial spatial) {
+  void drawSpatial(Transform transform, CameraPosition cameraPos, ImageElement image, Spatial spatial) {
     context2d.save();
 
     try {
@@ -127,19 +84,22 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
 
       context2d.beginPath();
 
-      if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && pos.x < MAXWIDTH) {
+      if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && transform.x < MAX_WIDTH) {
         context2d.translate(UNIVERSE_WIDTH, 0);
       }
-      if (cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT && pos.y < MAXHEIGHT) {
+      if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && transform.y < MAX_HEIGHT) {
         context2d.translate(0, UNIVERSE_HEIGHT);
       }
-      context2d.translate(pos.x, pos.y);
+      context2d.translate(transform.x, transform.y);
       if (spatial.isSprite) {
         num width = spatial.width * spatial.scale;
         num height = spatial.height * spatial.scale;
-        context2d.drawImage(image, spatial.x + (pos.angle.round() * 128) % 8192, spatial.y, spatial.width, spatial.height, -width ~/2, -height ~/ 2, width, height);
+        context2d.drawImage(image, spatial.x + (transform.angle.round() * 128) % 8192, spatial.y, spatial.width, spatial.height, -width ~/2, -height ~/ 2, width, height);
       } else {
-        context2d.drawImage(image, -image.width ~/2, -image.height ~/ 2, image.width, image.height);
+        num width = image.width * spatial.scale;
+        num height = image.height * spatial.scale;
+        context2d.rotate(transform.angle);
+        context2d.drawImage(image, -width ~/2, -height ~/ 2, width, height);
       }
 
       context2d.closePath();
@@ -153,6 +113,9 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
 }
 
 class BackgroundRenderSystem extends VoidEntitySystem {
+  const int OVERLAP_WIDTH = 50;
+  const int OVERLAP_HEIGHT = 50;
+
   CanvasElement bgCanvas;
   CanvasRenderingContext2D context2d;
   ComponentMapper<CameraPosition> cameraPositionMapper;
@@ -170,14 +133,11 @@ class BackgroundRenderSystem extends VoidEntitySystem {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
     ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
     ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH, height: UNIVERSE_HEIGHT);
+    bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
     var bgContext = bgCanvas.context2d;
-    bgContext..fillStyle = "black"
-             ..beginPath()
-             ..rect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT)
-             ..fill()
-             ..stroke()
-             ..closePath();
+
+    bgContext.setTransform(1, 0, 0, 1, 0, 0);
+    bgContext.translate(OVERLAP_WIDTH, OVERLAP_HEIGHT);
 
     groupManager.getEntities(GROUP_BACKGROUND).forEach((entity) {
       Transform transform = transformMapper.get(entity);
@@ -196,23 +156,43 @@ class BackgroundRenderSystem extends VoidEntitySystem {
 
     context2d.setTransform(1, 0, 0, 1, 0, 0);
     context2d.translate(-cameraPos.x, -cameraPos.y);
+    context2d..fillStyle = "black"
+        ..beginPath()
+        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+        ..fill()
+        ..stroke()
+        ..closePath();
 
     context2d.save();
     try {
       context2d.beginPath();
-      if (cameraPos.x < UNIVERSE_WIDTH - MAXWIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAXHEIGHT) {
-        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, MAXWIDTH, MAXHEIGHT, cameraPos.x, cameraPos.y, MAXWIDTH, MAXHEIGHT);
-      } else if (cameraPos.x > UNIVERSE_WIDTH - MAXWIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAXHEIGHT) {
-        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT);
-        context2d.drawImage(bgCanvas, 0, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT, UNIVERSE_WIDTH, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT);
-      } else if (cameraPos.x < UNIVERSE_WIDTH - MAXWIDTH && cameraPos.y > UNIVERSE_HEIGHT - MAXHEIGHT) {
-        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, MAXWIDTH, UNIVERSE_HEIGHT - cameraPos.y, cameraPos.x, cameraPos.y, MAXWIDTH, UNIVERSE_HEIGHT - cameraPos.y);
-        context2d.drawImage(bgCanvas, cameraPos.x, 0, MAXWIDTH, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y), cameraPos.x, UNIVERSE_HEIGHT, MAXWIDTH, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y));
+      num srcX = cameraPos.x + OVERLAP_WIDTH;
+      num srcY = cameraPos.y + OVERLAP_HEIGHT;
+      if (cameraPos.x < UNIVERSE_WIDTH - MAX_WIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAX_HEIGHT) {
+        context2d.drawImage(bgCanvas, srcX, srcY, MAX_WIDTH, MAX_HEIGHT, cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT);
+      } else if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAX_HEIGHT) {
+        num overlapWidthLeft = UNIVERSE_WIDTH - cameraPos.x + OVERLAP_WIDTH;
+        num overlapWidthRight = MAX_WIDTH - (UNIVERSE_WIDTH - cameraPos.x) + OVERLAP_WIDTH;
+        num overlapDestX = UNIVERSE_WIDTH - OVERLAP_WIDTH;
+        context2d.drawImage(bgCanvas, srcX, srcY, overlapWidthLeft, MAX_HEIGHT, cameraPos.x, cameraPos.y, overlapWidthLeft, MAX_HEIGHT);
+        context2d.drawImage(bgCanvas, 0, srcY, overlapWidthRight, MAX_HEIGHT, overlapDestX, cameraPos.y, overlapWidthRight, MAX_HEIGHT);
+      } else if (cameraPos.x < UNIVERSE_WIDTH - MAX_WIDTH && cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT) {
+        num overlapHeightTop = UNIVERSE_HEIGHT - cameraPos.y + OVERLAP_HEIGHT;
+        num overlapHeightBottom = MAX_HEIGHT - (UNIVERSE_HEIGHT - cameraPos.y) + OVERLAP_HEIGHT;
+        num overlapDestY = UNIVERSE_HEIGHT - OVERLAP_HEIGHT;
+        context2d.drawImage(bgCanvas, srcX, srcY, MAX_WIDTH, overlapHeightTop, cameraPos.x, cameraPos.y, MAX_WIDTH, overlapHeightTop);
+        context2d.drawImage(bgCanvas, srcX, 0, MAX_WIDTH, overlapHeightBottom, cameraPos.x, overlapDestY, MAX_WIDTH, overlapHeightBottom);
       } else {
-        context2d.drawImage(bgCanvas, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, UNIVERSE_HEIGHT - cameraPos.y, cameraPos.x, cameraPos.y, UNIVERSE_WIDTH - cameraPos.x, UNIVERSE_HEIGHT - cameraPos.y);
-        context2d.drawImage(bgCanvas, 0, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), UNIVERSE_HEIGHT - cameraPos.y,UNIVERSE_WIDTH, cameraPos.y, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), UNIVERSE_HEIGHT - cameraPos.y);
-        context2d.drawImage(bgCanvas, cameraPos.x, 0, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y), cameraPos.x, UNIVERSE_HEIGHT, UNIVERSE_WIDTH - cameraPos.x, MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y));
-        context2d.drawImage(bgCanvas, 0, 0, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y), UNIVERSE_WIDTH, UNIVERSE_HEIGHT, MAXWIDTH - (UNIVERSE_WIDTH - cameraPos.x), MAXHEIGHT - (UNIVERSE_HEIGHT - cameraPos.y));
+        num overlapWidthLeft = UNIVERSE_WIDTH - cameraPos.x + OVERLAP_WIDTH;
+        num overlapWidthRight = MAX_WIDTH - (UNIVERSE_WIDTH - cameraPos.x) + OVERLAP_WIDTH;
+        num overlapHeightTop = UNIVERSE_HEIGHT - cameraPos.y + OVERLAP_HEIGHT;
+        num overlapHeightBottom = MAX_HEIGHT - (UNIVERSE_HEIGHT - cameraPos.y) + OVERLAP_HEIGHT;
+        num overlapDestX = UNIVERSE_WIDTH - OVERLAP_WIDTH;
+        num overlapDestY = UNIVERSE_HEIGHT - OVERLAP_HEIGHT;
+        context2d.drawImage(bgCanvas, srcX, srcY, overlapWidthLeft, overlapHeightTop, cameraPos.x, cameraPos.y, overlapWidthLeft, overlapHeightTop);
+        context2d.drawImage(bgCanvas, 0, srcY, overlapWidthRight, overlapHeightTop, overlapDestX, cameraPos.y, overlapWidthRight, overlapHeightTop);
+        context2d.drawImage(bgCanvas, srcX, 0, overlapWidthLeft, overlapHeightBottom, cameraPos.x, overlapDestY, overlapWidthLeft, overlapHeightBottom);
+        context2d.drawImage(bgCanvas, 0, 0, overlapWidthRight, overlapHeightBottom, overlapDestX, overlapDestY, overlapWidthRight, overlapHeightBottom);
       }
       context2d.closePath();
     } finally {
@@ -235,7 +215,7 @@ class HudRenderSystem extends VoidEntitySystem {
       context2d.fillStyle = "#555";
 
       context2d.beginPath();
-      context2d.rect(0, 0, MAXWIDTH, HUDHEIGHT);
+      context2d.rect(0, 0, MAX_WIDTH, HUD_HEIGHT);
       context2d.closePath();
 
       context2d.fill();

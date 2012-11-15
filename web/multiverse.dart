@@ -1,16 +1,17 @@
 library multiverse;
 
-import 'dart:math';
 import 'dart:html' hide Entity;
-
+import 'dart:math';
 import 'package:dartemis/dartemis.dart';
 
+part 'components/components.dart';
+part 'systems/game_logic_systems.dart';
 part 'systems/render_systems.dart';
 part 'systems/input_systems.dart';
 
-const int MAXWIDTH = 800;
-const int MAXHEIGHT = 400;
-const int HUDHEIGHT = 100;
+const int MAX_WIDTH = 800;
+const int MAX_HEIGHT = 400;
+const int HUD_HEIGHT = 100;
 const int UNIVERSE_HEIGHT = 10000;
 const int UNIVERSE_WIDTH = 10000;
 const String TAG_CAMERA = "CAMERA";
@@ -23,10 +24,10 @@ void main() {
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
   window.requestLayoutFrame(() {
-    gameContainer.width = MAXWIDTH;
-    gameContainer.height = MAXHEIGHT;
-    hudContainer.width = MAXWIDTH;
-    hudContainer.height = HUDHEIGHT;
+    gameContainer.width = MAX_WIDTH;
+    gameContainer.height = MAX_HEIGHT;
+    hudContainer.width = MAX_WIDTH;
+    hudContainer.height = HUD_HEIGHT;
 
     Game game = new Game(gameContainer, hudContainer);
     game.start();
@@ -50,8 +51,9 @@ class Game {
     world = new World();
 
     Entity player = world.createEntity();
-    player.addComponent(new Transform(100, 4000));
+    player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
+    player.addComponent(new Spatial('resources/spaceship_dummy.png', scale: 0.5));
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -62,7 +64,7 @@ class Game {
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      star.addComponent(new Spatial('resources/star_0${random.nextInt(5)}.png'));
+      star.addComponent(new Spatial('resources/star_0${random.nextInt(6)}.png'));
       star.addComponent(new Background());
       star.addToWorld();
       groupManager.add(star, GROUP_BACKGROUND);
@@ -82,12 +84,10 @@ class Game {
     world.addManager(tagManager);
     world.addManager(groupManager);
 
-//    world.addSystem(new GravitationalSystem());
     world.addSystem(new PlayerControlSystem(gameCanvas));
     world.addSystem(new MovementSystem());
     world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
-//    world.addSystem(new PositionalRenderingSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new HudRenderSystem(hudContext));
     world.addSystem(new DebugSystem());
@@ -126,66 +126,6 @@ num generateRandom(num min, num max) {
   return randomNumber;
 }
 
-class GravitationalSystem extends EntityProcessingSystem {
-  var velocityMapper;
-
-  GravitationalSystem() : super(Aspect.getAspectForAllOf(new Velocity.hack().runtimeType));
-
-  void initialize() {
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-  }
-
-  void processEntity(Entity entity) {
-    Velocity vel = velocityMapper.get(entity);
-    vel.y += 0.00981 * world.delta;
-  }
-}
-
-class MovementSystem extends EntityProcessingSystem {
-  ComponentMapper<Transform> positionMapper;
-  ComponentMapper<Velocity> velocityMapper;
-
-  MovementSystem() : super(Aspect.getAspectForAllOf(new Transform.hack().runtimeType, [new Velocity.hack().runtimeType]));
-
-  void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-  }
-
-  void processEntity(Entity entity) {
-    Transform transform = positionMapper.get(entity);
-    Velocity vel = velocityMapper.get(entity);
-
-    transform.x += vel.x;
-    transform.y += vel.y;
-    transform.angle += transform.rotationRate;
-  }
-}
-
-class CameraSystem extends VoidEntitySystem {
-  ComponentMapper<Transform> positionMapper;
-  ComponentMapper<CameraPosition> cameraPositionMapper;
-  TagManager tagManager;
-
-  CameraSystem();
-
-  void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
-  }
-
-  void processSystem() {
-    Entity player = tagManager.getEntity(TAG_PLAYER);
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Transform playerPos = positionMapper.get(player);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    cameraPos.x = playerPos.x - MAXWIDTH ~/ 2;
-    cameraPos.y = playerPos.y - MAXHEIGHT ~/ 2;
-  }
-}
-
 class DebugSystem extends VoidEntitySystem {
   SpanElement fpsElement = query("#fps");
   SpanElement playerPosElement = query("#playerPos");
@@ -211,46 +151,4 @@ class DebugSystem extends VoidEntitySystem {
     cameraPosElement.text = "x: ${cameraPos.x}; y: ${cameraPos.y}";
     playerPosElement.text = "x: ${playerPos.x}; y: ${playerPos.y}";
   }
-}
-
-
-class Transform extends Component {
-  Transform.hack();
-  num _x, _y, angle, rotationRate;
-  Transform(this._x, this._y, {this.angle : 0, this.rotationRate : 0});
-  num get x => _x;
-  num get y => _y;
-  set x(num x) => _x = x % UNIVERSE_WIDTH;
-  set y(num y) => _y = y % UNIVERSE_HEIGHT;
-}
-
-class CameraPosition extends Transform {
-  CameraPosition.hack() : super.hack();
-  CameraPosition([num x = 0, num y = 0]) : super(x, y);
-}
-
-class Velocity extends Component {
-  Velocity.hack();
-  num x, y;
-  Velocity(this.x, this.y);
-}
-
-class Spatial extends Component {
-  Spatial.hack();
-
-  String resource;
-  bool isSprite;
-  num width, height, x, y;
-  num scale;
-  Spatial(this.resource, {this.scale : 1}) {
-    isSprite = false;
-  }
-  Spatial.asSprite(this.resource, this.x, this.y, this.width, this.height, {this.scale : 1}) {
-    isSprite = true;
-  }
-}
-
-class Background extends Component {
-  Background.hack();
-  Background();
 }

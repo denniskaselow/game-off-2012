@@ -1,1 +1,1 @@
-{"packages":{"dartemis":{"version":"0.2.2","source":"git","description":{"url":"git://github.com/denniskaselow/dartemis.git","ref":null,"resolved-ref":"4bc6987e5943604e9bbc1e342676fa57aa5137cd"}},"unittest":{"version":"0.0.0-r.14776","source":"sdk","description":"unittest"}}}
+{"packages":{"dartemis":{"version":"0.2.3","source":"git","description":{"url":"git://github.com/denniskaselow/dartemis.git","ref":null,"resolved-ref":"c9bd95844c476d5cd70dfb6aa43082f5de47edf9"}},"unittest":{"version":"0.0.0-r.14970","source":"sdk","description":"unittest"}}}
