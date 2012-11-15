@@ -40,7 +40,7 @@ class CameraSystem extends VoidEntitySystem {
     Transform playerPos = positionMapper.get(player);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
-    cameraPos.x = playerPos.x - MAXWIDTH ~/ 2;
-    cameraPos.y = playerPos.y - MAXHEIGHT ~/ 2;
+    cameraPos.x = playerPos.x - MAX_WIDTH ~/ 2;
+    cameraPos.y = playerPos.y - MAX_HEIGHT ~/ 2;
   }
 }

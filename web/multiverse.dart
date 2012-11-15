@@ -9,9 +9,9 @@ part 'systems/game_logic_systems.dart';
 part 'systems/render_systems.dart';
 part 'systems/input_systems.dart';
 
-const int MAXWIDTH = 800;
-const int MAXHEIGHT = 400;
-const int HUDHEIGHT = 100;
+const int MAX_WIDTH = 800;
+const int MAX_HEIGHT = 400;
+const int HUD_HEIGHT = 100;
 const int UNIVERSE_HEIGHT = 10000;
 const int UNIVERSE_WIDTH = 10000;
 const String TAG_CAMERA = "CAMERA";
@@ -24,10 +24,10 @@ void main() {
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
   window.requestLayoutFrame(() {
-    gameContainer.width = MAXWIDTH;
-    gameContainer.height = MAXHEIGHT;
-    hudContainer.width = MAXWIDTH;
-    hudContainer.height = HUDHEIGHT;
+    gameContainer.width = MAX_WIDTH;
+    gameContainer.height = MAX_HEIGHT;
+    hudContainer.width = MAX_WIDTH;
+    hudContainer.height = HUD_HEIGHT;
 
     Game game = new Game(gameContainer, hudContainer);
     game.start();
@@ -51,7 +51,7 @@ class Game {
     world = new World();
 
     Entity player = world.createEntity();
-    player.addComponent(new Transform(100, 4000));
+    player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
     player.addToWorld();
 
@@ -63,7 +63,7 @@ class Game {
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      star.addComponent(new Spatial('resources/star_0${random.nextInt(5)}.png'));
+      star.addComponent(new Spatial('resources/star_0${random.nextInt(6)}.png'));
       star.addComponent(new Background());
       star.addToWorld();
       groupManager.add(star, GROUP_BACKGROUND);
