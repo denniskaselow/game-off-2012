@@ -49,18 +49,25 @@ class Game {
 
   void start() {
     world = new World();
+    GroupManager groupManager = new GroupManager();
+    TagManager tagManager = new TagManager();
+    world.addManager(tagManager);
+    world.addManager(groupManager);
 
     Entity player = world.createEntity();
     player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
-    player.addComponent(new Spatial('resources/spaceship_dummy.png', scale: 0.5));
+    num scale = 0.5;
+    player.addComponent(new Spatial('resources/spaceship_dummy.png', scale: scale));
+    player.addComponent(new CircularBody(45 * scale));
+    player.addComponent(new Mass(100 * scale));
+    player.addComponent(new Status());
     player.addToWorld();
 
     Entity camera = world.createEntity();
     camera.addComponent(new CameraPosition());
     camera.addToWorld();
 
-    GroupManager groupManager = new GroupManager();
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
@@ -74,24 +81,24 @@ class Game {
       Entity asteroid = world.createEntity();
       asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.5, 1.5));
-      asteroid.addComponent(new Spatial.asSprite('resources/asteroid_strip64.png', 0, 0, 128, 128, scale : generateRandom(0.2, 0.5)));
+      scale = generateRandom(0.2, 0.5);
+      asteroid.addComponent(new Spatial.asSprite('resources/asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
+      asteroid.addComponent(new CircularBody(50 * scale));
+      asteroid.addComponent(new Mass(100 * scale));
       asteroid.addToWorld();
     }
 
-    TagManager tagManager = new TagManager();
     tagManager.register(TAG_CAMERA, camera);
     tagManager.register(TAG_PLAYER, player);
-    world.addManager(tagManager);
-    world.addManager(groupManager);
 
     world.addSystem(new PlayerControlSystem(gameCanvas));
     world.addSystem(new MovementSystem());
+    world.addSystem(new CircularCollisionDetectionSystem());
     world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new HudRenderSystem(hudContext));
     world.addSystem(new DebugSystem());
-
 
     world.initialize();
     world.delta = 16;

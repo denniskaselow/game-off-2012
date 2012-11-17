@@ -1,49 +1,6 @@
 part of multiverse;
 
-abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
-
-  static final num MAX_RENDER_DISTANCE_X = MAX_WIDTH + 50;
-  static final num MAX_RENDER_DISTANCE_Y = MAX_HEIGHT + 50;
-  static final num MIN_RENDER_DISTANCE_X_BORDER = UNIVERSE_WIDTH - MAX_RENDER_DISTANCE_X;
-  static final num MIN_RENDER_DISTANCE_Y_BORDER = UNIVERSE_HEIGHT - MAX_RENDER_DISTANCE_Y;
-
-  ComponentMapper<Transform> positionMapper;
-  ComponentMapper<CameraPosition> cameraPositionMapper;
-  TagManager tagManager;
-
-  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Transform.hack().runtimeType));
-
-  void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
-  }
-
-  void processEntity(Entity entity) {
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Transform pos = positionMapper.get(entity);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    if (isWithtinXRange(pos, cameraPos) && isWithtinYRange(pos, cameraPos)) {
-      processEntityOnScreen(entity);
-    }
-  }
-
-  bool isWithtinXRange(Transform pos, CameraPosition camPos) {
-    num distanceX = (camPos.x - pos.x).abs();
-    return (distanceX < MAX_RENDER_DISTANCE_X || distanceX > MIN_RENDER_DISTANCE_X_BORDER);
-  }
-
-  bool isWithtinYRange(Transform pos, CameraPosition camPos) {
-    num distanceY = (camPos.y - pos.y).abs();
-    return (distanceY < MAX_RENDER_DISTANCE_Y || distanceY > MIN_RENDER_DISTANCE_Y_BORDER);
-  }
-
-  void processEntityOnScreen(Entity entity);
-
-}
-
-class SpatialRenderingSystem extends OnScreenProcessingSystem {
+class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   CanvasRenderingContext2D context2d;
   Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();

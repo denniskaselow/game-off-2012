@@ -40,3 +40,25 @@ class Background extends Component {
   Background.hack();
   Background();
 }
+
+class Status extends Component {
+  num health;
+  num maxVelocity;
+
+  Status.hack();
+  Status({this.health : 100, this.maxVelocity : 20});
+}
+
+class CircularBody extends Component {
+  num radius;
+
+  CircularBody.hack();
+  CircularBody(this.radius);
+}
+
+class Mass extends Component {
+  num mass;
+
+  Mass.hack();
+  Mass(this.mass);
+}
