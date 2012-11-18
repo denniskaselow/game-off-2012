@@ -3,7 +3,7 @@ part of multiverse;
 class Transform extends Component {
   Transform.hack();
   num _x, _y, angle, rotationRate;
-  Transform(this._x, this._y, {this.angle : 0, this.rotationRate : 0});
+  Transform(num x, num y, {this.angle : 0, this.rotationRate : 0}) : _x = x % UNIVERSE_WIDTH, _y = y % UNIVERSE_HEIGHT;
   num get x => _x;
   num get y => _y;
   set x(num x) => _x = x % UNIVERSE_WIDTH;
@@ -61,4 +61,42 @@ class Mass extends Component {
 
   Mass.hack();
   Mass(this.mass);
+}
+
+class Cannon extends Component {
+  Cannon.hack() : cooldownTime = 0;
+
+  bool shoot = false;
+  num cooldownTimer = 0;
+  final num cooldownTime;
+  num bulletSpeed;
+
+  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 1});
+
+  bool get canShoot {
+    if (shoot && cooldownTimer <= 0) return true;
+    return false;
+  }
+
+  void resetCooldown() {
+    cooldownTimer = cooldownTime;
+  }
+}
+
+class ExpirationTimer extends Component {
+  ExpirationTimer.hack() : maxTime = 0;
+
+  final num maxTime;
+  num timeLeft;
+  ExpirationTimer(this.maxTime) {
+    timeLeft = maxTime;
+  }
+
+  void expireBy(num delta) {
+    timeLeft -= delta;
+  }
+
+  bool get expired => timeLeft <= 0;
+
+  num get percentLeft => timeLeft / maxTime;
 }

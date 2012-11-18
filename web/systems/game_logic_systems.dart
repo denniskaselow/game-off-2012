@@ -161,3 +161,65 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     }
   }
 }
+
+
+
+class BulletSpawningSystem extends EntityProcessingSystem {
+
+  ComponentMapper<Transform> transformMapper;
+  ComponentMapper<Cannon> cannonMapper;
+  ComponentMapper<Velocity> velocityMapper;
+
+  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType]));
+
+  void initialize() {
+    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
+  }
+
+  void processEntity(Entity entity) {
+    Cannon cannon = cannonMapper.get(entity);
+
+    if (cannon.canShoot) {
+      Transform transform = transformMapper.get(entity);
+      Velocity vel = velocityMapper.get(entity);
+      fireBullet(transform, vel, cannon);
+    } else if (cannon.cooldownTimer > 0){
+      cannon.cooldownTimer -= world.delta;
+    }
+  }
+
+  void fireBullet(Transform transform, Velocity shooterVel, Cannon cannon) {
+    cannon.resetCooldown();
+    Entity bullet = world.createEntity();
+    num x = TrigUtil.cos(transform.angle);
+    num y = TrigUtil.sin(transform.angle);
+    bullet.addComponent(new Transform(transform.x + x * 26, transform.y + y * 26));
+    bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * x, shooterVel.y + cannon.bulletSpeed * y));
+    bullet.addComponent(new CircularBody(2));
+    bullet.addComponent(new Mass(10));
+    bullet.addComponent(new Spatial('bullet_dummy.png'));
+    bullet.addComponent(new ExpirationTimer(5000));
+    bullet.addToWorld();
+  }
+}
+
+class ExpirationSystem extends EntityProcessingSystem {
+  ComponentMapper<ExpirationTimer> timerMapper;
+
+  ExpirationSystem() : super(Aspect.getAspectForAllOf(new ExpirationTimer.hack().runtimeType));
+
+  void initialize() {
+    timerMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
+  }
+
+  void processEntity(Entity entity) {
+    ExpirationTimer timer = timerMapper.get(entity);
+    if (timer.expired) {
+      entity.deleteFromWorld();
+    } else {
+      timer.expireBy(world.delta);
+    }
+  }
+}

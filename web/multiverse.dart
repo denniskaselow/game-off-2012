@@ -58,10 +58,11 @@ class Game {
     player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
     num scale = 0.5;
-    player.addComponent(new Spatial('resources/spaceship_dummy.png', scale: scale));
+    player.addComponent(new Spatial('spaceship_dummy.png', scale: scale));
     player.addComponent(new CircularBody(45 * scale));
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
+    player.addComponent(new Cannon(cooldownTime : 1000, bulletSpeed: 5));
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -71,7 +72,7 @@ class Game {
     for (int i = 0; i < 10000; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      star.addComponent(new Spatial('resources/star_0${random.nextInt(6)}.png'));
+      star.addComponent(new Spatial('star_0${random.nextInt(6)}.png'));
       star.addComponent(new Background());
       star.addToWorld();
       groupManager.add(star, GROUP_BACKGROUND);
@@ -82,7 +83,7 @@ class Game {
       asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.5, 1.5));
       scale = generateRandom(0.2, 0.5);
-      asteroid.addComponent(new Spatial.asSprite('resources/asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
+      asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
       asteroid.addComponent(new CircularBody(50 * scale));
       asteroid.addComponent(new Mass(100 * scale));
       asteroid.addToWorld();
@@ -94,7 +95,9 @@ class Game {
     world.addSystem(new PlayerControlSystem(gameCanvas));
     world.addSystem(new MovementSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
+    world.addSystem(new BulletSpawningSystem());
     world.addSystem(new CameraSystem());
+    world.addSystem(new ExpirationSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new HudRenderSystem(hudContext));
