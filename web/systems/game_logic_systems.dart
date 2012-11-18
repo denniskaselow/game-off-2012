@@ -166,13 +166,13 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             num v2yr = v2i * sin(ang2 - phi);
 
             // calculate momentums
-            num p1 = v1xr * m1.mass;
-            num p2 = v2xr * m2.mass;
-            num mTotal = m1.mass + m2.mass;
+            num p1 = v1xr * m1.value;
+            num p2 = v2xr * m2.value;
+            num mTotal = m1.value + m2.value;
 
             // elastic collision
-            num v1fxr = (p1 + 2 * p2 - m2.mass * v1xr) / mTotal;
-            num v2fxr = (p2 + 2 * p1 - m1.mass * v2xr) / mTotal;
+            num v1fxr = (p1 + 2 * p2 - m2.value * v1xr) / mTotal;
+            num v2fxr = (p2 + 2 * p1 - m1.value * v2xr) / mTotal;
             num v1fyr = v1yr;
             num v2fyr = v2yr;
 
@@ -195,12 +195,14 @@ class BulletSpawningSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Cannon> cannonMapper;
   ComponentMapper<Velocity> velocityMapper;
+  ComponentMapper<Mass> massMapper;
 
-  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType]));
+  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
     cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
   }
 
@@ -208,26 +210,36 @@ class BulletSpawningSystem extends EntityProcessingSystem {
     Cannon cannon = cannonMapper.get(entity);
 
     if (cannon.canShoot) {
-      Transform transform = transformMapper.get(entity);
-      Velocity vel = velocityMapper.get(entity);
-      fireBullet(transform, vel, cannon);
+      fireBullet(entity, cannon);
     } else if (cannon.cooldownTimer > 0){
       cannon.cooldownTimer -= world.delta;
     }
   }
 
-  void fireBullet(Transform transform, Velocity shooterVel, Cannon cannon) {
+  void fireBullet(Entity shooter, Cannon cannon) {
+    Transform transform = transformMapper.get(shooter);
+    Velocity shooterVel = velocityMapper.get(shooter);
+    Mass shooterMass = massMapper.get(shooter);
     cannon.resetCooldown();
     Entity bullet = world.createEntity();
-    num x = TrigUtil.cos(transform.angle);
-    num y = TrigUtil.sin(transform.angle);
-    bullet.addComponent(new Transform(transform.x + x * 26, transform.y + y * 26));
-    bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * x, shooterVel.y + cannon.bulletSpeed * y));
+    num cosx = TrigUtil.cos(transform.angle);
+    num siny = TrigUtil.sin(transform.angle);
+    bullet.addComponent(new Transform(transform.x + cosx * 26, transform.y + siny * 26));
+    bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * cosx, shooterVel.y + cannon.bulletSpeed * siny));
     bullet.addComponent(new CircularBody(2));
-    bullet.addComponent(new Mass(10));
+    bullet.addComponent(new Mass(cannon.bulletMass));
     bullet.addComponent(new Spatial('bullet_dummy.png'));
-    bullet.addComponent(new ExpirationTimer(5000));
+    bullet.addComponent(new ExpirationTimer(3000));
     bullet.addToWorld();
+
+    num getVelocityAfterRecoil(num shooterVel, num bulletVelMultiplier) {
+      num p1 = shooterVel * shooterMass.value;
+      num p2 = cannon.bulletSpeed * bulletVelMultiplier * cannon.bulletMass;
+      p1 = p1 - p2;
+      return p1 / shooterMass.value;
+    }
+    shooterVel.x = getVelocityAfterRecoil(shooterVel.x, cosx);
+    shooterVel.y = getVelocityAfterRecoil(shooterVel.y, siny);
   }
 }
 

@@ -57,10 +57,10 @@ class CircularBody extends Component {
 }
 
 class Mass extends Component {
-  num mass;
+  num value;
 
   Mass.hack();
-  Mass(this.mass);
+  Mass(this.value);
 }
 
 class Cannon extends Component {
@@ -70,8 +70,9 @@ class Cannon extends Component {
   num cooldownTimer = 0;
   final num cooldownTime;
   num bulletSpeed;
+  num bulletMass;
 
-  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 1});
+  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 1, this.bulletMass : 1});
 
   bool get canShoot {
     if (shoot && cooldownTimer <= 0) return true;
