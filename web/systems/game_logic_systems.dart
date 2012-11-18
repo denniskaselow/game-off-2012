@@ -143,18 +143,44 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             Velocity v2 = velocityMapper.get(e2);
             Mass m1 = massMapper.get(e1);
             Mass m2 = massMapper.get(e2);
-            num p1 = v1.x * m1.mass;
-            num p2 = v2.x * m2.mass;
+
+            // contact point
+            num cpx = (t1.x * c1.radius + t2.x * c2.radius) / (c1.radius + c2.radius);
+            num cpy = (t1.y * c1.radius + t2.y * c2.radius) / (c1.radius + c2.radius);
+
+            num dx = cpx - t1.x;
+            num dy = cpy - t1.y;
+            num phi = atan2(dy, dx);
+
+            num v1i = sqrt(v1.x * v1.x + v1.y * v1.y);
+            num v2i = sqrt(v2.x * v2.x + v2.y * v2.y);
+
+            num ang1 = atan2(v1.y, v1.x);
+            num ang2 = atan2(v2.y, v2.x);
+
+            // transforming velocities in a coordinate system where both circles have an equal y-coordinate
+            // thus allowing 1D elastic collision calculations
+            num v1xr = v1i * cos(ang1 - phi);
+            num v1yr = v1i * sin(ang1 - phi);
+            num v2xr = v2i * cos(ang2 - phi);
+            num v2yr = v2i * sin(ang2 - phi);
+
+            // calculate momentums
+            num p1 = v1xr * m1.mass;
+            num p2 = v2xr * m2.mass;
             num mTotal = m1.mass + m2.mass;
 
-            v1.x = (p1 + 2 * p2 - m2.mass * v1.x) / mTotal;
-            v2.x = (p2 + 2 * p1 - m1.mass * v2.x) / mTotal;
+            // elastic collision
+            num v1fxr = (p1 + 2 * p2 - m2.mass * v1xr) / mTotal;
+            num v2fxr = (p2 + 2 * p1 - m1.mass * v2xr) / mTotal;
+            num v1fyr = v1yr;
+            num v2fyr = v2yr;
 
-            p1 = v1.y * m1.mass;
-            p2 = v2.y * m2.mass;
-
-            v1.y = (p1 + 2 * p2 - m2.mass * v1.y) / mTotal;
-            v2.y = (p2 + 2 * p1 - m1.mass * v2.y) / mTotal;
+            // transform back to original coordinate system
+            v1.x = cos(phi) * v1fxr + cos(phi + PI/2) * v1fyr;
+            v1.y = sin(phi) * v1fxr + sin(phi + PI/2) * v1fyr;
+            v2.x = cos(phi) * v2fxr + cos(phi + PI/2) * v2fyr;
+            v2.y = sin(phi) * v2fxr + sin(phi + PI/2) * v2fyr;
           }
         }
       }

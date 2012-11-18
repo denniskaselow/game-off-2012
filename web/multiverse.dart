@@ -62,7 +62,7 @@ class Game {
     player.addComponent(new CircularBody(45 * scale));
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
-    player.addComponent(new Cannon(cooldownTime : 1000, bulletSpeed: 5));
+    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 10));
     player.addToWorld();
 
     Entity camera = world.createEntity();
