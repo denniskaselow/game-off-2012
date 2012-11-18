@@ -1,80 +1,34 @@
 part of multiverse;
 
-abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
-
-  static final num MAX_RENDER_DISTANCE_X = MAX_WIDTH + 50;
-  static final num MAX_RENDER_DISTANCE_Y = MAX_HEIGHT + 50;
-  static final num MIN_RENDER_DISTANCE_X_BORDER = UNIVERSE_WIDTH - MAX_RENDER_DISTANCE_X;
-  static final num MIN_RENDER_DISTANCE_Y_BORDER = UNIVERSE_HEIGHT - MAX_RENDER_DISTANCE_Y;
-
-  ComponentMapper<Transform> positionMapper;
-  ComponentMapper<CameraPosition> cameraPositionMapper;
-  TagManager tagManager;
-
-  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Transform.hack().runtimeType));
-
-  void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
-  }
-
-  void processEntity(Entity entity) {
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Transform pos = positionMapper.get(entity);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    if (isWithtinXRange(pos, cameraPos) && isWithtinYRange(pos, cameraPos)) {
-      processEntityOnScreen(entity);
-    }
-  }
-
-  bool isWithtinXRange(Transform pos, CameraPosition camPos) {
-    num distanceX = (camPos.x - pos.x).abs();
-    return (distanceX < MAX_RENDER_DISTANCE_X || distanceX > MIN_RENDER_DISTANCE_X_BORDER);
-  }
-
-  bool isWithtinYRange(Transform pos, CameraPosition camPos) {
-    num distanceY = (camPos.y - pos.y).abs();
-    return (distanceY < MAX_RENDER_DISTANCE_Y || distanceY > MIN_RENDER_DISTANCE_Y_BORDER);
-  }
-
-  void processEntityOnScreen(Entity entity);
-
-}
-
-class SpatialRenderingSystem extends OnScreenProcessingSystem {
+class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   CanvasRenderingContext2D context2d;
-  Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();
   ComponentMapper<Spatial> spatialMapper;
+  ComponentMapper<ExpirationTimer> timerMapper;
+  CameraPosition cameraPos;
 
   SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Spatial.hack().runtimeType,[new Transform.hack().runtimeType]).exclude(new Background.hack().runtimeType));
 
   void initialize() {
     super.initialize();
     spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+    timerMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
+  }
+
+  void begin() {
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    cameraPos = cameraPositionMapper.get(camera);
   }
 
   void processEntityOnScreen(Entity entity) {
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    Transform pos = positionMapper.get(entity);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
     Spatial spatial = spatialMapper.get(entity);
-    ImageElement image = loadedImages[spatial.resource];
-    if (null == image) {
-      image = new ImageElement();
-      image.on.load.add((event) {
-        loadedImages[spatial.resource] = image;
-        drawSpatial(pos, cameraPos, image, spatial);
-      });
-      image.src = spatial.resource;
-    } else {
-      drawSpatial(pos, cameraPos, image, spatial);
-    }
+    ImageCache.withImage(spatial.resource, (image) => drawImage(image, entity, spatial));
   }
 
-  void drawSpatial(Transform transform, CameraPosition cameraPos, ImageElement image, Spatial spatial) {
+  void drawImage(ImageElement image, Entity entity, Spatial spatial) {
+    Transform transform = positionMapper.get(entity);
+    ExpirationTimer timer = timerMapper.getSafe(entity);
+
     context2d.save();
 
     try {
@@ -91,6 +45,9 @@ class SpatialRenderingSystem extends OnScreenProcessingSystem {
         context2d.translate(0, UNIVERSE_HEIGHT);
       }
       context2d.translate(transform.x, transform.y);
+      if (null != timer) {
+        context2d.globalAlpha = timer.percentLeft;
+      }
       if (spatial.isSprite) {
         num width = spatial.width * spatial.scale;
         num height = spatial.height * spatial.scale;
@@ -142,7 +99,7 @@ class BackgroundRenderSystem extends VoidEntitySystem {
     groupManager.getEntities(GROUP_BACKGROUND).forEach((entity) {
       Transform transform = transformMapper.get(entity);
       Spatial spatial = spatialMapper.get(entity);
-      ImageLoader.withImage(spatial.resource, (image) {
+      ImageCache.withImage(spatial.resource, (image) {
         bgContext.beginPath();
         bgContext.drawImage(image, transform.x - image.width ~/ 2, transform.y - image.height ~/ 2, image.width, image.height);
         bgContext.closePath();
@@ -226,18 +183,18 @@ class HudRenderSystem extends VoidEntitySystem {
   }
 }
 
-class ImageLoader {
+class ImageCache {
   static final Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();
 
-  static void withImage(String imagePath, void action(ImageElement image)) {
-    ImageElement image = loadedImages[imagePath];
+  static void withImage(String imageName, void action(ImageElement image)) {
+    ImageElement image = loadedImages[imageName];
     if (null == image) {
       image = new ImageElement();
       image.on.load.add((event) {
         action(image);
-        loadedImages[imagePath] = image;
+        loadedImages[imageName] = image;
       });
-      image.src = imagePath;
+      image.src = "resources/${imageName}";
     } else {
       action(image);
     }

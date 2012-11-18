@@ -5,6 +5,7 @@ class PlayerControlSystem extends VoidEntitySystem {
   const int DECELERATE = 83;
   const int LEFT = 65;
   const int RIGHT = 68;
+  const int SHOOT = 74;
 
   bool accelerate = false;
   bool decelerate = false;
@@ -17,6 +18,7 @@ class PlayerControlSystem extends VoidEntitySystem {
 
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Transform> transformMapper;
+  ComponentMapper<Cannon> cannonMapper;
   TagManager tagManager;
 
   CanvasElement canvas;
@@ -26,18 +28,18 @@ class PlayerControlSystem extends VoidEntitySystem {
   void initialize() {
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
     transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
 
     tagManager = world.getManager(new TagManager().runtimeType);
     window.on.keyDown.add(handleKeyDown);
     window.on.keyUp.add(handleKeyUp);
-    canvas.on.mouseDown.add(handleMouseDown);
-    canvas.on.mouseUp.add(handleMouseUp);
   }
 
   void processEntities(ImmutableBag<Entity> entities) {
     Entity player = tagManager.getEntity(TAG_PLAYER);
     Velocity velocity = velocityMapper.get(player);
     Transform transform = transformMapper.get(player);
+    Cannon cannon = cannonMapper.get(player);
 
     if (accelerate) {
       velocity.x += 0.05 * TrigUtil.cos(transform.angle);
@@ -50,6 +52,11 @@ class PlayerControlSystem extends VoidEntitySystem {
       transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;
     } else if(turnRight) {
       transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
+    }
+    if (shoot) {
+      cannon.shoot = true;
+    } else {
+      cannon.shoot = false;
     }
   }
 
@@ -67,6 +74,8 @@ class PlayerControlSystem extends VoidEntitySystem {
     } else if (keyCode == RIGHT) {
       turnLeft = false;
       turnRight = true;
+    } else if (keyCode == SHOOT) {
+      shoot = true;
     }
   }
 
@@ -80,16 +89,8 @@ class PlayerControlSystem extends VoidEntitySystem {
       turnLeft = false;
     } else if (keyCode == RIGHT) {
       turnRight = false;
+    } else if (keyCode == SHOOT) {
+      shoot = false;
     }
-  }
-
-  void handleMouseDown(MouseEvent e) {
-    targetX = e.offsetX;
-    targetY = e.offsetY;
-    shoot = true;
-  }
-
-  void handleMouseUp(MouseEvent e) {
-    shoot = false;
   }
 }
