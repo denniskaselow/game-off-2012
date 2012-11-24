@@ -12,8 +12,8 @@ part 'systems/input_systems.dart';
 const int MAX_WIDTH = 800;
 const int MAX_HEIGHT = 400;
 const int HUD_HEIGHT = 100;
-const int UNIVERSE_HEIGHT = 10000;
-const int UNIVERSE_WIDTH = 10000;
+const int UNIVERSE_HEIGHT = MAX_HEIGHT * 2;
+const int UNIVERSE_WIDTH = MAX_WIDTH * 2;
 const String TAG_CAMERA = "CAMERA";
 const String TAG_PLAYER = "PLAYER";
 const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
@@ -62,6 +62,7 @@ class Game {
     player.addComponent(new CircularBody(45 * scale));
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
+    player.addComponent(new MiniMapRenderable("#1fe9f6"));
     player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 10));
     player.addToWorld();
 
@@ -69,7 +70,7 @@ class Game {
     camera.addComponent(new CameraPosition());
     camera.addToWorld();
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/10; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       star.addComponent(new Spatial('star_0${random.nextInt(6)}.png'));
@@ -78,7 +79,7 @@ class Game {
       groupManager.add(star, GROUP_BACKGROUND);
     }
 
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/100; i++) {
       Entity asteroid = world.createEntity();
       asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.5, 1.5));
@@ -86,6 +87,7 @@ class Game {
       asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
       asteroid.addComponent(new CircularBody(50 * scale));
       asteroid.addComponent(new Mass(100 * scale));
+      asteroid.addComponent(new MiniMapRenderable("#333"));
       asteroid.addToWorld();
     }
 
@@ -100,6 +102,7 @@ class Game {
     world.addSystem(new ExpirationSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
+    world.addSystem(new MiniMapRenderSystem(hudContext));
     world.addSystem(new HudRenderSystem(hudContext));
     world.addSystem(new DebugSystem());
 

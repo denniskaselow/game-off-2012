@@ -163,24 +163,58 @@ class HudRenderSystem extends VoidEntitySystem {
 
   HudRenderSystem(this.context2d);
 
-  void initialize() {
-  }
+  void initialize() {}
 
   void processSystem() {
-    context2d.save();
-    try {
-      context2d.fillStyle = "#555";
+    ImageCache.withImage("hud_dummy.png", (image) => context2d.drawImage(image, 0, 0, MAX_WIDTH, HUD_HEIGHT));
+  }
+}
 
+class MiniMapRenderSystem extends EntitySystem {
+  CanvasRenderingContext2D context2d;
+
+  ComponentMapper<Transform> transformMapper;
+  ComponentMapper<MiniMapRenderable> renderableMapper;
+  ComponentMapper<CircularBody> bodyMapper;
+
+  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(new MiniMapRenderable.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
+
+  void initialize() {
+    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    renderableMapper = new ComponentMapper<MiniMapRenderable>(new MiniMapRenderable.hack().runtimeType, world);
+    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
+  }
+
+  void processEntities(ImmutableBag<Entity> entities) {
+//    context2d.setTransform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
+
+//    context2d.setTransform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
+    context2d.save();
+    context2d.transform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
+    try {
+      context2d.fillStyle = "black";
       context2d.beginPath();
-      context2d.rect(0, 0, MAX_WIDTH, HUD_HEIGHT);
+      context2d.rect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT);
+      context2d.fill();
       context2d.closePath();
 
-      context2d.fill();
+      entities.forEach((entity) {
+        Transform transform = transformMapper.get(entity);
+        MiniMapRenderable renderable = renderableMapper.get(entity);
+        CircularBody body = bodyMapper.get(entity);
 
+        context2d.fillStyle = renderable.color;
+        context2d.strokeStyle = renderable.color;
+        context2d.beginPath();
+        context2d.fillRect(transform.x - body.radius / 2, transform.y - body.radius / 2, body.radius, body.radius);
+        context2d.closePath();
+      });
     } finally {
       context2d.restore();
     }
   }
+
+  bool checkProcessing() => true;
 }
 
 class ImageCache {

@@ -101,3 +101,10 @@ class ExpirationTimer extends Component {
 
   num get percentLeft => timeLeft / maxTime;
 }
+
+class MiniMapRenderable extends Component {
+  MiniMapRenderable.hack();
+
+  String color;
+  MiniMapRenderable(this.color);
+}
