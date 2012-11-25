@@ -186,9 +186,6 @@ class MiniMapRenderSystem extends EntitySystem {
   }
 
   void processEntities(ImmutableBag<Entity> entities) {
-//    context2d.setTransform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
-
-//    context2d.setTransform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
     context2d.save();
     context2d.transform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
     try {
@@ -209,6 +206,19 @@ class MiniMapRenderSystem extends EntitySystem {
         context2d.fillRect(transform.x - body.radius / 2, transform.y - body.radius / 2, body.radius, body.radius);
         context2d.closePath();
       });
+    } finally {
+      context2d.restore();
+    }
+
+    context2d.save();
+    context2d.transform(1, 0, 0, 1, 90, 12);
+    try {
+      context2d.fillStyle = "green";
+      context2d.beginPath();
+      context2d.rect(0, 0, 200, 15);
+      context2d.fill();
+      context2d.closePath();
+
     } finally {
       context2d.restore();
     }
