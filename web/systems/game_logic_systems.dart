@@ -116,6 +116,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<CircularBody> bodyMapper;
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
+  ComponentMapper<Status> statusMapper;
 
   CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf(new CircularBody.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
@@ -125,6 +126,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
     massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
+    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
   }
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
@@ -181,6 +183,12 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             v1.y = sin(phi) * v1fxr + sin(phi + PI/2) * v1fyr;
             v2.x = cos(phi) * v2fxr + cos(phi + PI/2) * v2fyr;
             v2.y = sin(phi) * v2fxr + sin(phi + PI/2) * v2fyr;
+
+            Status s1 = statusMapper.getSafe(e1);
+            Status s2 = statusMapper.getSafe(e2);
+
+            if (null != s1) s1.health -= (p2.abs() + p1.abs()) / 100;
+            if (null != s2) s2.health -= (p2.abs() + p1.abs()) / 100;
           }
         }
       }

@@ -88,6 +88,7 @@ class Game {
       asteroid.addComponent(new CircularBody(50 * scale));
       asteroid.addComponent(new Mass(100 * scale));
       asteroid.addComponent(new MiniMapRenderable("#333"));
+      asteroid.addComponent(new Status());
       asteroid.addToWorld();
     }
 

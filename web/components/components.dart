@@ -43,10 +43,13 @@ class Background extends Component {
 
 class Status extends Component {
   num health;
+  num maxHealth;
   num maxVelocity;
 
   Status.hack();
-  Status({this.health : 100, this.maxVelocity : 20});
+  Status({this.maxHealth : 100, this.maxVelocity : 20}) {
+    health = maxHealth;
+  }
 }
 
 class CircularBody extends Component {

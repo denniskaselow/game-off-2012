@@ -160,12 +160,33 @@ class BackgroundRenderSystem extends VoidEntitySystem {
 
 class HudRenderSystem extends VoidEntitySystem {
   CanvasRenderingContext2D context2d;
+  Status status;
 
   HudRenderSystem(this.context2d);
 
-  void initialize() {}
+  void initialize() {
+    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    Entity player = tagManager.getEntity(TAG_PLAYER);
+    status = statusMapper.get(player);
+  }
 
   void processSystem() {
+    context2d.save();
+    context2d.transform(1, 0, 0, 1, 90, 12);
+    try {
+      context2d.beginPath();
+      context2d.fillStyle = "black";
+      context2d.fillRect(0, 0, 200, 15);
+      context2d.fillStyle = "green";
+      context2d.fillRect(0, 0, 200 * status.health / status.maxHealth, 15);
+      context2d.closePath();
+
+    } finally {
+      context2d.restore();
+    }
+
+
     ImageCache.withImage("hud_dummy.png", (image) => context2d.drawImage(image, 0, 0, MAX_WIDTH, HUD_HEIGHT));
   }
 }
@@ -206,19 +227,6 @@ class MiniMapRenderSystem extends EntitySystem {
         context2d.fillRect(transform.x - body.radius / 2, transform.y - body.radius / 2, body.radius, body.radius);
         context2d.closePath();
       });
-    } finally {
-      context2d.restore();
-    }
-
-    context2d.save();
-    context2d.transform(1, 0, 0, 1, 90, 12);
-    try {
-      context2d.fillStyle = "green";
-      context2d.beginPath();
-      context2d.rect(0, 0, 200, 15);
-      context2d.fill();
-      context2d.closePath();
-
     } finally {
       context2d.restore();
     }
