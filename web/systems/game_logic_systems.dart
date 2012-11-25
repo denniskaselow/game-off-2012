@@ -8,14 +8,14 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
   static final num MIN_RENDER_DISTANCE_X_BORDER = UNIVERSE_WIDTH - MAX_RENDER_DISTANCE_X;
   static final num MIN_RENDER_DISTANCE_Y_BORDER = UNIVERSE_HEIGHT - MAX_RENDER_DISTANCE_Y;
 
-  ComponentMapper<Transform> positionMapper;
+  ComponentMapper<Transform> transformMapper;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
   OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Transform.hack().runtimeType));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
@@ -27,7 +27,7 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
     Bag<Entity> entitiesOnScreen = new Bag<Entity>();
 
     entities.forEach((entity) {
-      Transform pos = positionMapper.get(entity);
+      Transform pos = transformMapper.get(entity);
 
       if (isWithtinXRange(pos, cameraPos) && isWithtinYRange(pos, cameraPos)) {
         entitiesOnScreen.add(entity);
@@ -111,11 +111,47 @@ class CameraSystem extends VoidEntitySystem {
   }
 }
 
+class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
+  ComponentMapper<CircularBody> bodyMapper;
+  ComponentMapper<Upgrade> upgradeMapper;
+  Status status;
+  Transform transform;
+  CircularBody body;
+
+  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(new Upgrade.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
+
+  void initialize() {
+    super.initialize();
+    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
+    upgradeMapper = new ComponentMapper<Upgrade>(new Upgrade.hack().runtimeType, world);
+
+    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    Entity player = tagManager.getEntity(TAG_PLAYER);
+    status = statusMapper.get(player);
+    transform = transformMapper.get(player);
+    body = bodyMapper.get(player);
+  }
+
+  void processEntityOnScreen(Entity entity) {
+    Transform upgradeTransform = transformMapper.get(entity);
+    CircularBody upgradeBody = bodyMapper.get(entity);
+
+    if (Utils.doCirclesCollide(transform.x, transform.y, body.radius, upgradeTransform.x, upgradeTransform.y, upgradeBody.radius)) {
+      Upgrade upgrade = upgradeMapper.get(entity);
+      status.maxHealth += 10;
+      status.health = status.maxHealth;
+      entity.deleteFromWorld();
+    }
+  }
+}
+
 class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<CircularBody> bodyMapper;
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
+  ComponentMapper<Status> statusMapper;
 
   CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf(new CircularBody.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
@@ -125,6 +161,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
     massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
+    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
   }
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
@@ -181,6 +218,12 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             v1.y = sin(phi) * v1fxr + sin(phi + PI/2) * v1fyr;
             v2.x = cos(phi) * v2fxr + cos(phi + PI/2) * v2fyr;
             v2.y = sin(phi) * v2fxr + sin(phi + PI/2) * v2fyr;
+
+            Status s1 = statusMapper.getSafe(e1);
+            Status s2 = statusMapper.getSafe(e2);
+
+            if (null != s1) s1.health -= (p2.abs() + p1.abs()) / 100;
+            if (null != s2) s2.health -= (p2.abs() + p1.abs()) / 100;
           }
         }
       }
@@ -260,4 +303,44 @@ class ExpirationSystem extends EntityProcessingSystem {
       timer.expireBy(world.delta);
     }
   }
+}
+
+abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
+
+  Entity player;
+  Status status;
+
+  void initialize() {
+    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    player = tagManager.getEntity(TAG_PLAYER);
+    status = statusMapper.get(player);
+  }
+}
+
+class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
+  Cannon cannon;
+  Transform transform;
+
+  void initialize() {
+    super.initialize();
+    var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
+    var transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    cannon = cannonMapper.get(player);
+    transform = transformMapper.get(player);
+  }
+
+  void processSystem() {
+    if (!status.destroyed && status.health < 0) {
+      cannon.shoot = false;
+      status.destroyed = true;
+
+      Entity explosion = world.createEntity();
+      transform.rotationRate = 0.1;
+      explosion.addComponent(transform);
+      explosion.addComponent(new Spatial('spaceship_dummy.png', scale: 0.5));
+      explosion.addToWorld();
+    }
+  }
+
 }

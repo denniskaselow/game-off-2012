@@ -43,10 +43,14 @@ class Background extends Component {
 
 class Status extends Component {
   num health;
+  num maxHealth;
   num maxVelocity;
+  bool destroyed = false;
 
   Status.hack();
-  Status({this.health : 100, this.maxVelocity : 20});
+  Status({this.maxHealth : 100, this.maxVelocity : 20}) {
+    health = maxHealth;
+  }
 }
 
 class CircularBody extends Component {
@@ -100,4 +104,16 @@ class ExpirationTimer extends Component {
   bool get expired => timeLeft <= 0;
 
   num get percentLeft => timeLeft / maxTime;
+}
+
+class MiniMapRenderable extends Component {
+  MiniMapRenderable.hack();
+
+  String color;
+  MiniMapRenderable(this.color);
+}
+
+class Upgrade extends Component {
+  Upgrade.hack();
+  Upgrade();
 }
