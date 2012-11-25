@@ -92,6 +92,19 @@ class Game {
       asteroid.addToWorld();
     }
 
+    for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/1000; i++) {
+      Entity upgrade = world.createEntity();
+      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+      upgrade.addComponent(generateRandomVelocity(0.5, 1.5));
+      scale = 0.2;
+      upgrade.addComponent(new Spatial('upgrade_dummy.png', scale: scale));
+      upgrade.addComponent(new CircularBody(50 * scale));
+      upgrade.addComponent(new Mass(100 * scale));
+      upgrade.addComponent(new MiniMapRenderable("green"));
+      upgrade.addComponent(new Collectable());
+      upgrade.addToWorld();
+    }
+
     tagManager.register(TAG_CAMERA, camera);
     tagManager.register(TAG_PLAYER, player);
 

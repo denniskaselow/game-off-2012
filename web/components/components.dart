@@ -111,3 +111,8 @@ class MiniMapRenderable extends Component {
   String color;
   MiniMapRenderable(this.color);
 }
+
+class Collectable extends Component {
+  Collectable.hack();
+  Collectable();
+}
