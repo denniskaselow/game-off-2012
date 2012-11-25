@@ -26,7 +26,7 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   }
 
   void drawImage(ImageElement image, Entity entity, Spatial spatial) {
-    Transform transform = positionMapper.get(entity);
+    Transform transform = transformMapper.get(entity);
     ExpirationTimer timer = timerMapper.getSafe(entity);
 
     context2d.save();

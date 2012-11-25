@@ -94,14 +94,14 @@ class Game {
 
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/1000; i++) {
       Entity upgrade = world.createEntity();
-      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       upgrade.addComponent(generateRandomVelocity(0.5, 1.5));
       scale = 0.2;
-      upgrade.addComponent(new Spatial('upgrade_dummy.png', scale: scale));
+      upgrade.addComponent(new Spatial('upgrade_health.png', scale: scale));
       upgrade.addComponent(new CircularBody(50 * scale));
       upgrade.addComponent(new Mass(100 * scale));
       upgrade.addComponent(new MiniMapRenderable("green"));
-      upgrade.addComponent(new Collectable());
+      upgrade.addComponent(new Upgrade());
       upgrade.addToWorld();
     }
 
@@ -110,6 +110,7 @@ class Game {
 
     world.addSystem(new PlayerControlSystem(gameCanvas));
     world.addSystem(new MovementSystem());
+    world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
     world.addSystem(new BulletSpawningSystem());
     world.addSystem(new PlayerDestructionSystem());
@@ -158,6 +159,7 @@ class DebugSystem extends VoidEntitySystem {
   SpanElement fpsElement = query("#fps");
   SpanElement playerPosElement = query("#playerPos");
   SpanElement cameraPosElement = query("#cameraPos");
+  SpanElement entityCountElement = query("#entityCount");
   ComponentMapper<CameraPosition> cameraPositionMapper;
   ComponentMapper<Transform> positionMapper;
   TagManager tagManager;
@@ -178,5 +180,6 @@ class DebugSystem extends VoidEntitySystem {
     fpsElement.text = "${fps}";
     cameraPosElement.text = "x: ${cameraPos.x}; y: ${cameraPos.y}";
     playerPosElement.text = "x: ${playerPos.x}; y: ${playerPos.y}";
+    entityCountElement.text = "${world.entityManager.activeEntityCount}";
   }
 }

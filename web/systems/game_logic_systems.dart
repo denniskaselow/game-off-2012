@@ -8,14 +8,14 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
   static final num MIN_RENDER_DISTANCE_X_BORDER = UNIVERSE_WIDTH - MAX_RENDER_DISTANCE_X;
   static final num MIN_RENDER_DISTANCE_Y_BORDER = UNIVERSE_HEIGHT - MAX_RENDER_DISTANCE_Y;
 
-  ComponentMapper<Transform> positionMapper;
+  ComponentMapper<Transform> transformMapper;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
   OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Transform.hack().runtimeType));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
@@ -27,7 +27,7 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
     Bag<Entity> entitiesOnScreen = new Bag<Entity>();
 
     entities.forEach((entity) {
-      Transform pos = positionMapper.get(entity);
+      Transform pos = transformMapper.get(entity);
 
       if (isWithtinXRange(pos, cameraPos) && isWithtinYRange(pos, cameraPos)) {
         entitiesOnScreen.add(entity);
@@ -108,6 +108,41 @@ class CameraSystem extends VoidEntitySystem {
 
     cameraPos.x = playerPos.x - MAX_WIDTH ~/ 2;
     cameraPos.y = playerPos.y - MAX_HEIGHT ~/ 2;
+  }
+}
+
+class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
+  ComponentMapper<CircularBody> bodyMapper;
+  ComponentMapper<Upgrade> upgradeMapper;
+  Status status;
+  Transform transform;
+  CircularBody body;
+
+  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(new Upgrade.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
+
+  void initialize() {
+    super.initialize();
+    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
+    upgradeMapper = new ComponentMapper<Upgrade>(new Upgrade.hack().runtimeType, world);
+
+    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    Entity player = tagManager.getEntity(TAG_PLAYER);
+    status = statusMapper.get(player);
+    transform = transformMapper.get(player);
+    body = bodyMapper.get(player);
+  }
+
+  void processEntityOnScreen(Entity entity) {
+    Transform upgradeTransform = transformMapper.get(entity);
+    CircularBody upgradeBody = bodyMapper.get(entity);
+
+    if (Utils.doCirclesCollide(transform.x, transform.y, body.radius, upgradeTransform.x, upgradeTransform.y, upgradeBody.radius)) {
+      Upgrade upgrade = upgradeMapper.get(entity);
+      status.maxHealth += 10;
+      status.health = status.maxHealth;
+      entity.deleteFromWorld();
+    }
   }
 }
 
@@ -296,10 +331,12 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
   }
 
   void processSystem() {
-    if (status.health < 0) {
+    if (!status.destroyed && status.health < 0) {
       cannon.shoot = false;
+      status.destroyed = true;
 
       Entity explosion = world.createEntity();
+      transform.rotationRate = 0.1;
       explosion.addComponent(transform);
       explosion.addComponent(new Spatial('spaceship_dummy.png', scale: 0.5));
       explosion.addToWorld();

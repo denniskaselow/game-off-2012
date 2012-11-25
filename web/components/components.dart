@@ -45,6 +45,7 @@ class Status extends Component {
   num health;
   num maxHealth;
   num maxVelocity;
+  bool destroyed = false;
 
   Status.hack();
   Status({this.maxHealth : 100, this.maxVelocity : 20}) {
@@ -112,7 +113,7 @@ class MiniMapRenderable extends Component {
   MiniMapRenderable(this.color);
 }
 
-class Collectable extends Component {
-  Collectable.hack();
-  Collectable();
+class Upgrade extends Component {
+  Upgrade.hack();
+  Upgrade();
 }
