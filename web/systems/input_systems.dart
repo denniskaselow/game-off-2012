@@ -1,6 +1,6 @@
 part of multiverse;
 
-class PlayerControlSystem extends VoidEntitySystem {
+class PlayerControlSystem extends PlayerStatusProcessingSystem {
   const int ACCELERATE = 87;
   const int DECELERATE = 83;
   const int LEFT = 65;
@@ -26,6 +26,7 @@ class PlayerControlSystem extends VoidEntitySystem {
   PlayerControlSystem(this.canvas) : super();
 
   void initialize() {
+    super.initialize();
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
     transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
     cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
@@ -93,4 +94,6 @@ class PlayerControlSystem extends VoidEntitySystem {
       shoot = false;
     }
   }
+
+  bool checkProcessing() => status.health > 0;
 }

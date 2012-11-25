@@ -12,7 +12,7 @@ part 'systems/input_systems.dart';
 const int MAX_WIDTH = 800;
 const int MAX_HEIGHT = 400;
 const int HUD_HEIGHT = 100;
-const int UNIVERSE_HEIGHT = MAX_HEIGHT * 2;
+const int UNIVERSE_HEIGHT = MAX_HEIGHT * 4;
 const int UNIVERSE_WIDTH = MAX_WIDTH * 2;
 const String TAG_CAMERA = "CAMERA";
 const String TAG_PLAYER = "PLAYER";
@@ -99,6 +99,7 @@ class Game {
     world.addSystem(new MovementSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
     world.addSystem(new BulletSpawningSystem());
+    world.addSystem(new PlayerDestructionSystem());
     world.addSystem(new CameraSystem());
     world.addSystem(new ExpirationSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
