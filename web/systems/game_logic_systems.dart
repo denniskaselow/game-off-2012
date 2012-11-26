@@ -144,6 +144,11 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
       entity.deleteFromWorld();
     }
   }
+
+  void end() {
+    // no collision with collected upgrades wanted
+    world.processEntityChanges();
+  }
 }
 
 class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
