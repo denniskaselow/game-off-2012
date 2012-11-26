@@ -3,6 +3,7 @@ library multiverse;
 import 'dart:html' hide Entity;
 import 'dart:math';
 import 'package:dartemis/dartemis.dart';
+import 'package:simple_audio/simple_audio.dart';
 
 part 'components/components.dart';
 part 'systems/game_logic_systems.dart';
@@ -48,6 +49,7 @@ class Game {
   }
 
   void start() {
+    AudioManager audioManager = createAudioManager();
     world = new World();
     GroupManager groupManager = new GroupManager();
     TagManager tagManager = new TagManager();
@@ -112,7 +114,7 @@ class Game {
     world.addSystem(new MovementSystem());
     world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
-    world.addSystem(new BulletSpawningSystem());
+    world.addSystem(new BulletSpawningSystem(audioManager));
     world.addSystem(new PlayerDestructionSystem());
     world.addSystem(new CameraSystem());
     world.addSystem(new ExpirationSystem());
@@ -140,6 +142,33 @@ class Game {
   void requestRedraw() {
     window.requestAnimationFrame(gameLoop);
   }
+
+  AudioManager createAudioManager() {
+    try {
+      AudioManager audioManager = new AudioManager();
+      String location = window.location.href;
+      int slashIndex = location.lastIndexOf('/');
+      if (slashIndex < 0) {
+        audioManager.baseURL = '';
+      } else {
+        audioManager.baseURL = location.substring(0, slashIndex);
+      }
+      AudioSource source = audioManager.makeSource('non-positional');
+      source.positional = false;
+
+      AudioClip clip = audioManager.makeClip('shoot_sound', 'resources/shoot.ogg');
+      clip.load();
+
+      return audioManager;
+    } catch (e) {
+      // Browser doesn't support AudioContext
+    }
+    return new AudioManagerDummy();
+  }
+}
+
+class AudioManagerDummy implements AudioManager {
+  dynamic noSuchMethod(InvocationMirror im) {}
 }
 
 Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
