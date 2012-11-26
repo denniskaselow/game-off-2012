@@ -144,6 +144,11 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
       entity.deleteFromWorld();
     }
   }
+
+  void end() {
+    // no collision with collected upgrades wanted
+    world.processEntityChanges();
+  }
 }
 
 class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
@@ -235,12 +240,14 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
 
 class BulletSpawningSystem extends EntityProcessingSystem {
 
+  AudioManager audioManager;
+
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Cannon> cannonMapper;
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
 
-  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
+  BulletSpawningSystem(this.audioManager) : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
@@ -283,6 +290,9 @@ class BulletSpawningSystem extends EntityProcessingSystem {
     }
     shooterVel.x = getVelocityAfterRecoil(shooterVel.x, cosx);
     shooterVel.y = getVelocityAfterRecoil(shooterVel.y, siny);
+
+    // Play clip.
+    audioManager.playClipFromSource('non-positional', 'shoot_sound');
   }
 }
 
