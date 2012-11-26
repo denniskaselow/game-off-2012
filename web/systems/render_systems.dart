@@ -104,6 +104,7 @@ class BackgroundRenderSystem extends VoidEntitySystem {
         bgContext.drawImage(image, transform.x - image.width ~/ 2, transform.y - image.height ~/ 2, image.width, image.height);
         bgContext.closePath();
       });
+      entity.deleteFromWorld();
     });
   }
 
