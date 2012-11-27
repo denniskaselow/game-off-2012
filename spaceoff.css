@@ -1,3 +1,7 @@
+body {
+  background-color: #FDFDFD;
+}
+
 canvas {
   border: solid 1px black;
   display: block;
@@ -8,6 +12,56 @@ h1 {
   text-align: center;
 }
 
-#story {
+.hidden {
   display : none;
+}
+
+.selectedTab {
+  background-color: #AAB;
+}
+
+#info {
+  border: solid 1px black;
+  width: 800px;
+  margin: 0px auto;
+  background-color: #EEE;
+}
+
+ul.tabs {
+  list-style: none;
+  border-bottom: solid 1px grey;
+  background-color: #FCFCFC;
+  padding-top: 20px;
+  margin-top: 0px;
+}
+
+ul.tabs li {
+  display: inline-block;
+  border: solid 1px grey;
+  border-bottom: none;
+  border-radius: 10px 10px 0px 0px;
+  padding: 5px 15px;
+  border-bottom: none;
+  cursor: pointer;
+}
+
+div#info > div {
+  margin-left: 50px;
+  margin-right: 50px;
+  clear: both;
+}
+
+dl {
+  width: 700px;
+  clear: both;
+}
+
+dt {
+  float: left;
+  width: 50px;
+  font-weight: bold;
+}
+
+dd {
+  width: 500px;
 }

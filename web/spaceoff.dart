@@ -22,6 +22,8 @@ const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
 final Random random = new Random();
 
 void main() {
+  initTabbedContent();
+
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
   window.requestLayoutFrame(() {
@@ -182,6 +184,25 @@ Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
 num generateRandom(num min, num max) {
   num randomNumber = min + max * random.nextDouble();
   return randomNumber;
+}
+
+void initTabbedContent() {
+  Map<String, String> tabs = {"tabStory": "story", "tabControls": "controls", "tabCredits": "credits", "tabDebug": "debug"};
+  String selectedTab = "tabStory";
+  tabs.forEach((key, value) {
+    Element tab = query("#$key");
+    Element tabContent = query("#$value");
+
+    tab.on.click.add((listener) {
+      if (key != selectedTab) {
+        tab.classes.add("selectedTab");
+        tabContent.classes.remove("hidden");
+        query("#$selectedTab").classes.remove("selectedTab");
+        query("#${tabs[selectedTab]}").classes.add("hidden");
+        selectedTab = key;
+      }
+    });
+  });
 }
 
 class DebugSystem extends VoidEntitySystem {
