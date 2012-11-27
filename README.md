@@ -1,4 +1,4 @@
-## The Game
+## The GitHub Space Off
 
 Playable here: [Multiverse](http://denniskaselow.github.com/game-off-2012/)
 

@@ -1,4 +1,4 @@
-part of multiverse;
+part of spaceoff;
 
 class Transform extends Component {
   Transform.hack();

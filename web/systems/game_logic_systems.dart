@@ -1,4 +1,4 @@
-part of multiverse;
+part of spaceoff;
 
 
 abstract class OnScreenProcessingSystem extends EntityProcessingSystem {

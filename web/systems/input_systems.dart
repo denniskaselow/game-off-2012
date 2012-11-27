@@ -1,4 +1,4 @@
-part of multiverse;
+part of spaceoff;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
   const int ACCELERATE = 87;

@@ -1,4 +1,4 @@
-library multiverse;
+library spaceoff;
 
 import 'dart:html' hide Entity;
 import 'dart:math';
