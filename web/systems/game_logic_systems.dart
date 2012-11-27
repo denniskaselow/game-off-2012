@@ -149,6 +149,8 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     // no collision with collected upgrades wanted
     world.processEntityChanges();
   }
+
+  bool checkProcessing() => status.health > 0;
 }
 
 class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
