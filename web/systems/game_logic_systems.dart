@@ -245,8 +245,8 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             Status s1 = statusMapper.getSafe(e1);
             Status s2 = statusMapper.getSafe(e2);
 
-            if (null != s1) s1.health -= (p2.abs() + p1.abs()) / 100;
-            if (null != s2) s2.health -= (p2.abs() + p1.abs()) / 100;
+            if (null != s1) s1.health -= (p2.abs() + p1.abs()) / 5;
+            if (null != s2) s2.health -= (p2.abs() + p1.abs()) / 5;
           }
         }
       }
