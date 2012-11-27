@@ -76,7 +76,7 @@ class Cannon extends Component {
   num bulletSpeed;
   num bulletMass;
 
-  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 1, this.bulletMass : 1});
+  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 0.05, this.bulletMass : 1});
 
   bool get canShoot {
     if (shoot && cooldownTimer <= 0) return true;

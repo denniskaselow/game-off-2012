@@ -81,8 +81,8 @@ class MovementSystem extends EntityProcessingSystem {
     Transform transform = positionMapper.get(entity);
     Velocity vel = velocityMapper.get(entity);
 
-    transform.x += vel.x;
-    transform.y += vel.y;
+    transform.x += vel.x * world.delta;
+    transform.y += vel.y * world.delta;
     transform.angle += transform.rotationRate;
   }
 }
@@ -174,12 +174,12 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
     if (entities.size > 1) {
       for (int i = 0; i < entities.size - 1; i++) {
+        Entity e1 = entities[i];
+        Transform t1 = transformMapper.get(e1);
+        CircularBody c1 = bodyMapper.get(e1);
         for (int j = i+1; j < entities.size; j++) {
-          Entity e1 = entities[i];
           Entity e2 = entities[j];
-          Transform t1 = transformMapper.get(e1);
           Transform t2 = transformMapper.get(e2);
-          CircularBody c1 = bodyMapper.get(e1);
           CircularBody c2 = bodyMapper.get(e2);
 
           if (Utils.doCirclesCollide(t1.x, t1.y, c1.radius, t2.x, t2.y, c2.radius)) {
@@ -188,12 +188,28 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             Mass m1 = massMapper.get(e1);
             Mass m2 = massMapper.get(e2);
 
-            // contact point
-            num cpx = (t1.x * c1.radius + t2.x * c2.radius) / (c1.radius + c2.radius);
-            num cpy = (t1.y * c1.radius + t2.y * c2.radius) / (c1.radius + c2.radius);
+            num dx = t2.x - t1.x;
+            num dy = t2.y - t1.y;
 
-            num dx = cpx - t1.x;
-            num dy = cpy - t1.y;
+            num distance = sqrt(dx*dx + dy*dy);
+            num radiusTotal = c1.radius + c2.radius;
+            num overlap = radiusTotal - distance;
+
+            if (overlap > 0) {
+              num dvx = v2.x - v1.x;
+              num dvy = v2.y - v1.y;
+
+              num time = (distance - radiusTotal) / sqrt(dvx*dvx + dvy*dvy);
+
+              t1.x += time * v1.x;
+              t1.y += time * v1.y;
+              t2.x += time * v2.x;
+              t2.y += time * v2.y;
+
+              dx = t2.x - t1.x;
+              dy = t2.y - t1.y;
+            }
+            // calculate collision angle
             num phi = atan2(dy, dx);
 
             num v1i = sqrt(v1.x * v1.x + v1.y * v1.y);
