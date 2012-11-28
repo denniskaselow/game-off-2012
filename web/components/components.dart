@@ -22,6 +22,7 @@ class Velocity extends Component {
 }
 
 class Spatial extends Component {
+
   Spatial.hack();
 
   String resource;
@@ -34,6 +35,12 @@ class Spatial extends Component {
   Spatial.asSprite(this.resource, this.x, this.y, this.width, this.height, {this.scale : 1}) {
     isSprite = true;
   }
+  Spatial.fromSpatial(Spatial spatial, this.scale) : resource = spatial.resource,
+                                                     isSprite = spatial.isSprite,
+                                                     width = spatial.width,
+                                                     height = spatial.height,
+                                                     x = spatial.x,
+                                                     y = spatial.y;
 }
 
 class Background extends Component {
@@ -75,8 +82,9 @@ class Cannon extends Component {
   final num cooldownTime;
   num bulletSpeed;
   num bulletMass;
+  num bulletDamage;
 
-  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 0.05, this.bulletMass : 1});
+  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 0.05, this.bulletMass : 1, this.bulletDamage : 5});
 
   bool get canShoot {
     if (shoot && cooldownTimer <= 0) return true;
@@ -116,4 +124,21 @@ class MiniMapRenderable extends Component {
 class Upgrade extends Component {
   Upgrade.hack();
   Upgrade();
+}
+
+class Damage extends Component {
+  Damage.hack();
+  num value;
+  Damage(this.value);
+}
+
+class SplitsOnDestruction extends Component {
+  SplitsOnDestruction.hack();
+  int parts;
+  SplitsOnDestruction(this.parts);
+}
+
+class DisappearsOnDestruction extends Component {
+  DisappearsOnDestruction.hack();
+  DisappearsOnDestruction();
 }

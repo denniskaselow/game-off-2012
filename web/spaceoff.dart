@@ -67,7 +67,7 @@ class Game {
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
-    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5));
+    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5));
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -92,7 +92,8 @@ class Game {
       asteroid.addComponent(new CircularBody(50 * scale));
       asteroid.addComponent(new Mass(100 * scale));
       asteroid.addComponent(new MiniMapRenderable("#333"));
-      asteroid.addComponent(new Status());
+      asteroid.addComponent(new Status(maxHealth : 100 * scale));
+      asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
       asteroid.addToWorld();
     }
 
@@ -117,9 +118,11 @@ class Game {
     world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
     world.addSystem(new BulletSpawningSystem(audioManager));
+    world.addSystem(new SplittingDestructionSystem());
+    world.addSystem(new DisapperearingDestructionSystem());
     world.addSystem(new PlayerDestructionSystem());
-    world.addSystem(new CameraSystem());
     world.addSystem(new ExpirationSystem());
+    world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));

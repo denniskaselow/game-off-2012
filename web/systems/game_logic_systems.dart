@@ -159,6 +159,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
   ComponentMapper<Status> statusMapper;
+  ComponentMapper<Damage> damageMapper;
 
   CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf(new CircularBody.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
@@ -169,6 +170,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
     massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
     statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    damageMapper = new ComponentMapper<Damage>(new Damage.hack().runtimeType, world);
   }
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
@@ -244,9 +246,17 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
 
             Status s1 = statusMapper.getSafe(e1);
             Status s2 = statusMapper.getSafe(e2);
+            Damage d1 = damageMapper.getSafe(e1);
+            Damage d2 = damageMapper.getSafe(e2);
 
-            if (null != s1) s1.health -= (p2.abs() + p1.abs()) / 5;
-            if (null != s2) s2.health -= (p2.abs() + p1.abs()) / 5;
+            if (null != s1) {
+              s1.health -= (p2.abs() + p1.abs()) / 5;
+              if (null != d2) s1.health -= d2.value;
+            }
+            if (null != s2) {
+              s2.health -= (p2.abs() + p1.abs()) / 5;
+              if (null != d1) s2.health -= d1.value;
+            }
           }
         }
       }
@@ -298,6 +308,7 @@ class BulletSpawningSystem extends EntityProcessingSystem {
     bullet.addComponent(new Mass(cannon.bulletMass));
     bullet.addComponent(new Spatial('bullet_dummy.png'));
     bullet.addComponent(new ExpirationTimer(3000));
+    bullet.addComponent(new Damage(cannon.bulletDamage));
     bullet.addToWorld();
 
     num getVelocityAfterRecoil(num shooterVel, num bulletVelMultiplier) {
@@ -343,6 +354,84 @@ abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
     player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
+  }
+}
+
+class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
+
+  ComponentMapper<Status> statusMapper;
+  ComponentMapper<SplitsOnDestruction> splitterMapper;
+  ComponentMapper<CircularBody> bodyMapper;
+  ComponentMapper<Velocity> velocityMapper;
+  ComponentMapper<Mass> massMapper;
+  ComponentMapper<Spatial> spatialMapper;
+
+  SplittingDestructionSystem() : super(Aspect.getAspectForAllOf(new SplitsOnDestruction.hack().runtimeType, [new CircularBody.hack().runtimeType, new Status.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType, new Spatial.hack().runtimeType]));
+
+  void initialize() {
+    super.initialize();
+    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    splitterMapper = new ComponentMapper<SplitsOnDestruction>(new SplitsOnDestruction.hack().runtimeType, world);
+    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
+    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
+    spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+  }
+
+  void processEntityOnScreen(Entity entity) {
+    Status status = statusMapper.get(entity);
+    if (status.health <= 0) {
+      Transform transform = transformMapper.get(entity);
+      SplitsOnDestruction splitter = splitterMapper.get(entity);
+      Mass mass = massMapper.get(entity);
+      Velocity velocity = velocityMapper.get(entity);
+      CircularBody body = bodyMapper.get(entity);
+      Spatial spatial = spatialMapper.get(entity);
+      num volume = PI * body.radius * body.radius;
+
+      for (int i = 0; i < splitter.parts; i++) {
+        Entity asteroid = world.createEntity();
+        asteroid.addComponent(new Transform(transform.x, transform.y, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+        // TODO calculate velocity based on current velocity
+        asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
+        num scale = generateRandom(0.2, 0.5);
+        asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrt(splitter.parts)));
+        asteroid.addComponent(new Mass(mass.value / splitter.parts));
+        asteroid.addComponent(new MiniMapRenderable("#333"));
+        asteroid.addComponent(new Status(maxHealth : status.maxHealth / splitter.parts));
+        num radius = body.radius / sqrt(splitter.parts);
+        asteroid.addComponent(new CircularBody(radius));
+        if (radius > 15) {
+          asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
+        } else {
+          asteroid.addComponent(new DisappearsOnDestruction());
+        }
+        asteroid.addToWorld();
+      }
+      entity.deleteFromWorld();
+    }
+  }
+}
+
+
+
+class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
+
+  ComponentMapper<Status> statusMapper;
+  ComponentMapper<DisappearsOnDestruction> splitterMapper;
+
+  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(new DisappearsOnDestruction.hack().runtimeType, [new Status.hack().runtimeType]));
+
+  void initialize() {
+    super.initialize();
+    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+  }
+
+  void processEntityOnScreen(Entity entity) {
+    Status status = statusMapper.get(entity);
+    if (status.health <= 0) {
+      entity.deleteFromWorld();
+    }
   }
 }
 
