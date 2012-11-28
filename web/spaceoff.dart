@@ -1,4 +1,4 @@
-library multiverse;
+library spaceoff;
 
 import 'dart:html' hide Entity;
 import 'dart:math';
@@ -22,6 +22,8 @@ const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
 final Random random = new Random();
 
 void main() {
+  initTabbedContent();
+
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
   window.requestLayoutFrame(() {
@@ -65,7 +67,7 @@ class Game {
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
-    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 10));
+    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5));
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -84,20 +86,21 @@ class Game {
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/100; i++) {
       Entity asteroid = world.createEntity();
       asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-      asteroid.addComponent(generateRandomVelocity(0.5, 1.5));
+      asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
       scale = generateRandom(0.2, 0.5);
       asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
       asteroid.addComponent(new CircularBody(50 * scale));
       asteroid.addComponent(new Mass(100 * scale));
       asteroid.addComponent(new MiniMapRenderable("#333"));
-      asteroid.addComponent(new Status());
+      asteroid.addComponent(new Status(maxHealth : 100 * scale));
+      asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
       asteroid.addToWorld();
     }
 
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/1000; i++) {
       Entity upgrade = world.createEntity();
       upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      upgrade.addComponent(generateRandomVelocity(0.5, 1.5));
+      upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
       scale = 0.2;
       upgrade.addComponent(new Spatial('upgrade_health.png', scale: scale));
       upgrade.addComponent(new CircularBody(50 * scale));
@@ -115,9 +118,11 @@ class Game {
     world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
     world.addSystem(new BulletSpawningSystem(audioManager));
+    world.addSystem(new SplittingDestructionSystem());
+    world.addSystem(new DisapperearingDestructionSystem());
     world.addSystem(new PlayerDestructionSystem());
-    world.addSystem(new CameraSystem());
     world.addSystem(new ExpirationSystem());
+    world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));
@@ -182,6 +187,25 @@ Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
 num generateRandom(num min, num max) {
   num randomNumber = min + max * random.nextDouble();
   return randomNumber;
+}
+
+void initTabbedContent() {
+  Map<String, String> tabs = {"tabStory": "story", "tabControls": "controls", "tabCredits": "credits", "tabDebug": "debug"};
+  String selectedTab = "tabStory";
+  tabs.forEach((key, value) {
+    Element tab = query("#$key");
+    Element tabContent = query("#$value");
+
+    tab.on.click.add((listener) {
+      if (key != selectedTab) {
+        tab.classes.add("selectedTab");
+        tabContent.classes.remove("hidden");
+        query("#$selectedTab").classes.remove("selectedTab");
+        query("#${tabs[selectedTab]}").classes.add("hidden");
+        selectedTab = key;
+      }
+    });
+  });
 }
 
 class DebugSystem extends VoidEntitySystem {

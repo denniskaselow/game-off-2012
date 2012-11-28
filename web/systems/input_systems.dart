@@ -1,14 +1,12 @@
-part of multiverse;
+part of spaceoff;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
   const int ACCELERATE = 87;
-  const int DECELERATE = 83;
   const int LEFT = 65;
   const int RIGHT = 68;
   const int SHOOT = 74;
 
   bool accelerate = false;
-  bool decelerate = false;
   bool turnLeft = false;
   bool turnRight = false;
   bool shoot = false;
@@ -43,11 +41,8 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     Cannon cannon = cannonMapper.get(player);
 
     if (accelerate) {
-      velocity.x += 0.05 * TrigUtil.cos(transform.angle);
-      velocity.y += 0.05 * TrigUtil.sin(transform.angle);
-    } else if (decelerate) {
-      velocity.x *= 0.98;
-      velocity.y *= 0.98;
+      velocity.x += 0.0025 * TrigUtil.cos(transform.angle);
+      velocity.y += 0.0025 * TrigUtil.sin(transform.angle);
     }
     if (turnLeft) {
       transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;
@@ -65,10 +60,6 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     int keyCode = e.keyCode;
     if (keyCode == ACCELERATE) {
       accelerate = true;
-      decelerate = false;
-    } else if (keyCode == DECELERATE) {
-      accelerate = false;
-      decelerate = true;
     } else if (keyCode == LEFT) {
       turnLeft = true;
       turnRight = false;
@@ -84,8 +75,6 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     int keyCode = e.keyCode;
     if (keyCode == ACCELERATE) {
       accelerate = false;
-    } else if (keyCode == DECELERATE) {
-      decelerate = false;
     } else if (keyCode == LEFT) {
       turnLeft = false;
     } else if (keyCode == RIGHT) {
