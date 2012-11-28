@@ -37,14 +37,17 @@ class AudioManager {
   GainNode _musicGain;
   GainNode _sourceGain;
 
-  String baseURL = '';
+  String baseURL;
 
   Map<String, AudioClip> _clips = new Map<String, AudioClip>();
   Map<String, AudioSource> _sources = new Map<String, AudioSource>();
   AudioMusic _music;
 
-  /** Construct a new AudioManager */
-  AudioManager() {
+  /** Construct a new AudioManager,
+   * can specify [baseURL] which is prepended to all clip URLs.
+   * [baseURL] defaults to '/'
+   */
+  AudioManager([this.baseURL = '/']) {
     _context = new AudioContext();
     _destination = _context.destination;
     _listener = _context.listener;
@@ -199,6 +202,31 @@ class AudioManager {
     clip = new AudioClip._internal(this, name, url);
     _clips[name] = clip;
     return clip;
+  }
+
+  /** Batch create many clips. */
+  List<AudioClip> makeClips(List<String> names, List<String> urls) {
+    if (names == null || urls == null ||
+        (names.length != urls.length)) {
+      throw new ArgumentError('Invalid arguments.');
+    }
+    List<AudioClip> clips = new List<AudioClip>();
+    for (int i = 0; i < names.length; i++) {
+      clips.add(makeClip(names[i], urls[i]));
+    }
+  }
+
+  /** Batch load all clips not marked as ready to play.
+   * Returns a single Future which will complete once all the clips have loaded.
+   */
+  Future<List<AudioClip>> loadClips() {
+    List<Future<AudioClip>> loaded = new List<Future<AudioClip>>();
+    _clips.forEach((name, clip) {
+      if (clip.isReadyToPlay == false) {
+        loaded.add(clip.load());
+      }
+    });
+    return Futures.wait(loaded);
   }
 
   /** Create an [AudioSource] and assign it [name] */
