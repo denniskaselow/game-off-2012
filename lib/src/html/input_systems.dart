@@ -1,4 +1,4 @@
-part of spaceoff;
+part of html;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
   const int ACCELERATE = 87;

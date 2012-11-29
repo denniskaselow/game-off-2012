@@ -1,4 +1,4 @@
-part of spaceoff;
+part of html;
 
 class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 

@@ -142,3 +142,10 @@ class DisappearsOnDestruction extends Component {
   DisappearsOnDestruction.hack();
   DisappearsOnDestruction();
 }
+
+class Sound extends Component {
+  Sound.hack();
+  String source;
+  String clip;
+  Sound(this.source, this.clip);
+}
