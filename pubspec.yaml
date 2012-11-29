@@ -7,3 +7,4 @@ dependencies:
     git: git://github.com/denniskaselow/dartemis.git
   simple_audio:
     git: https://github.com/johnmccutchan/simpleaudio.git
+  unittest: {sdk : unittest}

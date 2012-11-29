@@ -34,7 +34,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     window.on.keyUp.add(handleKeyUp);
   }
 
-  void processEntities(ImmutableBag<Entity> entities) {
+  void processSystem() {
     Entity player = tagManager.getEntity(TAG_PLAYER);
     Velocity velocity = velocityMapper.get(player);
     Transform transform = transformMapper.get(player);

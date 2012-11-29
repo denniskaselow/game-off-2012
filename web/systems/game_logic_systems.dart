@@ -1,7 +1,7 @@
 part of spaceoff;
 
 
-abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
+abstract class OnScreenProcessingSystem extends EntitySystem {
 
   static final num MAX_RENDER_DISTANCE_X = MAX_WIDTH + 50;
   static final num MAX_RENDER_DISTANCE_Y = MAX_HEIGHT + 50;
@@ -48,6 +48,7 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities);
 
+  bool checkProcessing() => true;
 }
 
 abstract class OnScreenEntityProcessingSystem extends OnScreenProcessingSystem {
