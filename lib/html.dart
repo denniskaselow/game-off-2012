@@ -1,41 +1,14 @@
-library spaceoff;
+library html;
 
-import 'dart:html' hide Entity;
 import 'dart:math';
-import 'package:dartemis/dartemis.dart';
+import 'dart:html' hide Entity;
+import 'package:spaceoff/spaceoff.dart';
+export 'package:spaceoff/spaceoff.dart';
 import 'package:simple_audio/simple_audio.dart';
 
-part 'components/components.dart';
-part 'systems/game_logic_systems.dart';
-part 'systems/render_systems.dart';
-part 'systems/input_systems.dart';
-
-const int MAX_WIDTH = 800;
-const int MAX_HEIGHT = 400;
-const int HUD_HEIGHT = 100;
-const int UNIVERSE_HEIGHT = MAX_HEIGHT * 4;
-const int UNIVERSE_WIDTH = MAX_WIDTH * 2;
-const String TAG_CAMERA = "CAMERA";
-const String TAG_PLAYER = "PLAYER";
-const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
-
-final Random random = new Random();
-
-void main() {
-  initTabbedContent();
-
-  CanvasElement gameContainer = query('#gamecontainer');
-  CanvasElement hudContainer = query('#hudcontainer');
-  window.requestLayoutFrame(() {
-    gameContainer.width = MAX_WIDTH;
-    gameContainer.height = MAX_HEIGHT;
-    hudContainer.width = MAX_WIDTH;
-    hudContainer.height = HUD_HEIGHT;
-
-    Game game = new Game(gameContainer, hudContainer);
-    game.start();
-  });
-}
+part 'src/html/input_systems.dart';
+part 'src/html/render_systems.dart';
+part 'src/html/sound_systems.dart';
 
 class Game {
   CanvasElement gameCanvas;
@@ -51,7 +24,7 @@ class Game {
   }
 
   void start() {
-    AudioManager audioManager = createAudioManager();
+    AudioManager audioManager = createAudioManager(window.location.href);
     world = new World();
     GroupManager groupManager = new GroupManager();
     TagManager tagManager = new TagManager();
@@ -62,12 +35,12 @@ class Game {
     player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
     num scale = 0.5;
-    player.addComponent(new Spatial('spaceship_dummy.png', scale: scale));
+    player.addComponent(new Spatial('spaceship.png', scale: 0.25));
     player.addComponent(new CircularBody(45 * scale));
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
-    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5));
+    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1));
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -97,7 +70,7 @@ class Game {
       asteroid.addToWorld();
     }
 
-    for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/1000; i++) {
+    for (int i = 0; i < 5; i++) {
       Entity upgrade = world.createEntity();
       upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
@@ -106,7 +79,20 @@ class Game {
       upgrade.addComponent(new CircularBody(50 * scale));
       upgrade.addComponent(new Mass(100 * scale));
       upgrade.addComponent(new MiniMapRenderable("green"));
-      upgrade.addComponent(new Upgrade());
+      upgrade.addComponent(new Upgrade(maxHealth: 20));
+      upgrade.addToWorld();
+    }
+
+    for (int i = 0; i < 2; i++) {
+      Entity upgrade = world.createEntity();
+      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
+      upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
+      scale = 0.2;
+      upgrade.addComponent(new Spatial('upgrade_bullets.png', scale: scale));
+      upgrade.addComponent(new CircularBody(50 * scale));
+      upgrade.addComponent(new Mass(100 * scale));
+      upgrade.addComponent(new MiniMapRenderable("green"));
+      upgrade.addComponent(new Upgrade(bullets: 1));
       upgrade.addToWorld();
     }
 
@@ -117,7 +103,7 @@ class Game {
     world.addSystem(new MovementSystem());
     world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
-    world.addSystem(new BulletSpawningSystem(audioManager));
+    world.addSystem(new BulletSpawningSystem());
     world.addSystem(new SplittingDestructionSystem());
     world.addSystem(new DisapperearingDestructionSystem());
     world.addSystem(new PlayerDestructionSystem());
@@ -127,6 +113,7 @@ class Game {
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));
     world.addSystem(new HudRenderSystem(hudContext));
+    world.addSystem(new SoundSystem(audioManager));
     world.addSystem(new DebugSystem());
 
     world.initialize();
@@ -147,65 +134,32 @@ class Game {
   void requestRedraw() {
     window.requestAnimationFrame(gameLoop);
   }
+}
 
-  AudioManager createAudioManager() {
-    try {
-      AudioManager audioManager = new AudioManager();
-      String location = window.location.href;
-      int slashIndex = location.lastIndexOf('/');
-      if (slashIndex < 0) {
-        audioManager.baseURL = '';
-      } else {
-        audioManager.baseURL = location.substring(0, slashIndex);
-      }
-      AudioSource source = audioManager.makeSource('non-positional');
-      source.positional = false;
-
-      AudioClip clip = audioManager.makeClip('shoot_sound', 'resources/shoot.ogg');
-      clip.load();
-
-      return audioManager;
-    } catch (e) {
-      // Browser doesn't support AudioContext
+AudioManager createAudioManager(String location) {
+  try {
+    AudioManager audioManager = new AudioManager();
+    int slashIndex = location.lastIndexOf('/');
+    if (slashIndex < 0) {
+      audioManager.baseURL = '';
+    } else {
+      audioManager.baseURL = location.substring(0, slashIndex);
     }
-    return new AudioManagerDummy();
+    AudioSource source = audioManager.makeSource('non-positional');
+    source.positional = false;
+
+    AudioClip clip = audioManager.makeClip('shoot_sound', 'resources/shoot.ogg');
+    clip.load();
+
+    return audioManager;
+  } catch (e) {
+    // Browser doesn't support AudioContext
   }
+  return new AudioManagerDummy();
 }
 
 class AudioManagerDummy implements AudioManager {
   dynamic noSuchMethod(InvocationMirror im) {}
-}
-
-Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
-  num velx = generateRandom(minSpeed, maxSpeed);
-  velx = velx * (random.nextBool() ? 1 : -1);
-  num vely = generateRandom(minSpeed, maxSpeed);
-  vely = vely * (random.nextBool() ? 1 : -1);
-  return new Velocity(velx, vely);
-}
-
-num generateRandom(num min, num max) {
-  num randomNumber = min + max * random.nextDouble();
-  return randomNumber;
-}
-
-void initTabbedContent() {
-  Map<String, String> tabs = {"tabStory": "story", "tabControls": "controls", "tabCredits": "credits", "tabDebug": "debug"};
-  String selectedTab = "tabStory";
-  tabs.forEach((key, value) {
-    Element tab = query("#$key");
-    Element tabContent = query("#$value");
-
-    tab.on.click.add((listener) {
-      if (key != selectedTab) {
-        tab.classes.add("selectedTab");
-        tabContent.classes.remove("hidden");
-        query("#$selectedTab").classes.remove("selectedTab");
-        query("#${tabs[selectedTab]}").classes.add("hidden");
-        selectedTab = key;
-      }
-    });
-  });
 }
 
 class DebugSystem extends VoidEntitySystem {

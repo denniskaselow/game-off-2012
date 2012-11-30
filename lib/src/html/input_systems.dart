@@ -1,4 +1,4 @@
-part of spaceoff;
+part of html;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
   const int ACCELERATE = 87;
@@ -14,10 +14,10 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   num targetX = 0;
   num targetY = 0;
 
-  ComponentMapper<Velocity> velocityMapper;
-  ComponentMapper<Transform> transformMapper;
-  ComponentMapper<Cannon> cannonMapper;
-  TagManager tagManager;
+  Spatial spatial;
+  Velocity velocity;
+  Transform transform;
+  Cannon cannon;
 
   CanvasElement canvas;
 
@@ -25,24 +25,27 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
+    ComponentMapper<Velocity> velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    ComponentMapper<Cannon> cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
+    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
 
-    tagManager = world.getManager(new TagManager().runtimeType);
+    spatial = spatialMapper.get(player);
+    velocity = velocityMapper.get(player);
+    transform = transformMapper.get(player);
+    cannon = cannonMapper.get(player);
+
     window.on.keyDown.add(handleKeyDown);
     window.on.keyUp.add(handleKeyUp);
   }
 
-  void processEntities(ImmutableBag<Entity> entities) {
-    Entity player = tagManager.getEntity(TAG_PLAYER);
-    Velocity velocity = velocityMapper.get(player);
-    Transform transform = transformMapper.get(player);
-    Cannon cannon = cannonMapper.get(player);
-
+  void processSystem() {
     if (accelerate) {
       velocity.x += 0.0025 * TrigUtil.cos(transform.angle);
       velocity.y += 0.0025 * TrigUtil.sin(transform.angle);
+      spatial.resource = 'spaceship_thrusters.png';
+    } else {
+      spatial.resource = 'spaceship.png';
     }
     if (turnLeft) {
       transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;

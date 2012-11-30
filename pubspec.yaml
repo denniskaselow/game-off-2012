@@ -1,4 +1,4 @@
-name: game-off-2012
+name: spaceoff
 description: Entry to the GitHub Game Off 2012
 author: Dennis Kaselow <Dennis.Kaselow+githubgameoff2012@gmail.com>
 homepage: https://github.com/denniskaselow/game-off-2012
@@ -7,3 +7,4 @@ dependencies:
     git: git://github.com/denniskaselow/dartemis.git
   simple_audio:
     git: https://github.com/johnmccutchan/simpleaudio.git
+  unittest: {sdk : unittest}

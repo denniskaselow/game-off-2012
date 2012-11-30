@@ -1,7 +1,7 @@
 part of spaceoff;
 
 
-abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
+abstract class OnScreenProcessingSystem extends EntitySystem {
 
   static final num MAX_RENDER_DISTANCE_X = MAX_WIDTH + 50;
   static final num MAX_RENDER_DISTANCE_Y = MAX_HEIGHT + 50;
@@ -48,6 +48,7 @@ abstract class OnScreenProcessingSystem extends EntityProcessingSystem {
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities);
 
+  bool checkProcessing() => true;
 }
 
 abstract class OnScreenEntityProcessingSystem extends OnScreenProcessingSystem {
@@ -117,6 +118,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Status status;
   Transform transform;
   CircularBody body;
+  Cannon cannon;
 
   UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(new Upgrade.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
 
@@ -124,6 +126,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     super.initialize();
     bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
     upgradeMapper = new ComponentMapper<Upgrade>(new Upgrade.hack().runtimeType, world);
+    var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
 
     var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
@@ -131,6 +134,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     status = statusMapper.get(player);
     transform = transformMapper.get(player);
     body = bodyMapper.get(player);
+    cannon = cannonMapper.get(player);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -139,8 +143,8 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
 
     if (Utils.doCirclesCollide(transform.x, transform.y, body.radius, upgradeTransform.x, upgradeTransform.y, upgradeBody.radius)) {
       Upgrade upgrade = upgradeMapper.get(entity);
-      status.maxHealth += 10;
-      status.health = status.maxHealth;
+      upgrade.applyToStatus(status);
+      upgrade.applyToCannon(cannon);
       entity.deleteFromWorld();
     }
   }
@@ -264,18 +268,14 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   }
 }
 
-
-
 class BulletSpawningSystem extends EntityProcessingSystem {
-
-  AudioManager audioManager;
 
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Cannon> cannonMapper;
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
 
-  BulletSpawningSystem(this.audioManager) : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
+  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
@@ -299,29 +299,36 @@ class BulletSpawningSystem extends EntityProcessingSystem {
     Velocity shooterVel = velocityMapper.get(shooter);
     Mass shooterMass = massMapper.get(shooter);
     cannon.resetCooldown();
-    Entity bullet = world.createEntity();
+
     num cosx = TrigUtil.cos(transform.angle);
     num siny = TrigUtil.sin(transform.angle);
-    bullet.addComponent(new Transform(transform.x + cosx * 26, transform.y + siny * 26));
-    bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * cosx, shooterVel.y + cannon.bulletSpeed * siny));
-    bullet.addComponent(new CircularBody(2));
-    bullet.addComponent(new Mass(cannon.bulletMass));
-    bullet.addComponent(new Spatial('bullet_dummy.png'));
-    bullet.addComponent(new ExpirationTimer(3000));
-    bullet.addComponent(new Damage(cannon.bulletDamage));
-    bullet.addToWorld();
+    for (int i = 0; i < cannon.amount; i++) {
+      num anglechange;
+      if (cannon.amount == 1) {
+        anglechange = transform.angle;
+      } else {
+        anglechange = transform.angle + PI/4 - ((PI/(2*(cannon.amount-1))) * i);
+      }
+      Entity bullet = world.createEntity();
+      bullet.addComponent(new Transform(transform.x + cos(anglechange) * 26, transform.y + sin(anglechange) * 26));
+      bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * cosx, shooterVel.y + cannon.bulletSpeed * siny));
+      bullet.addComponent(new CircularBody(2));
+      bullet.addComponent(new Mass(cannon.bulletMass));
+      bullet.addComponent(new Spatial('bullet_dummy.png'));
+      bullet.addComponent(new ExpirationTimer(3000));
+      bullet.addComponent(new Damage(cannon.bulletDamage));
+      bullet.addComponent(new Sound('non-positional', 'shoot_sound'));
+      bullet.addToWorld();
+    }
 
     num getVelocityAfterRecoil(num shooterVel, num bulletVelMultiplier) {
       num p1 = shooterVel * shooterMass.value;
-      num p2 = cannon.bulletSpeed * bulletVelMultiplier * cannon.bulletMass;
+      num p2 = cannon.bulletSpeed * bulletVelMultiplier * cannon.bulletMass * cannon.amount;
       p1 = p1 - p2;
       return p1 / shooterMass.value;
     }
     shooterVel.x = getVelocityAfterRecoil(shooterVel.x, cosx);
     shooterVel.y = getVelocityAfterRecoil(shooterVel.y, siny);
-
-    // Play clip.
-    audioManager.playClipFromSource('non-positional', 'shoot_sound');
   }
 }
 
@@ -389,19 +396,23 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       Spatial spatial = spatialMapper.get(entity);
       num volume = PI * body.radius * body.radius;
 
+      num anglePerPart = 2 * PI / splitter.parts;
+      num sqrtparts = sqrt(splitter.parts);
+      num radius = body.radius / sqrtparts;
+      num spread = (2 * PI / 3) / ((splitter.parts - 1) * anglePerPart);
       for (int i = 0; i < splitter.parts; i++) {
+        num angle = i * anglePerPart;
         Entity asteroid = world.createEntity();
-        asteroid.addComponent(new Transform(transform.x, transform.y, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-        // TODO calculate velocity based on current velocity
-        asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
+        asteroid.addComponent(new Transform(transform.x + body.radius * sin(angle), transform.y + body.radius * cos(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+        double changeOfVelocity = sin(PI/6 + angle * spread);
+        asteroid.addComponent(new Velocity(velocity.x * changeOfVelocity, velocity.y * changeOfVelocity));
         num scale = generateRandom(0.2, 0.5);
-        asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrt(splitter.parts)));
+        asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrtparts));
         asteroid.addComponent(new Mass(mass.value / splitter.parts));
         asteroid.addComponent(new MiniMapRenderable("#333"));
-        asteroid.addComponent(new Status(maxHealth : status.maxHealth / splitter.parts));
-        num radius = body.radius / sqrt(splitter.parts);
+        asteroid.addComponent(new Status(maxHealth : status.maxHealth / sqrtparts));
         asteroid.addComponent(new CircularBody(radius));
-        if (radius > 15) {
+        if (radius > 10) {
           asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
         } else {
           asteroid.addComponent(new DisappearsOnDestruction());
@@ -438,26 +449,27 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
 class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
   Cannon cannon;
   Transform transform;
+  Spatial spatial;
 
   void initialize() {
     super.initialize();
     var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
     var transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    var spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
     cannon = cannonMapper.get(player);
     transform = transformMapper.get(player);
+    spatial = spatialMapper.get(player);
   }
 
   void processSystem() {
     if (!status.destroyed && status.health < 0) {
       cannon.shoot = false;
       status.destroyed = true;
-
-      Entity explosion = world.createEntity();
+      spatial.resource = 'spaceship.png';
       transform.rotationRate = 0.1;
-      explosion.addComponent(transform);
-      explosion.addComponent(new Spatial('spaceship_dummy.png', scale: 0.5));
-      explosion.addToWorld();
     }
   }
+
+  bool checkProcessing() => !status.destroyed;
 
 }

@@ -83,8 +83,9 @@ class Cannon extends Component {
   num bulletSpeed;
   num bulletMass;
   num bulletDamage;
+  int amount;
 
-  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 0.05, this.bulletMass : 1, this.bulletDamage : 5});
+  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 0.05, this.bulletMass : 0.1, this.bulletDamage : 5, this.amount: 1});
 
   bool get canShoot {
     if (shoot && cooldownTimer <= 0) return true;
@@ -123,7 +124,18 @@ class MiniMapRenderable extends Component {
 
 class Upgrade extends Component {
   Upgrade.hack();
-  Upgrade();
+  num maxHealth;
+  num bullets;
+  Upgrade({this.maxHealth : 0, this.bullets : 0});
+
+  void applyToStatus(Status status) {
+    status.maxHealth += maxHealth;
+    status.health = status.maxHealth;
+  }
+
+  void applyToCannon(Cannon cannon) {
+    cannon.amount += bullets;
+  }
 }
 
 class Damage extends Component {
@@ -141,4 +153,11 @@ class SplitsOnDestruction extends Component {
 class DisappearsOnDestruction extends Component {
   DisappearsOnDestruction.hack();
   DisappearsOnDestruction();
+}
+
+class Sound extends Component {
+  Sound.hack();
+  String source;
+  String clip;
+  Sound(this.source, this.clip);
 }
