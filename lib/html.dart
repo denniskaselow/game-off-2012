@@ -35,7 +35,7 @@ class Game {
     player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
     player.addComponent(new Velocity(0, 0));
     num scale = 0.5;
-    player.addComponent(new Spatial('spaceship_dummy.png', scale: scale));
+    player.addComponent(new Spatial('spaceship.png', scale: 0.25));
     player.addComponent(new CircularBody(45 * scale));
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
