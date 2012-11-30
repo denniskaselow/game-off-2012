@@ -386,19 +386,23 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       Spatial spatial = spatialMapper.get(entity);
       num volume = PI * body.radius * body.radius;
 
+      num anglePerPart = 2 * PI / splitter.parts;
+      num sqrtparts = sqrt(splitter.parts);
+      num radius = body.radius / sqrtparts;
+      num spread = (2 * PI / 3) / ((splitter.parts - 1) * anglePerPart);
       for (int i = 0; i < splitter.parts; i++) {
+        num angle = i * anglePerPart;
         Entity asteroid = world.createEntity();
-        asteroid.addComponent(new Transform(transform.x, transform.y, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-        // TODO calculate velocity based on current velocity
-        asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
+        asteroid.addComponent(new Transform(transform.x + body.radius * sin(angle), transform.y + body.radius * cos(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+        double changeOfVelocity = sin(PI/6 + angle * spread);
+        asteroid.addComponent(new Velocity(velocity.x * changeOfVelocity, velocity.y * changeOfVelocity));
         num scale = generateRandom(0.2, 0.5);
-        asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrt(splitter.parts)));
+        asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrtparts));
         asteroid.addComponent(new Mass(mass.value / splitter.parts));
         asteroid.addComponent(new MiniMapRenderable("#333"));
-        asteroid.addComponent(new Status(maxHealth : status.maxHealth / splitter.parts));
-        num radius = body.radius / sqrt(splitter.parts);
+        asteroid.addComponent(new Status(maxHealth : status.maxHealth / sqrtparts));
         asteroid.addComponent(new CircularBody(radius));
-        if (radius > 15) {
+        if (radius > 10) {
           asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
         } else {
           asteroid.addComponent(new DisappearsOnDestruction());
