@@ -15,3 +15,6 @@ Playable here: [GitHub Space Off](http://denniskaselow.github.com/game-off-2012/
 
 ### Font
  * [D3 Radicalism](http://www.fontspace.com/digitaldreamdesign/d3-radicalism)
+
+
+<img src="http://i.imgur.com/c5ETs.jpg?1" />
