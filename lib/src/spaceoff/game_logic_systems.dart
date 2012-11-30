@@ -118,6 +118,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Status status;
   Transform transform;
   CircularBody body;
+  Cannon cannon;
 
   UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(new Upgrade.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
 
@@ -125,6 +126,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     super.initialize();
     bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
     upgradeMapper = new ComponentMapper<Upgrade>(new Upgrade.hack().runtimeType, world);
+    var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
 
     var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
@@ -132,6 +134,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     status = statusMapper.get(player);
     transform = transformMapper.get(player);
     body = bodyMapper.get(player);
+    cannon = cannonMapper.get(player);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -140,8 +143,8 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
 
     if (Utils.doCirclesCollide(transform.x, transform.y, body.radius, upgradeTransform.x, upgradeTransform.y, upgradeBody.radius)) {
       Upgrade upgrade = upgradeMapper.get(entity);
-      status.maxHealth += 10;
-      status.health = status.maxHealth;
+      upgrade.applyToStatus(status);
+      upgrade.applyToCannon(cannon);
       entity.deleteFromWorld();
     }
   }
@@ -265,8 +268,6 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   }
 }
 
-
-
 class BulletSpawningSystem extends EntityProcessingSystem {
 
   ComponentMapper<Transform> transformMapper;
@@ -298,22 +299,31 @@ class BulletSpawningSystem extends EntityProcessingSystem {
     Velocity shooterVel = velocityMapper.get(shooter);
     Mass shooterMass = massMapper.get(shooter);
     cannon.resetCooldown();
-    Entity bullet = world.createEntity();
+
     num cosx = TrigUtil.cos(transform.angle);
     num siny = TrigUtil.sin(transform.angle);
-    bullet.addComponent(new Transform(transform.x + cosx * 26, transform.y + siny * 26));
-    bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * cosx, shooterVel.y + cannon.bulletSpeed * siny));
-    bullet.addComponent(new CircularBody(2));
-    bullet.addComponent(new Mass(cannon.bulletMass));
-    bullet.addComponent(new Spatial('bullet_dummy.png'));
-    bullet.addComponent(new ExpirationTimer(3000));
-    bullet.addComponent(new Damage(cannon.bulletDamage));
-    bullet.addComponent(new Sound('non-positional', 'shoot_sound'));
-    bullet.addToWorld();
+    for (int i = 0; i < cannon.amount; i++) {
+      num anglechange;
+      if (cannon.amount == 1) {
+        anglechange = transform.angle;
+      } else {
+        anglechange = transform.angle + PI/4 - ((PI/(2*(cannon.amount-1))) * i);
+      }
+      Entity bullet = world.createEntity();
+      bullet.addComponent(new Transform(transform.x + cos(anglechange) * 26, transform.y + sin(anglechange) * 26));
+      bullet.addComponent(new Velocity(shooterVel.x + cannon.bulletSpeed * cosx, shooterVel.y + cannon.bulletSpeed * siny));
+      bullet.addComponent(new CircularBody(2));
+      bullet.addComponent(new Mass(cannon.bulletMass));
+      bullet.addComponent(new Spatial('bullet_dummy.png'));
+      bullet.addComponent(new ExpirationTimer(3000));
+      bullet.addComponent(new Damage(cannon.bulletDamage));
+      bullet.addComponent(new Sound('non-positional', 'shoot_sound'));
+      bullet.addToWorld();
+    }
 
     num getVelocityAfterRecoil(num shooterVel, num bulletVelMultiplier) {
       num p1 = shooterVel * shooterMass.value;
-      num p2 = cannon.bulletSpeed * bulletVelMultiplier * cannon.bulletMass;
+      num p2 = cannon.bulletSpeed * bulletVelMultiplier * cannon.bulletMass * cannon.amount;
       p1 = p1 - p2;
       return p1 / shooterMass.value;
     }

@@ -40,7 +40,7 @@ class Game {
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
-    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5));
+    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1));
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -70,7 +70,7 @@ class Game {
       asteroid.addToWorld();
     }
 
-    for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/1000; i++) {
+    for (int i = 0; i < 5; i++) {
       Entity upgrade = world.createEntity();
       upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
@@ -79,7 +79,20 @@ class Game {
       upgrade.addComponent(new CircularBody(50 * scale));
       upgrade.addComponent(new Mass(100 * scale));
       upgrade.addComponent(new MiniMapRenderable("green"));
-      upgrade.addComponent(new Upgrade());
+      upgrade.addComponent(new Upgrade(maxHealth: 20));
+      upgrade.addToWorld();
+    }
+
+    for (int i = 0; i < 2; i++) {
+      Entity upgrade = world.createEntity();
+      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
+      upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
+      scale = 0.2;
+      upgrade.addComponent(new Spatial('upgrade_bullets.png', scale: scale));
+      upgrade.addComponent(new CircularBody(50 * scale));
+      upgrade.addComponent(new Mass(100 * scale));
+      upgrade.addComponent(new MiniMapRenderable("green"));
+      upgrade.addComponent(new Upgrade(bullets: 1));
       upgrade.addToWorld();
     }
 
