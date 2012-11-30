@@ -4,6 +4,7 @@ import 'package:spaceoff/html.dart';
 
 void main() {
   initTabbedContent();
+  loadImages();
 
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
@@ -16,6 +17,12 @@ void main() {
     Game game = new Game(gameContainer, hudContainer);
     game.start();
   });
+}
+
+void loadImages() {
+   // TODO use http://www.codeandweb.com/texturepacker
+  List<String> images = ['spaceship.png', 'spaceship_thrusters.png', 'hud_dummy.png', 'bullet_dummy', 'star_00.png', 'star_01.png', 'star_02.png', 'star_03.png', 'star_04.png', 'star_05.png', 'upgrade_health.png'];
+  images.forEach((image) => ImageCache.withImage(image, (element) {}));
 }
 
 void initTabbedContent() {
