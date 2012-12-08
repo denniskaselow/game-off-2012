@@ -125,7 +125,7 @@ class AudioClip {
     _buffer = _manager._context.createBuffer(numberOfChannels,
                                              numberOfChannels,
                                              sampleRate);
-    isReadyToPlay = true;
+    _isReadyToPlay = true;
   }
 
   /** Return the sample frames array for [channel]. Assuming a stereo setup,

@@ -164,6 +164,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<Mass> massMapper;
   ComponentMapper<Status> statusMapper;
   ComponentMapper<Damage> damageMapper;
+  ComponentMapper<ExpirationTimer> expirationMapper;
 
   CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf(new CircularBody.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
 
@@ -175,6 +176,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
     statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
     damageMapper = new ComponentMapper<Damage>(new Damage.hack().runtimeType, world);
+    expirationMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
   }
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
@@ -261,6 +263,15 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
               s2.health -= (p2.abs() + p1.abs()) / 5;
               if (null != d1) s2.health -= d1.value;
             }
+
+            ExpirationTimer timer1 = expirationMapper.getSafe(e1);
+            ExpirationTimer timer2 = expirationMapper.getSafe(e2);
+            if (null != timer1) {
+              timer1.timeLeft *= 0.8;
+            }
+            if (null != timer2) {
+              timer2.timeLeft *= 0.8;
+            }
           }
         }
       }
@@ -315,7 +326,7 @@ class BulletSpawningSystem extends EntityProcessingSystem {
       bullet.addComponent(new CircularBody(2));
       bullet.addComponent(new Mass(cannon.bulletMass));
       bullet.addComponent(new Spatial('bullet_dummy.png'));
-      bullet.addComponent(new ExpirationTimer(3000));
+      bullet.addComponent(new ExpirationTimer(2500));
       bullet.addComponent(new Damage(cannon.bulletDamage));
       bullet.addComponent(new Sound('non-positional', 'shoot_sound'));
       bullet.addToWorld();
@@ -334,11 +345,14 @@ class BulletSpawningSystem extends EntityProcessingSystem {
 
 class ExpirationSystem extends EntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
+  ComponentMapper<Damage> damageMapper;
 
   ExpirationSystem() : super(Aspect.getAspectForAllOf(new ExpirationTimer.hack().runtimeType));
 
   void initialize() {
     timerMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
+    damageMapper = new ComponentMapper<Damage>(new Damage.hack().runtimeType, world);
+
   }
 
   void processEntity(Entity entity) {
@@ -347,6 +361,10 @@ class ExpirationSystem extends EntityProcessingSystem {
       entity.deleteFromWorld();
     } else {
       timer.expireBy(world.delta);
+      Damage damage = damageMapper.getSafe(entity);
+      if (null != damage) {
+        damage.value = damage.maxValue * timer.percentLeft;
+      }
     }
   }
 }
