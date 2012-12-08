@@ -108,6 +108,9 @@ class ExpirationTimer extends Component {
 
   void expireBy(num delta) {
     timeLeft -= delta;
+    if (expired) {
+      timeLeft = 0;
+    }
   }
 
   bool get expired => timeLeft <= 0;
@@ -141,7 +144,10 @@ class Upgrade extends Component {
 class Damage extends Component {
   Damage.hack();
   num value;
-  Damage(this.value);
+  num maxValue;
+  Damage(this.maxValue) {
+    value = maxValue;
+  }
 }
 
 class SplitsOnDestruction extends Component {
