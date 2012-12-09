@@ -6,6 +6,7 @@ export 'package:dartemis/dartemis.dart';
 
 part 'src/spaceoff/components.dart';
 part 'src/spaceoff/game_logic_systems.dart';
+part 'src/spaceoff/player_systems.dart';
 
 const int MAX_WIDTH = 800;
 const int MAX_HEIGHT = 400;
