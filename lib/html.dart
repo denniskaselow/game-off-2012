@@ -123,6 +123,7 @@ class Game {
     world.addSystem(new CameraSystem());
     world.addSystem(new BackgroundRenderSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
+    world.addSystem(new ParticleRenderSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));
     world.addSystem(new HudRenderSystem(hudContext));
     world.addSystem(new SoundSystem(audioManager));

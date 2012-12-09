@@ -161,3 +161,9 @@ class Sound extends Component {
   String clip;
   Sound(this.source, this.clip);
 }
+
+class Particle extends Component {
+  Particle.hack();
+  String color;
+  Particle(this.color);
+}

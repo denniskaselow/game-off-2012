@@ -32,3 +32,16 @@ num generateRandom(num min, num max) {
   num randomNumber = min + max * random.nextDouble();
   return randomNumber;
 }
+
+void createParticles(World world, Transform transform) {
+  for (int i = 0; i < 25; i++) {
+    Entity particle = world.createEntity();
+    particle.addComponent(new Transform(transform.x, transform.y));
+    particle.addComponent(generateRandomVelocity(0.0, 0.1));
+    particle.addComponent(new Particle("#${toHex(12 + random.nextInt(4))}${toHex(12 + random.nextInt(4))}${toHex(0 + random.nextInt(4))}"));
+    particle.addComponent(new ExpirationTimer(100 + random.nextInt(250)));
+    particle.addToWorld();
+  }
+}
+
+String toHex(int n) => n.toRadixString(16);

@@ -159,6 +159,48 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   }
 }
 
+class ParticleRenderSystem extends EntityProcessingSystem {
+  CanvasRenderingContext2D context2d;
+
+  ComponentMapper<Transform> transformMapper;
+  ComponentMapper<Particle> particleMapper;
+  CameraPosition cameraPos;
+
+  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Particle.hack().runtimeType, [new Transform.hack().runtimeType]));
+
+  void initialize() {
+    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    particleMapper = new ComponentMapper<Particle>(new Particle.hack().runtimeType, world);
+    ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    cameraPos = cameraPositionMapper.get(camera);
+  }
+
+  void processEntity(Entity e) {
+
+    Transform t = transformMapper.get(e);
+    Particle p = particleMapper.get(e);
+
+    context2d.save();
+    try {
+      if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && t.x < MAX_WIDTH) {
+        context2d.translate(UNIVERSE_WIDTH, 0);
+      }
+      if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && t.y < MAX_HEIGHT) {
+        context2d.translate(0, UNIVERSE_HEIGHT);
+      }
+      context2d.translate(t.x, t.y);
+
+      context2d.fillStyle = p.color;
+      context2d.fillRect(0, 0, 1, 1);
+    } finally {
+      context2d.restore();
+    }
+  }
+}
+
 class HudRenderSystem extends PlayerStatusProcessingSystem {
   CanvasRenderingContext2D context2d;
 

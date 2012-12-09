@@ -432,19 +432,18 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
         }
         asteroid.addToWorld();
       }
+      createParticles(world, transform);
+
       entity.deleteFromWorld();
     }
   }
 }
 
-
-
 class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
 
   ComponentMapper<Status> statusMapper;
-  ComponentMapper<DisappearsOnDestruction> splitterMapper;
 
-  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(new DisappearsOnDestruction.hack().runtimeType, [new Status.hack().runtimeType]));
+  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(new DisappearsOnDestruction.hack().runtimeType, [new Status.hack().runtimeType, new Transform.hack().runtimeType]));
 
   void initialize() {
     super.initialize();
@@ -454,7 +453,10 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper.get(entity);
     if (status.health <= 0) {
+      Transform transform = transformMapper.get(entity);
+      createParticles(world, transform);
       entity.deleteFromWorld();
     }
   }
+
 }
