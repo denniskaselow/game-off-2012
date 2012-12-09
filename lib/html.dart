@@ -31,12 +31,15 @@ class Game {
     world.addManager(tagManager);
     world.addManager(groupManager);
 
+    double scale = 0.5;
+    double playerX = random.nextDouble() * UNIVERSE_WIDTH;
+    double playerY = random.nextDouble() * UNIVERSE_HEIGHT;
+    double playerRadius = 45 * scale;
     Entity player = world.createEntity();
-    player.addComponent(new Transform(UNIVERSE_WIDTH - 100, UNIVERSE_HEIGHT - 100));
+    player.addComponent(new Transform(playerX, playerY));
     player.addComponent(new Velocity(0, 0));
-    num scale = 0.5;
     player.addComponent(new Spatial('spaceship.png', scale: 0.25));
-    player.addComponent(new CircularBody(45 * scale));
+    player.addComponent(new CircularBody(playerRadius));
     player.addComponent(new Mass(100 * scale));
     player.addComponent(new Status());
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
@@ -57,12 +60,19 @@ class Game {
     }
 
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/100; i++) {
-      Entity asteroid = world.createEntity();
-      asteroid.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-      asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
       scale = generateRandom(0.2, 0.5);
+      Entity asteroid = world.createEntity();
+      double asteroidX = random.nextDouble() * UNIVERSE_WIDTH;
+      double asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
+      double asteroidRadius = 50 * scale;
+      while (Utils.doCirclesCollide(playerX, playerY, playerRadius * 3, asteroidX, asteroidY, asteroidRadius)) {
+        asteroidX = random.nextDouble() * UNIVERSE_WIDTH;
+        asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
+      }
+      asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+      asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
       asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
-      asteroid.addComponent(new CircularBody(50 * scale));
+      asteroid.addComponent(new CircularBody(asteroidRadius));
       asteroid.addComponent(new Mass(100 * scale));
       asteroid.addComponent(new MiniMapRenderable("#333"));
       asteroid.addComponent(new Status(maxHealth : 100 * scale));
@@ -71,29 +81,11 @@ class Game {
     }
 
     for (int i = 0; i < 5; i++) {
-      Entity upgrade = world.createEntity();
-      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
-      scale = 0.2;
-      upgrade.addComponent(new Spatial('upgrade_health.png', scale: scale));
-      upgrade.addComponent(new CircularBody(50 * scale));
-      upgrade.addComponent(new Mass(100 * scale));
-      upgrade.addComponent(new MiniMapRenderable("green"));
-      upgrade.addComponent(new Upgrade(maxHealth: 20));
-      upgrade.addToWorld();
+      addUpgradeToWorld(new Upgrade("health", maxHealth: 20));
     }
 
     for (int i = 0; i < 2; i++) {
-      Entity upgrade = world.createEntity();
-      upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
-      scale = 0.2;
-      upgrade.addComponent(new Spatial('upgrade_bullets.png', scale: scale));
-      upgrade.addComponent(new CircularBody(50 * scale));
-      upgrade.addComponent(new Mass(100 * scale));
-      upgrade.addComponent(new MiniMapRenderable("green"));
-      upgrade.addComponent(new Upgrade(bullets: 1));
-      upgrade.addToWorld();
+      addUpgradeToWorld(new Upgrade("bullets", bullets: 1));
     }
 
     tagManager.register(TAG_CAMERA, camera);
@@ -121,6 +113,19 @@ class Game {
     world.process();
 
     gameLoop(16);
+  }
+
+  void addUpgradeToWorld(Upgrade upgradeComponent) {
+    double scale = 0.2;
+    Entity upgrade = world.createEntity();
+    upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
+    upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
+    upgrade.addComponent(new Spatial('upgrade_${upgradeComponent.name}.png', scale: scale));
+    upgrade.addComponent(new CircularBody(50 * scale));
+    upgrade.addComponent(new Mass(100 * scale));
+    upgrade.addComponent(new MiniMapRenderable("green"));
+    upgrade.addComponent(upgradeComponent);
+    upgrade.addToWorld();
   }
 
   void gameLoop(num time) {

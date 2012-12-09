@@ -127,9 +127,10 @@ class MiniMapRenderable extends Component {
 
 class Upgrade extends Component {
   Upgrade.hack();
+  String name;
   num maxHealth;
   num bullets;
-  Upgrade({this.maxHealth : 0, this.bullets : 0});
+  Upgrade(this.name, {this.maxHealth : 0, this.bullets : 0});
 
   void applyToStatus(Status status) {
     status.maxHealth += maxHealth;
