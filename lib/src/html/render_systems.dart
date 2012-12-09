@@ -237,7 +237,7 @@ class ImageCache {
         action(image);
         loadedImages[imageName] = image;
       });
-      image.src = "resources/${imageName}";
+      image.src = "resources/img/${imageName}";
     } else {
       action(image);
     }
