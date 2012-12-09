@@ -113,6 +113,8 @@ class CameraSystem extends VoidEntitySystem {
 }
 
 class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
+  const int MAX_BULLETS = 11;
+
   ComponentMapper<CircularBody> bodyMapper;
   ComponentMapper<Upgrade> upgradeMapper;
   Status status;
@@ -143,8 +145,13 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
 
     if (Utils.doCirclesCollide(transform.x, transform.y, body.radius, upgradeTransform.x, upgradeTransform.y, upgradeBody.radius)) {
       Upgrade upgrade = upgradeMapper.get(entity);
-      upgrade.applyToStatus(status);
-      upgrade.applyToCannon(cannon);
+
+      status.maxHealth += upgrade.healthGain;
+      if (upgrade.fillHealth) {
+        status.health = status.maxHealth;
+      }
+      cannon.amount = cannon.amount == MAX_BULLETS ? MAX_BULLETS : cannon.amount + upgrade.bullets;
+
       entity.deleteFromWorld();
     }
   }

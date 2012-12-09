@@ -53,6 +53,7 @@ class Status extends Component {
   num maxHealth;
   num maxVelocity;
   bool destroyed = false;
+  bool leaveLevel = false;
 
   Status.hack();
   Status({this.maxHealth : 100, this.maxVelocity : 20}) {
@@ -128,18 +129,10 @@ class MiniMapRenderable extends Component {
 class Upgrade extends Component {
   Upgrade.hack();
   String name;
-  num maxHealth;
+  bool fillHealth = false;
+  num healthGain;
   num bullets;
-  Upgrade(this.name, {this.maxHealth : 0, this.bullets : 0});
-
-  void applyToStatus(Status status) {
-    status.maxHealth += maxHealth;
-    status.health = status.maxHealth;
-  }
-
-  void applyToCannon(Cannon cannon) {
-    cannon.amount += bullets;
-  }
+  Upgrade(this.name, {this.healthGain : 0, this.fillHealth : false, this.bullets : 0});
 }
 
 class Damage extends Component {

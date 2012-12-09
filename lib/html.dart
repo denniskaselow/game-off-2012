@@ -17,33 +17,53 @@ class Game {
   CanvasRenderingContext2D hudContext;
   num lastTime = 0;
   World world;
+  AudioManager audioManager;
+  Status playerStatus;
+  Mass playerMass;
+  Cannon playerCannon;
+  double playerScale;
+  int currentLevel = 0;
 
   Game(this.gameCanvas, this.hudCanvas) {
     gameContext = gameCanvas.context2d;
     hudContext = hudCanvas.context2d;
+    audioManager = createAudioManager(window.location.href);
+    playerScale = 0.5;
+    playerStatus = new Status();
+    playerMass = new Mass(100 * playerScale);
+    playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
   }
 
   void start() {
-    AudioManager audioManager = createAudioManager(window.location.href);
-    world = new World();
+    world = createWorld(0);
+
+    world.initialize();
+    world.delta = 16;
+    world.process();
+
+    gameLoop(16);
+  }
+
+  World createWorld(int level) {
+    double levelMod = (1 + level/10);
+    World world = new World();
     GroupManager groupManager = new GroupManager();
     TagManager tagManager = new TagManager();
     world.addManager(tagManager);
     world.addManager(groupManager);
 
-    double scale = 0.5;
-    double playerX = random.nextDouble() * UNIVERSE_WIDTH;
-    double playerY = random.nextDouble() * UNIVERSE_HEIGHT;
-    double playerRadius = 45 * scale;
+    double playerX = UNIVERSE_WIDTH / 2;
+    double playerY = UNIVERSE_HEIGHT / 2;
+    double playerRadius = 45 * playerScale;
     Entity player = world.createEntity();
     player.addComponent(new Transform(playerX, playerY));
     player.addComponent(new Velocity(0, 0));
     player.addComponent(new Spatial('spaceship.png', scale: 0.25));
     player.addComponent(new CircularBody(playerRadius));
-    player.addComponent(new Mass(100 * scale));
-    player.addComponent(new Status());
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
-    player.addComponent(new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1));
+    player.addComponent(playerStatus);
+    player.addComponent(playerMass);
+    player.addComponent(playerCannon);
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -60,7 +80,7 @@ class Game {
     }
 
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/100; i++) {
-      scale = generateRandom(0.2, 0.5);
+      double scale = generateRandom(0.2, 0.5);
       Entity asteroid = world.createEntity();
       double asteroidX = random.nextDouble() * UNIVERSE_WIDTH;
       double asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
@@ -70,22 +90,22 @@ class Game {
         asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
       }
       asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-      asteroid.addComponent(generateRandomVelocity(0.025, 0.075));
+      asteroid.addComponent(generateRandomVelocity(0.025 * levelMod, 0.075 * levelMod));
       asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
       asteroid.addComponent(new CircularBody(asteroidRadius));
-      asteroid.addComponent(new Mass(100 * scale));
+      asteroid.addComponent(new Mass(100 * scale * levelMod));
       asteroid.addComponent(new MiniMapRenderable("#333"));
-      asteroid.addComponent(new Status(maxHealth : 100 * scale));
+      asteroid.addComponent(new Status(maxHealth : 100 * scale * levelMod));
       asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
       asteroid.addToWorld();
     }
 
     for (int i = 0; i < 5; i++) {
-      addUpgradeToWorld(new Upgrade("health", maxHealth: 20));
+      addUpgradeToWorld(world, new Upgrade("health", healthGain: 20, fillHealth: true));
     }
 
     for (int i = 0; i < 2; i++) {
-      addUpgradeToWorld(new Upgrade("bullets", bullets: 1));
+      addUpgradeToWorld(world, new Upgrade("bullets", bullets: 1));
     }
 
     tagManager.register(TAG_CAMERA, camera);
@@ -108,14 +128,10 @@ class Game {
     world.addSystem(new SoundSystem(audioManager));
     world.addSystem(new DebugSystem());
 
-    world.initialize();
-    world.delta = 16;
-    world.process();
-
-    gameLoop(16);
+    return world;
   }
 
-  void addUpgradeToWorld(Upgrade upgradeComponent) {
+  void addUpgradeToWorld(World world, Upgrade upgradeComponent) {
     double scale = 0.2;
     Entity upgrade = world.createEntity();
     upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
@@ -133,6 +149,11 @@ class Game {
     lastTime = time;
     world.process();
 
+    if (playerStatus.leaveLevel) {
+      world = createWorld(++currentLevel);
+      world.initialize();
+      playerStatus.leaveLevel = false;
+    }
     requestRedraw();
   }
 

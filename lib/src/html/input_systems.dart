@@ -1,15 +1,22 @@
 part of html;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
+  /** W. */
   const int ACCELERATE = 87;
+  /** A. */
   const int LEFT = 65;
+  /** D. */
   const int RIGHT = 68;
+  /** J. */
   const int SHOOT = 74;
+  /** L. */
+  const int LEAVE_LEVEL = 76;
 
   bool accelerate = false;
   bool turnLeft = false;
   bool turnRight = false;
   bool shoot = false;
+  bool leaveLevel = false;
 
   num targetX = 0;
   num targetY = 0;
@@ -21,7 +28,13 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   CanvasElement canvas;
 
-  PlayerControlSystem(this.canvas) : super();
+  EventListener keyDownListener;
+  EventListener keyUpListener;
+
+  PlayerControlSystem(this.canvas) : super() {
+    keyDownListener = handleKeyDown;
+    keyUpListener = handleKeyUp;
+  }
 
   void initialize() {
     super.initialize();
@@ -35,8 +48,8 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     transform = transformMapper.get(player);
     cannon = cannonMapper.get(player);
 
-    window.on.keyDown.add(handleKeyDown);
-    window.on.keyUp.add(handleKeyUp);
+    window.on.keyDown.add(keyDownListener);
+    window.on.keyUp.add(keyUpListener);
   }
 
   void processSystem() {
@@ -52,11 +65,8 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     } else if(turnRight) {
       transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
     }
-    if (shoot) {
-      cannon.shoot = true;
-    } else {
-      cannon.shoot = false;
-    }
+    cannon.shoot = shoot;
+    status.leaveLevel = leaveLevel;
   }
 
   void handleKeyDown(KeyboardEvent e) {
@@ -71,6 +81,10 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
       turnRight = true;
     } else if (keyCode == SHOOT) {
       shoot = true;
+    } else if (keyCode == LEAVE_LEVEL) {
+      leaveLevel = true;
+      window.on.keyDown.remove(keyDownListener);
+      window.on.keyUp.remove(keyUpListener);
     }
   }
 
