@@ -83,6 +83,8 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
       shoot = true;
     } else if (keyCode == LEAVE_LEVEL) {
       leaveLevel = true;
+      spatial.resource = 'spaceship.png';
+      cannon.shoot = false;
       window.on.keyDown.remove(keyDownListener);
       window.on.keyUp.remove(keyUpListener);
     }
@@ -101,5 +103,5 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     }
   }
 
-  bool checkProcessing() => status.health > 0;
+  bool checkProcessing() => status.health > 0 && !leaveLevel;
 }
