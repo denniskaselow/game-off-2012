@@ -167,3 +167,10 @@ class Particle extends Component {
   String color;
   Particle(this.color);
 }
+
+class AutoPilot extends Component {
+  AutoPilot.hack();
+  num angle;
+  num velocity;
+  AutoPilot({this.angle, this.velocity});
+}

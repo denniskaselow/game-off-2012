@@ -147,6 +147,7 @@ class Game {
     tagManager.register(TAG_PLAYER, player);
 
     world.addSystem(new PlayerControlSystem(gameCanvas));
+    world.addSystem(new AutoPilotControlSystem());
     world.addSystem(new MovementSystem());
     world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
@@ -186,12 +187,22 @@ class Game {
     world.process();
 
     if (playerStatus.leaveLevel) {
-      print("creating new world");
-      World nextWorld = createWorld(++currentLevel);
-      nextWorld.initialize();
-      playerStatus.leaveLevel = false;
+      prepareNextLevel();
     }
     requestRedraw();
+  }
+
+  void prepareNextLevel() {
+    print("creating new world");
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    Entity player = tagManager.getEntity(TAG_PLAYER);
+    player.addComponent(new AutoPilot(angle: FastMath.THREE_PI_HALVES, velocity: 1));
+    player.changedInWorld();
+
+    World nextWorld = createWorld(++currentLevel);
+    nextWorld.initialize();
+
+    playerStatus.leaveLevel = false;
   }
 
   void requestRedraw() {

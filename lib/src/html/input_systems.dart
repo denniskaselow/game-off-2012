@@ -17,6 +17,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   bool turnRight = false;
   bool shoot = false;
   bool leaveLevel = false;
+  bool stopProcessing = false;
 
   num targetX = 0;
   num targetY = 0;
@@ -66,7 +67,14 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
       transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
     }
     cannon.shoot = shoot;
-    status.leaveLevel = leaveLevel;
+    if (leaveLevel) {
+      status.leaveLevel = leaveLevel;
+      stopProcessing = true;
+      spatial.resource = 'spaceship.png';
+      cannon.shoot = false;
+      window.on.keyDown.remove(keyDownListener);
+      window.on.keyUp.remove(keyUpListener);
+    }
   }
 
   void handleKeyDown(KeyboardEvent e) {
@@ -83,10 +91,6 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
       shoot = true;
     } else if (keyCode == LEAVE_LEVEL) {
       leaveLevel = true;
-      spatial.resource = 'spaceship.png';
-      cannon.shoot = false;
-      window.on.keyDown.remove(keyDownListener);
-      window.on.keyUp.remove(keyUpListener);
     }
   }
 
@@ -103,5 +107,5 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     }
   }
 
-  bool checkProcessing() => status.health > 0 && !leaveLevel;
+  bool checkProcessing() => status.health > 0 && !stopProcessing;
 }
