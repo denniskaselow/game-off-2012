@@ -224,7 +224,7 @@ class Game {
       World nextWorld = new World();
       createWorld(nextWorld, level);
       completer.complete(nextWorld);
-    }, 5000);
+    }, 8000);
     return completer.future;
   }
 }

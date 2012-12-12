@@ -78,6 +78,7 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
   Status playerStatus;
+  double hyperspaceMod = 0.0;
 
   BackgroundRenderSystem(this.context2d);
 
@@ -116,15 +117,19 @@ class BackgroundRenderSystem extends VoidEntitySystem {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
-    context2d.setTransform(1, 0, 0, 1, 0, 0);
-    context2d.translate(-cameraPos.x, -cameraPos.y);
     if (!playerStatus.leaveLevel || playerStatus.destroyed) {
+      context2d.setTransform(1, 0, 0, 1, 0, 0);
+      context2d.translate(-cameraPos.x, -cameraPos.y);
       context2d..fillStyle = "black"
           ..beginPath()
           ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
           ..fill()
           ..stroke()
           ..closePath();
+    } else {
+      hyperspaceMod += 0.01 + hyperspaceMod * 0.005;
+      context2d.setTransform(1, 0, 0, 1+hyperspaceMod, 0, 0);
+      context2d.translate(-cameraPos.x, -cameraPos.y - (20 * hyperspaceMod));
     }
 
     context2d.save();
