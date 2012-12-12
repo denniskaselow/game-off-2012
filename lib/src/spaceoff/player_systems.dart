@@ -64,7 +64,6 @@ class AutoPilotControlSystem extends EntityProcessingSystem {
       angleDiff -= FastMath.TWO_PI;
     }
     if (angleDiff.abs() > 0.001) {
-      print("rotating ${angleDiff} = ${autoPilot.angle} - ${transform.angle}");
       transform.angle += angleDiff * 0.08;
     } else {
       Velocity velocity = velocityMapper.get(e);

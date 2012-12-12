@@ -58,6 +58,7 @@ class Game {
   Cannon playerCannon;
   double playerScale;
   int currentLevel = 0;
+  bool nextLevelIsBeingPrepared = false;
 
   Game(this.gameCanvas, this.hudCanvas) {
     gameContext = gameCanvas.context2d;
@@ -70,18 +71,18 @@ class Game {
   }
 
   void start() {
-    world = createWorld(0);
+    world = new World();
 
-    world.initialize();
+    createWorld(world, 0);
+
     world.delta = 16;
     world.process();
 
     gameLoop(16);
   }
 
-  World createWorld(int level) {
+  void createWorld(World world, int level) {
     double levelMod = (1 + level/10);
-    World world = new World();
     GroupManager groupManager = new GroupManager();
     TagManager tagManager = new TagManager();
     world.addManager(tagManager);
@@ -165,7 +166,7 @@ class Game {
     world.addSystem(new SoundSystem(audioManager));
     world.addSystem(new DebugSystem());
 
-    return world;
+    world.initialize();
   }
 
   void addUpgradeToWorld(World world, Upgrade upgradeComponent) {
@@ -186,29 +187,49 @@ class Game {
     lastTime = time;
     world.process();
 
-    if (playerStatus.leaveLevel) {
+    if (playerStatus.leaveLevel && !nextLevelIsBeingPrepared) {
       prepareNextLevel();
     }
     requestRedraw();
   }
 
   void prepareNextLevel() {
-    print("creating new world");
+    nextLevelIsBeingPrepared = true;
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
     Entity player = tagManager.getEntity(TAG_PLAYER);
-    player.addComponent(new AutoPilot(angle: FastMath.THREE_PI_HALVES, velocity: 1));
+    player.addComponent(new AutoPilot(angle: FastMath.THREE_PI_HALVES, velocity: 0.7));
     player.changedInWorld();
 
-    World nextWorld = createWorld(++currentLevel);
-    nextWorld.initialize();
-
-    playerStatus.leaveLevel = false;
+    Future<World> nextWorldFuture = createAndInitWorld(++currentLevel);
+    nextWorldFuture.then((nextWorld) {
+      if (!playerStatus.destroyed) {
+        world = nextWorld;
+        tagManager = world.getManager(new TagManager().runtimeType);
+        player = tagManager.getEntity(TAG_PLAYER);
+        player.removeComponent(new AutoPilot.hack());
+        player.changedInWorld();
+        playerStatus.leaveLevel = false;
+        nextLevelIsBeingPrepared = false;
+      }
+    });
   }
 
   void requestRedraw() {
     window.requestAnimationFrame(gameLoop);
   }
+
+  Future<World> createAndInitWorld(int level) {
+    Completer<World> completer = new Completer<World>();
+    window.setTimeout(() {
+      World nextWorld = new World();
+      createWorld(nextWorld, level);
+      completer.complete(nextWorld);
+    }, 5000);
+    return completer.future;
+  }
 }
+
+
 
 AudioManager createAudioManager(String location) {
   try {

@@ -77,12 +77,16 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   CanvasRenderingContext2D context2d;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
+  Status playerStatus;
 
   BackgroundRenderSystem(this.context2d);
 
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
+    Entity player = tagManager.getEntity(TAG_PLAYER);
+    var statusMapper = new ComponentMapper(new Status.hack().runtimeType, world);
+    playerStatus = statusMapper.get(player);
     initBackground();
   }
 
@@ -114,12 +118,14 @@ class BackgroundRenderSystem extends VoidEntitySystem {
 
     context2d.setTransform(1, 0, 0, 1, 0, 0);
     context2d.translate(-cameraPos.x, -cameraPos.y);
-    context2d..fillStyle = "black"
-        ..beginPath()
-        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
-        ..fill()
-        ..stroke()
-        ..closePath();
+    if (!playerStatus.leaveLevel || playerStatus.destroyed) {
+      context2d..fillStyle = "black"
+          ..beginPath()
+          ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+          ..fill()
+          ..stroke()
+          ..closePath();
+    }
 
     context2d.save();
     try {
