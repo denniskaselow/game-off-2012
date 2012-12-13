@@ -128,8 +128,21 @@ class BackgroundRenderSystem extends VoidEntitySystem {
           ..closePath();
     } else {
       hyperspaceMod += 0.01 + hyperspaceMod * 0.005;
-      context2d.setTransform(1, 0, 0, 1+hyperspaceMod, 0, 0);
-      context2d.translate(-cameraPos.x, -cameraPos.y - (20 * hyperspaceMod));
+      if (hyperspaceMod > 0.5) {
+        double stretch = hyperspaceMod - 0.5;
+        context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
+        context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+      }
+      if (hyperspaceMod < 0.5) {
+        context2d.setTransform(1, 0, 0, 1, 0, 0);
+        context2d.translate(-cameraPos.x, -cameraPos.y);
+        context2d..fillStyle = "black"
+            ..beginPath()
+            ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+            ..fill()
+            ..stroke()
+            ..closePath();
+      }
     }
 
     context2d.save();
