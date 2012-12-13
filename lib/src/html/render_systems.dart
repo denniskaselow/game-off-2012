@@ -98,30 +98,47 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
         ..closePath();
   }
 
-  bool checkProcessing() => !status.leaveLevel || status.destroyed;
+  bool checkProcessing() => (!status.leaveLevel && !status.enterLevel) || status.destroyed;
 }
 
 class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem {
-  double hyperspaceMod = 0.0;
+  HyperDrive hyperDrive;
 
   HyperSpaceBackgroundRenderSystem(context2d) : super(context2d);
+
+  void initialize() {
+    super.initialize();
+    var hdMapper = new ComponentMapper<HyperDrive>(new HyperDrive.hack().runtimeType, world);
+    hyperDrive = hdMapper.get(player);
+  }
 
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    hyperspaceMod += 0.01 + hyperspaceMod * 0.005;
-    if (hyperspaceMod > 0.5) {
-      double stretch = hyperspaceMod - 0.5;
-      context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
-      context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+    if (status.leaveLevel) {
+      hyperDrive.hyperSpaceMod += 0.01 + hyperDrive.hyperSpaceMod * 0.005;
+      if (hyperDrive.hyperSpaceMod > 0.5) {
+        double stretch = hyperDrive.hyperSpaceMod - 0.5;
+        context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
+        context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+      }
+    } else {
+      hyperDrive.hyperSpaceMod -= 0.01 + hyperDrive.hyperSpaceMod * 0.005;
+      if (hyperDrive.hyperSpaceMod > 0.5) {
+        double stretch = hyperDrive.hyperSpaceMod - 0.5;
+        context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
+        context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+      }
+      if (hyperDrive.hyperSpaceMod < 0.001) {
+        status.enterLevel = false;
+      }
     }
-    if (hyperspaceMod < 0.5) {
+    if (hyperDrive.hyperSpaceMod < 0.5) {
       renderNormalSpace(cameraPos);
     }
   }
 
-  bool checkProcessing() => status.leaveLevel && !status.destroyed;
+  bool checkProcessing() => (status.enterLevel || status.leaveLevel) && !status.destroyed;
 }
 
 class BackgroundStarsRenderingSystem extends VoidEntitySystem {

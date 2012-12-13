@@ -17,7 +17,6 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   bool turnRight = false;
   bool shoot = false;
   bool leaveLevel = false;
-  bool stopProcessing = false;
 
   num targetX = 0;
   num targetY = 0;
@@ -69,7 +68,6 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     cannon.shoot = shoot;
     if (leaveLevel) {
       status.leaveLevel = leaveLevel;
-      stopProcessing = true;
       spatial.resource = 'spaceship.png';
       cannon.shoot = false;
       window.on.keyDown.remove(keyDownListener);
@@ -107,5 +105,5 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     }
   }
 
-  bool checkProcessing() => status.health > 0 && !stopProcessing;
+  bool checkProcessing() => status.health > 0 && !status.leaveLevel && !status.enterLevel;
 }

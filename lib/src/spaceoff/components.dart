@@ -54,6 +54,7 @@ class Status extends Component {
   num maxVelocity;
   bool destroyed = false;
   bool leaveLevel = false;
+  bool enterLevel = false;
 
   Status.hack();
   Status({this.maxHealth : 100, this.maxVelocity : 20}) {
@@ -173,4 +174,10 @@ class AutoPilot extends Component {
   num angle;
   num velocity;
   AutoPilot({this.angle, this.velocity});
+}
+
+class HyperDrive extends Component {
+  HyperDrive.hack();
+  double hyperSpaceMod = 0.0;
+  HyperDrive();
 }

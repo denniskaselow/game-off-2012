@@ -56,6 +56,7 @@ class Game {
   Status playerStatus;
   Mass playerMass;
   Cannon playerCannon;
+  HyperDrive playerHyperDrive;
   double playerScale;
   int currentLevel = 0;
   bool nextLevelIsBeingPrepared = false;
@@ -68,6 +69,7 @@ class Game {
     playerStatus = new Status();
     playerMass = new Mass(100 * playerScale);
     playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
+    playerHyperDrive = new HyperDrive();
   }
 
   void start() {
@@ -100,6 +102,7 @@ class Game {
     player.addComponent(playerStatus);
     player.addComponent(playerMass);
     player.addComponent(playerCannon);
+    player.addComponent(playerHyperDrive);
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -211,6 +214,7 @@ class Game {
         player.removeComponent(new AutoPilot.hack());
         player.changedInWorld();
         playerStatus.leaveLevel = false;
+        playerStatus.enterLevel = true;
         nextLevelIsBeingPrepared = false;
       }
     });
