@@ -2,12 +2,13 @@ part of spaceoff;
 
 abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
 
+  TagManager tagManager;
   Entity player;
   Status status;
 
   void initialize() {
     var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
-    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    tagManager = world.getManager(new TagManager().runtimeType);
     player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
   }

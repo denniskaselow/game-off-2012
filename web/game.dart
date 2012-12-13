@@ -158,7 +158,9 @@ class Game {
     world.addSystem(new PlayerDestructionSystem());
     world.addSystem(new ExpirationSystem());
     world.addSystem(new CameraSystem());
-    world.addSystem(new BackgroundRenderSystem(gameContext));
+    world.addSystem(new NormalSpaceBackgroundRenderSystem(gameContext));
+    world.addSystem(new HyperSpaceBackgroundRenderSystem(gameContext));
+    world.addSystem(new BackgroundStarsRenderingSystem(gameContext));
     world.addSystem(new SpatialRenderingSystem(gameContext));
     world.addSystem(new ParticleRenderSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));

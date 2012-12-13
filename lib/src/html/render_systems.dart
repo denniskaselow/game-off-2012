@@ -69,7 +69,62 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   }
 }
 
-class BackgroundRenderSystem extends VoidEntitySystem {
+class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
+  CanvasRenderingContext2D context2d;
+  ComponentMapper<CameraPosition> cameraPositionMapper;
+
+  NormalSpaceBackgroundRenderSystem(this.context2d);
+
+  void initialize() {
+    super.initialize();
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+  }
+
+  void processSystem() {
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+
+    renderNormalSpace(cameraPos);
+  }
+
+  void renderNormalSpace(CameraPosition cameraPos) {
+    context2d.setTransform(1, 0, 0, 1, 0, 0);
+    context2d.translate(-cameraPos.x, -cameraPos.y);
+    context2d..fillStyle = "black"
+        ..beginPath()
+        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+        ..fill()
+        ..stroke()
+        ..closePath();
+  }
+
+  bool checkProcessing() => !status.leaveLevel || status.destroyed;
+}
+
+class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem {
+  double hyperspaceMod = 0.0;
+
+  HyperSpaceBackgroundRenderSystem(context2d) : super(context2d);
+
+  void processSystem() {
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+
+    hyperspaceMod += 0.01 + hyperspaceMod * 0.005;
+    if (hyperspaceMod > 0.5) {
+      double stretch = hyperspaceMod - 0.5;
+      context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
+      context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+    }
+    if (hyperspaceMod < 0.5) {
+      renderNormalSpace(cameraPos);
+    }
+  }
+
+  bool checkProcessing() => status.leaveLevel && !status.destroyed;
+}
+
+class BackgroundStarsRenderingSystem extends VoidEntitySystem {
   const int OVERLAP_WIDTH = 50;
   const int OVERLAP_HEIGHT = 50;
 
@@ -77,17 +132,12 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   CanvasRenderingContext2D context2d;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
-  Status playerStatus;
-  double hyperspaceMod = 0.0;
 
-  BackgroundRenderSystem(this.context2d);
+  BackgroundStarsRenderingSystem(this.context2d);
 
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
     tagManager = world.getManager(new TagManager().runtimeType);
-    Entity player = tagManager.getEntity(TAG_PLAYER);
-    var statusMapper = new ComponentMapper(new Status.hack().runtimeType, world);
-    playerStatus = statusMapper.get(player);
     initBackground();
   }
 
@@ -116,34 +166,6 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    if (!playerStatus.leaveLevel || playerStatus.destroyed) {
-      context2d.setTransform(1, 0, 0, 1, 0, 0);
-      context2d.translate(-cameraPos.x, -cameraPos.y);
-      context2d..fillStyle = "black"
-          ..beginPath()
-          ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
-          ..fill()
-          ..stroke()
-          ..closePath();
-    } else {
-      hyperspaceMod += 0.01 + hyperspaceMod * 0.005;
-      if (hyperspaceMod > 0.5) {
-        double stretch = hyperspaceMod - 0.5;
-        context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
-        context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
-      }
-      if (hyperspaceMod < 0.5) {
-        context2d.setTransform(1, 0, 0, 1, 0, 0);
-        context2d.translate(-cameraPos.x, -cameraPos.y);
-        context2d..fillStyle = "black"
-            ..beginPath()
-            ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
-            ..fill()
-            ..stroke()
-            ..closePath();
-      }
-    }
 
     context2d.save();
     try {
