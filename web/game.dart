@@ -249,8 +249,10 @@ AudioManager createAudioManager(String location) {
     AudioSource source = audioManager.makeSource('non-positional');
     source.positional = false;
 
-    AudioClip clip = audioManager.makeClip('shoot_sound', 'resources/sfx/shoot.ogg');
+    AudioClip clip = audioManager.makeClip('shoot', 'resources/sfx/shoot.ogg');
     clip.load();
+//    clip = audioManager.makeClip('hyperspace', 'resources/sfx/hyperspace.ogg');
+//    clip.load();
 
     return audioManager;
   } catch (e) {

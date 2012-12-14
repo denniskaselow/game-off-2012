@@ -103,6 +103,7 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
 
 class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem {
   HyperDrive hyperDrive;
+  bool inHyperSpace = false;
 
   HyperSpaceBackgroundRenderSystem(context2d) : super(context2d);
 
@@ -115,25 +116,30 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
+
+    double stretch;
     if (status.leaveLevel) {
       hyperDrive.hyperSpaceMod += 0.01 + hyperDrive.hyperSpaceMod * 0.005;
-      if (hyperDrive.hyperSpaceMod > 0.5) {
-        double stretch = hyperDrive.hyperSpaceMod - 0.5;
-        context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
-        context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
-      }
     } else {
       hyperDrive.hyperSpaceMod -= 0.01 + hyperDrive.hyperSpaceMod * 0.005;
-      if (hyperDrive.hyperSpaceMod > 0.5) {
-        double stretch = hyperDrive.hyperSpaceMod - 0.5;
-        context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
-        context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
-      }
       if (hyperDrive.hyperSpaceMod < 0.001) {
         status.enterLevel = false;
       }
     }
-    if (hyperDrive.hyperSpaceMod < 0.5) {
+    if (hyperDrive.hyperSpaceMod > 0.5) {
+      if (!inHyperSpace && status.leaveLevel) {
+        // TODO everything that's not rendering related has to go somewhere else
+//        player.addComponent(new Sound('non-positional', 'hyperspace'));
+//        player.changedInWorld();
+        inHyperSpace = true;
+      }
+      stretch = hyperDrive.hyperSpaceMod - 0.5;
+      context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
+      context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+    } else {
+      if (inHyperSpace) {
+        inHyperSpace = false;
+      }
       renderNormalSpace(cameraPos);
     }
   }

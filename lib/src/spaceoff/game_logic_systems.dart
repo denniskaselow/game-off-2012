@@ -335,7 +335,7 @@ class BulletSpawningSystem extends EntityProcessingSystem {
       bullet.addComponent(new Spatial('bullet_dummy.png'));
       bullet.addComponent(new ExpirationTimer(2500));
       bullet.addComponent(new Damage(cannon.bulletDamage));
-      bullet.addComponent(new Sound('non-positional', 'shoot_sound'));
+      bullet.addComponent(new Sound('non-positional', 'shoot'));
       bullet.addToWorld();
     }
 
