@@ -407,7 +407,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       Velocity velocity = velocityMapper.get(entity);
       CircularBody body = bodyMapper.get(entity);
       Spatial spatial = spatialMapper.get(entity);
-      num volume = PI * body.radius * body.radius;
+      num area = PI * body.radius * body.radius;
 
       num anglePerPart = 2 * PI / splitter.parts;
       num sqrtparts = sqrt(splitter.parts);
@@ -432,7 +432,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
         }
         asteroid.addToWorld();
       }
-      createParticles(world, transform);
+      createParticles(world, transform, body.radius, 20 * sqrt(area).toInt());
 
       entity.deleteFromWorld();
     }
@@ -442,19 +442,22 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
 class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
 
   ComponentMapper<Status> statusMapper;
+  ComponentMapper<CircularBody> bodyMapper;
 
-  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(new DisappearsOnDestruction.hack().runtimeType, [new Status.hack().runtimeType, new Transform.hack().runtimeType]));
+  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(new DisappearsOnDestruction.hack().runtimeType, [new Status.hack().runtimeType, new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
 
   void initialize() {
     super.initialize();
     statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
   }
 
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper.get(entity);
     if (status.health <= 0) {
       Transform transform = transformMapper.get(entity);
-      createParticles(world, transform);
+      CircularBody body = bodyMapper.get(entity);
+      createParticles(world, transform, body.radius, (PI * body.radius * body.radius).toInt());
       entity.deleteFromWorld();
     }
   }

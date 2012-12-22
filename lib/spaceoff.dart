@@ -33,15 +33,15 @@ num generateRandom(num min, num max) {
   return randomNumber;
 }
 
-void createParticles(World world, Transform transform) {
-  for (int i = 0; i < 25; i++) {
+void createParticles(World world, Transform transform, num radius, int amount) {
+  for (int i = 0; i < amount; i++) {
     Entity particle = world.createEntity();
-    particle.addComponent(new Transform(transform.x, transform.y));
+    double offsetX = random.nextDouble() * radius * TrigUtil.sin(FastMath.TWO_PI * random.nextDouble());
+    double offsetY = random.nextDouble() * radius * TrigUtil.sin(FastMath.TWO_PI * random.nextDouble());
+    particle.addComponent(new Transform(transform.x + offsetX, transform.y + offsetY));
     particle.addComponent(generateRandomVelocity(0.0, 0.1));
-    particle.addComponent(new Particle("#${toHex(12 + random.nextInt(4))}${toHex(12 + random.nextInt(4))}${toHex(0 + random.nextInt(4))}"));
+    particle.addComponent(new Particle("grey"));
     particle.addComponent(new ExpirationTimer(100 + random.nextInt(250)));
     particle.addToWorld();
   }
 }
-
-String toHex(int n) => n.toRadixString(16);
