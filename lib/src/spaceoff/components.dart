@@ -1,7 +1,8 @@
 part of spaceoff;
 
 class Transform extends Component {
-  Transform.hack();
+  static Type get type => new Transform._hack().runtimeType;
+  Transform._hack();
   num _x, _y, angle, rotationRate;
   Transform(num x, num y, {this.angle : 0, this.rotationRate : 0}) : _x = x % UNIVERSE_WIDTH, _y = y % UNIVERSE_HEIGHT;
   num get x => _x;
@@ -11,19 +12,21 @@ class Transform extends Component {
 }
 
 class CameraPosition extends Transform {
-  CameraPosition.hack() : super.hack();
+  static Type get type => new CameraPosition._hack().runtimeType;
+  CameraPosition._hack() : super._hack();
   CameraPosition({num x: 0, num y: 0}) : super(x, y);
 }
 
 class Velocity extends Component {
-  Velocity.hack();
+  static Type get type => new Velocity._hack().runtimeType;
+  Velocity._hack();
   num x, y;
   Velocity(this.x, this.y);
 }
 
 class Spatial extends Component {
-
-  Spatial.hack();
+  static Type get type => new Spatial._hack().runtimeType;
+  Spatial._hack();
 
   String resource;
   bool isSprite;
@@ -44,11 +47,13 @@ class Spatial extends Component {
 }
 
 class Background extends Component {
-  Background.hack();
+  static Type get type => new Background._hack().runtimeType;
+  Background._hack();
   Background();
 }
 
 class Status extends Component {
+  static Type get type => new Status._hack().runtimeType;
   num health;
   num maxHealth;
   num maxVelocity;
@@ -56,28 +61,31 @@ class Status extends Component {
   bool leaveLevel = false;
   bool enterLevel = false;
 
-  Status.hack();
+  Status._hack();
   Status({this.maxHealth : 100, this.maxVelocity : 20}) {
     health = maxHealth;
   }
 }
 
 class CircularBody extends Component {
+  static Type get type => new CircularBody._hack().runtimeType;
   num radius;
 
-  CircularBody.hack();
+  CircularBody._hack();
   CircularBody(this.radius);
 }
 
 class Mass extends Component {
+  static Type get type => new Mass._hack().runtimeType;
   num value;
 
-  Mass.hack();
+  Mass._hack();
   Mass(this.value);
 }
 
 class Cannon extends Component {
-  Cannon.hack() : cooldownTime = 0;
+  static Type get type => new Cannon._hack().runtimeType;
+  Cannon._hack() : cooldownTime = 0;
 
   bool shoot = false;
   num cooldownTimer = 0;
@@ -100,7 +108,8 @@ class Cannon extends Component {
 }
 
 class ExpirationTimer extends Component {
-  ExpirationTimer.hack() : maxTime = 0;
+  static Type get type => new ExpirationTimer._hack().runtimeType;
+  ExpirationTimer._hack() : maxTime = 0;
 
   final num maxTime;
   num timeLeft;
@@ -121,14 +130,16 @@ class ExpirationTimer extends Component {
 }
 
 class MiniMapRenderable extends Component {
-  MiniMapRenderable.hack();
+  static Type get type => new MiniMapRenderable._hack().runtimeType;
+  MiniMapRenderable._hack();
 
   String color;
   MiniMapRenderable(this.color);
 }
 
 class Upgrade extends Component {
-  Upgrade.hack();
+  static Type get type => new Upgrade._hack().runtimeType;
+  Upgrade._hack();
   String name;
   bool fillHealth = false;
   num healthGain;
@@ -137,7 +148,8 @@ class Upgrade extends Component {
 }
 
 class Damage extends Component {
-  Damage.hack();
+  static Type get type => new Damage._hack().runtimeType;
+  Damage._hack();
   num value;
   num maxValue;
   Damage(this.maxValue) {
@@ -146,38 +158,44 @@ class Damage extends Component {
 }
 
 class SplitsOnDestruction extends Component {
-  SplitsOnDestruction.hack();
+  static Type get type => new SplitsOnDestruction._hack().runtimeType;
+  SplitsOnDestruction._hack();
   int parts;
   SplitsOnDestruction(this.parts);
 }
 
 class DisappearsOnDestruction extends Component {
-  DisappearsOnDestruction.hack();
+  static Type get type => new DisappearsOnDestruction._hack().runtimeType;
+  DisappearsOnDestruction._hack();
   DisappearsOnDestruction();
 }
 
 class Sound extends Component {
-  Sound.hack();
+  static Type get type => new Sound._hack().runtimeType;
+  Sound._hack();
   String source;
   String clip;
   Sound(this.source, this.clip);
 }
 
 class Particle extends Component {
-  Particle.hack();
+  static Type get type => new Particle._hack().runtimeType;
+  Particle._hack();
   String color;
   Particle(this.color);
 }
 
 class AutoPilot extends Component {
-  AutoPilot.hack();
+  static Type get type => new AutoPilot._hack().runtimeType; 
+  AutoPilot._hack();
   num angle;
   num velocity;
   AutoPilot({this.angle, this.velocity});
 }
 
 class HyperDrive extends Component {
-  HyperDrive.hack();
+  static Type get type => new HyperDrive._hack().runtimeType; 
+  HyperDrive._hack();
   double hyperSpaceMod = 0.0;
   HyperDrive();
 }

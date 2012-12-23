@@ -7,7 +7,7 @@ abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
   Status status;
 
   void initialize() {
-    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    var statusMapper = new ComponentMapper<Status>(Status.type, world);
     tagManager = world.getManager(new TagManager().runtimeType);
     player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
@@ -21,9 +21,9 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
-    var transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    var spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    var transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    var spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
     cannon = cannonMapper.get(player);
     transform = transformMapper.get(player);
     spatial = spatialMapper.get(player);
@@ -35,7 +35,7 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
       status.destroyed = true;
       spatial.resource = 'spaceship.png';
       transform.rotationRate = 0.1;
-      player.removeComponent(new AutoPilot.hack());
+      player.removeComponent(new AutoPilot._hack());
       player.changedInWorld();
     }
   }
@@ -48,12 +48,12 @@ class AutoPilotControlSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf(new AutoPilot.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType]));
+  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf(AutoPilot.type, [Transform.type, Velocity.type]));
 
   void initialize() {
-    autoPilotMapper = new ComponentMapper<AutoPilot>(new AutoPilot.hack().runtimeType, world);
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot.type, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
   }
 
   void processEntity(Entity e) {

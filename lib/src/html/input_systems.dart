@@ -38,10 +38,10 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    ComponentMapper<Velocity> velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    ComponentMapper<Cannon> cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
-    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+    ComponentMapper<Velocity> velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    ComponentMapper<Cannon> cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
 
     spatial = spatialMapper.get(player);
     velocity = velocityMapper.get(player);

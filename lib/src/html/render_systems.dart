@@ -7,12 +7,12 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Spatial.hack().runtimeType,[new Transform.hack().runtimeType]).exclude(new Background.hack().runtimeType));
+  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(Spatial.type,[Transform.type]).exclude(Background.type));
 
   void initialize() {
     super.initialize();
-    spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
-    timerMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
+    spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    timerMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer.type, world);
   }
 
   void begin() {
@@ -77,7 +77,7 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
   }
 
   void processSystem() {
@@ -109,7 +109,7 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
 
   void initialize() {
     super.initialize();
-    var hdMapper = new ComponentMapper<HyperDrive>(new HyperDrive.hack().runtimeType, world);
+    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
     hyperDrive = hdMapper.get(player);
   }
 
@@ -159,15 +159,15 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
   BackgroundStarsRenderingSystem(this.context2d);
 
   void initialize() {
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
     tagManager = world.getManager(new TagManager().runtimeType);
     initBackground();
   }
 
   void initBackground() {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
-    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
-    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform.type, world);
     bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
     var bgContext = bgCanvas.context2d;
 
@@ -235,12 +235,12 @@ class ParticleRenderSystem extends EntityProcessingSystem {
   ComponentMapper<Particle> particleMapper;
   CameraPosition cameraPos;
 
-  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Particle.hack().runtimeType, [new Transform.hack().runtimeType]));
+  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(Particle.type, [Transform.type]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    particleMapper = new ComponentMapper<Particle>(new Particle.hack().runtimeType, world);
-    ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    particleMapper = new ComponentMapper<Particle>(Particle.type, world);
+    ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
 
     Entity camera = tagManager.getEntity(TAG_CAMERA);
@@ -301,12 +301,12 @@ class MiniMapRenderSystem extends EntitySystem {
   ComponentMapper<MiniMapRenderable> renderableMapper;
   ComponentMapper<CircularBody> bodyMapper;
 
-  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(new MiniMapRenderable.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
+  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(MiniMapRenderable.type, [Transform.type, CircularBody.type]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    renderableMapper = new ComponentMapper<MiniMapRenderable>(new MiniMapRenderable.hack().runtimeType, world);
-    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    renderableMapper = new ComponentMapper<MiniMapRenderable>(MiniMapRenderable.type, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
   }
 
   void processEntities(ImmutableBag<Entity> entities) {
