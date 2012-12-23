@@ -21,10 +21,10 @@ final Random random = new Random();
 
 
 Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
-  num velx = generateRandom(minSpeed, maxSpeed);
-  velx = velx * (random.nextBool() ? 1 : -1);
-  num vely = generateRandom(minSpeed, maxSpeed);
-  vely = vely * (random.nextBool() ? 1 : -1);
+  num vel = generateRandom(minSpeed, maxSpeed);
+  num angle = generateRandom(0, FastMath.TWO_PI);
+  num velx = vel * TrigUtil.sin(angle);
+  num vely = vel * TrigUtil.cos(angle);
   return new Velocity(velx, vely);
 }
 
@@ -41,7 +41,7 @@ void createParticles(World world, Transform transform, num radius, int amount) {
     particle.addComponent(new Transform(transform.x + offsetX, transform.y + offsetY));
     particle.addComponent(generateRandomVelocity(0.0, 0.1));
     particle.addComponent(new Particle("grey"));
-    particle.addComponent(new ExpirationTimer(100 + random.nextInt(250)));
+    particle.addComponent(new ExpirationTimer(250 + random.nextInt(500)));
     particle.addToWorld();
   }
 }
