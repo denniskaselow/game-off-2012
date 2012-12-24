@@ -22,6 +22,8 @@ class Velocity extends Component {
   Velocity._hack();
   num x, y;
   Velocity(this.x, this.y);
+  double get absolute => FastMath.sqrt(x * x + y * y);
+  double get angle => atan2(y, x);
 }
 
 class Spatial extends Component {

@@ -412,13 +412,15 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       num anglePerPart = 2 * PI / splitter.parts;
       num sqrtparts = sqrt(splitter.parts);
       num radius = body.radius / sqrtparts;
-      num spread = (2 * PI / 3) / ((splitter.parts - 1) * anglePerPart);
+      num spread = (1 * PI / 6) / ((splitter.parts - 1));
+      num directionAngle = velocity.angle - PI/12;
+      num absVelocity = velocity.absolute;
+      num distanceToCenter = 5 + sin((180-anglePerPart)/2) * radius / sin(anglePerPart);
       for (int i = 0; i < splitter.parts; i++) {
         num angle = i * anglePerPart;
         Entity asteroid = world.createEntity();
-        asteroid.addComponent(new Transform(transform.x + body.radius * sin(angle), transform.y + body.radius * cos(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-        double changeOfVelocity = sin(PI/6 + angle * spread);
-        asteroid.addComponent(new Velocity(velocity.x * changeOfVelocity, velocity.y * changeOfVelocity));
+        asteroid.addComponent(new Transform(transform.x + distanceToCenter * cos(angle), transform.y + distanceToCenter * sin(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+        asteroid.addComponent(new Velocity(absVelocity * TrigUtil.cos(directionAngle + spread * i), absVelocity * TrigUtil.sin(directionAngle + spread * i)));
         num scale = generateRandom(0.2, 0.5);
         asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrtparts));
         asteroid.addComponent(new Mass(mass.value / splitter.parts));
