@@ -136,6 +136,15 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
       stretch = hyperDrive.hyperSpaceMod - 0.5;
       context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
       context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
+      
+      context2d.globalAlpha = 0.05;
+      context2d..fillStyle = "black"
+          ..beginPath()
+          ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+          ..fill()
+          ..stroke()
+          ..closePath();
+      context2d.globalAlpha = 1;
     } else {
       if (inHyperSpace) {
         inHyperSpace = false;
