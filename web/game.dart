@@ -211,7 +211,7 @@ class Game {
         world = nextWorld;
         tagManager = world.getManager(new TagManager().runtimeType);
         player = tagManager.getEntity(TAG_PLAYER);
-        player.removeComponent(new AutoPilot.hack());
+        player.removeComponent(new AutoPilot());
         player.changedInWorld();
         playerStatus.leaveLevel = false;
         playerStatus.enterLevel = true;
