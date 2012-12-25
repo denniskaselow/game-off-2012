@@ -414,8 +414,14 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       num radius = body.radius / sqrtparts;
       num spread = (1 * PI / 6) / ((splitter.parts - 1));
       num directionAngle = velocity.angle - PI/12;
-      num absVelocity = velocity.absolute;
-      num distanceToCenter = 5 + sin((180-anglePerPart)/2) * radius / sin(anglePerPart);
+      num absVelocity = velocity.absolute;      
+      num distanceToCenter;
+      if (splitter.parts == 2) {
+        distanceToCenter = radius;
+      } else {
+        distanceToCenter = sin((180-anglePerPart)/2) * radius / sin(anglePerPart);        
+      }
+      distanceToCenter += 10;
       for (int i = 0; i < splitter.parts; i++) {
         num angle = i * anglePerPart;
         Entity asteroid = world.createEntity();
