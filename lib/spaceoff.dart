@@ -33,13 +33,16 @@ num generateRandom(num min, num max) {
   return randomNumber;
 }
 
-void createParticles(World world, Transform transform, num radius, int amount) {
+void createParticles(World world, Transform transform, num radius, int amount, Velocity velocity) {
   for (int i = 0; i < amount; i++) {
     Entity particle = world.createEntity();
     double offsetX = random.nextDouble() * radius * TrigUtil.sin(FastMath.TWO_PI * random.nextDouble());
     double offsetY = random.nextDouble() * radius * TrigUtil.sin(FastMath.TWO_PI * random.nextDouble());
+    Velocity particleVelocity = generateRandomVelocity(0, velocity.absolute/2);
+    particleVelocity.x += velocity.x;
+    particleVelocity.y += velocity.y;
     particle.addComponent(new Transform(transform.x + offsetX, transform.y + offsetY));
-    particle.addComponent(generateRandomVelocity(0.0, 0.1));
+    particle.addComponent(particleVelocity);
     particle.addComponent(new Particle("grey"));
     particle.addComponent(new ExpirationTimer(250 + random.nextInt(500)));
     particle.addToWorld();

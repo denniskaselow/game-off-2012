@@ -434,7 +434,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
         }
         asteroid.addToWorld();
       }
-      createParticles(world, transform, body.radius, 20 * sqrt(area).toInt());
+      createParticles(world, transform, body.radius, 20 * sqrt(area).toInt(), velocity);
 
       entity.deleteFromWorld();
     }
@@ -445,13 +445,15 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
 
   ComponentMapper<Status> statusMapper;
   ComponentMapper<CircularBody> bodyMapper;
+  ComponentMapper<Velocity> velocityMapper;
 
-  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(DisappearsOnDestruction.type, [Status.type, Transform.type, CircularBody.type]));
+  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(DisappearsOnDestruction.type, [Status.type, Transform.type, CircularBody.type, Velocity.type]));
 
   void initialize() {
     super.initialize();
     statusMapper = new ComponentMapper<Status>(Status.type, world);
     bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -459,7 +461,8 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
     if (status.health <= 0) {
       Transform transform = transformMapper.get(entity);
       CircularBody body = bodyMapper.get(entity);
-      createParticles(world, transform, body.radius, (PI * body.radius * body.radius).toInt());
+      Velocity vel = velocityMapper.get(entity);
+      createParticles(world, transform, body.radius, (PI * body.radius * body.radius).toInt(), vel);
       entity.deleteFromWorld();
     }
   }

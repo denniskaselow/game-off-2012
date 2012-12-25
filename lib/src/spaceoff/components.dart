@@ -21,7 +21,7 @@ class Velocity extends Component {
   static Type get type => new Velocity._hack().runtimeType;
   Velocity._hack();
   num x, y;
-  Velocity(this.x, this.y);
+  Velocity(this.x, this.y);  
   double get absolute => FastMath.sqrt(x * x + y * y);
   double get angle => atan2(y, x);
 }
