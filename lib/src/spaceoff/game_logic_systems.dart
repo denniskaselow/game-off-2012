@@ -121,6 +121,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Transform transform;
   CircularBody body;
   Cannon cannon;
+  HyperDrive hyperDrive;
 
   UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(Upgrade.type, [Transform.type, CircularBody.type]));
 
@@ -129,6 +130,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
     upgradeMapper = new ComponentMapper<Upgrade>(Upgrade.type, world);
     var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
 
     var statusMapper = new ComponentMapper<Status>(Status.type, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
@@ -137,6 +139,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     transform = transformMapper.get(player);
     body = bodyMapper.get(player);
     cannon = cannonMapper.get(player);
+    hyperDrive = hyperDriveMapper.get(player);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -151,6 +154,9 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
         status.health = status.maxHealth;
       }
       cannon.amount = cannon.amount == MAX_BULLETS ? MAX_BULLETS : cannon.amount + upgrade.bullets;
+      if (upgrade.enableHyperDrive) {
+        hyperDrive.enabled = true;
+      }
 
       entity.deleteFromWorld();
     }

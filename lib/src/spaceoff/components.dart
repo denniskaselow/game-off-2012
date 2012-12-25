@@ -143,10 +143,11 @@ class Upgrade extends Component {
   static Type get type => new Upgrade._hack().runtimeType;
   Upgrade._hack();
   String name;
-  bool fillHealth = false;
+  bool fillHealth;
+  bool enableHyperDrive;
   num healthGain;
   num bullets;
-  Upgrade(this.name, {this.healthGain : 0, this.fillHealth : false, this.bullets : 0});
+  Upgrade(this.name, {this.healthGain : 0, this.fillHealth : false, this.bullets : 0, this.enableHyperDrive : false});
 }
 
 class Damage extends Component {
@@ -196,8 +197,9 @@ class AutoPilot extends Component {
 }
 
 class HyperDrive extends Component {
-  static Type get type => new HyperDrive._hack().runtimeType; 
+  static Type get type => new HyperDrive._hack().runtimeType;
   HyperDrive._hack();
+  bool enabled = false;
   double hyperSpaceMod = 0.0;
   HyperDrive();
 }

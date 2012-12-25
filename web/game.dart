@@ -22,7 +22,7 @@ void main() {
 
 void loadImages() {
    // TODO use http://www.codeandweb.com/texturepacker
-  List<String> images = ['spaceship.png', 'spaceship_thrusters.png', 'hud_dummy.png', 'bullet_dummy.png', 'star_00.png', 'star_01.png', 'star_02.png', 'star_03.png', 'star_04.png', 'star_05.png', 'upgrade_health.png', 'upgrade_bullets.png'];
+  List<String> images = ['spaceship.png', 'spaceship_thrusters.png', 'hud_dummy.png', 'bullet_dummy.png', 'star_00.png', 'star_01.png', 'star_02.png', 'star_03.png', 'star_04.png', 'star_05.png', 'upgrade_health.png', 'upgrade_bullets.png', 'upgrade_hyperdrive.png'];
   images.forEach((image) => ImageCache.withImage(image, (element) {}));
 }
 
@@ -146,6 +146,9 @@ class Game {
     for (int i = 0; i < 2; i++) {
       addUpgradeToWorld(world, new Upgrade("bullets", bullets: 1));
     }
+
+    addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true));
+
 
     tagManager.register(TAG_CAMERA, camera);
     tagManager.register(TAG_PLAYER, player);

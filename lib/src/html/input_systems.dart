@@ -21,6 +21,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   Velocity velocity;
   Transform transform;
   Cannon cannon;
+  HyperDrive hyperDrive;
 
   CanvasElement canvas;
 
@@ -34,15 +35,17 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    ComponentMapper<Velocity> velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
-    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    ComponentMapper<Cannon> cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
-    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    var velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    var transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    var spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
 
     spatial = spatialMapper.get(player);
     velocity = velocityMapper.get(player);
     transform = transformMapper.get(player);
     cannon = cannonMapper.get(player);
+    hyperDrive = hyperDriveMapper.get(player);
 
     window.on.keyDown.add(keyDownListener);
     window.on.keyUp.add(keyUpListener);
@@ -62,7 +65,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
       transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
     }
     cannon.shoot = keyPressed[SHOOT] == true;
-    if (keyPressed[LEAVE_LEVEL] == true) {
+    if (keyPressed[LEAVE_LEVEL] == true && hyperDrive.enabled) {
       status.leaveLevel = keyPressed[LEAVE_LEVEL] == true;
       spatial.resource = 'spaceship.png';
       cannon.shoot = false;
