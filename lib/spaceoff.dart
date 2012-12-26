@@ -36,13 +36,18 @@ num generateRandom(num min, num max) {
 void createParticles(World world, Transform transform, num radius, int amount, Velocity velocity) {
   for (int i = 0; i < amount; i++) {
     Entity particle = world.createEntity();
+    
     double offsetX = random.nextDouble() * radius * TrigUtil.sin(FastMath.TWO_PI * random.nextDouble());
     double offsetY = random.nextDouble() * radius * TrigUtil.sin(FastMath.TWO_PI * random.nextDouble());
-    Velocity particleVelocity = generateRandomVelocity(0, velocity.absolute/2);
-    particleVelocity.x += velocity.x;
-    particleVelocity.y += velocity.y;
     particle.addComponent(new Transform(transform.x + offsetX, transform.y + offsetY));
-    particle.addComponent(particleVelocity);
+    
+    double vAbs = velocity.absolute;
+    double vAngle = velocity.angle;
+    double stretchX = vAbs * generateRandom(0.8, 1.2);
+    double stretchY = generateRandom(-0.05, 0.05);
+    double vx = cos(vAngle) * stretchX + cos(vAngle + PI/2) * stretchY;
+    double vy = sin(vAngle) * stretchX + sin(vAngle + PI/2) * stretchY;
+    particle.addComponent(new Velocity(vx, vy));
     particle.addComponent(new Particle("grey"));
     particle.addComponent(new ExpirationTimer(250 + random.nextInt(500)));
     particle.addToWorld();
