@@ -113,8 +113,6 @@ class CameraSystem extends VoidEntitySystem {
 }
 
 class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
-  const int MAX_BULLETS = 11;
-
   ComponentMapper<CircularBody> bodyMapper;
   ComponentMapper<Upgrade> upgradeMapper;
   Status status;

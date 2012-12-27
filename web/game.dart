@@ -84,7 +84,7 @@ class Game {
   }
 
   void createWorld(World world, int level) {
-    double levelMod = (1 + level/10);
+    double levelMod = pow(1.2, level);
     GroupManager groupManager = new GroupManager();
     TagManager tagManager = new TagManager();
     world.addManager(tagManager);
@@ -139,16 +139,17 @@ class Game {
       asteroid.addToWorld();
     }
 
-    for (int i = 0; i < 5; i++) {
-      addUpgradeToWorld(world, new Upgrade("health", healthGain: 20, fillHealth: true));
+    for (int i = 0; i < 4; i++) {
+      addUpgradeToWorld(world, new Upgrade("health", healthGain: 5, fillHealth: true));
     }
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < min(1, MAX_BULLETS - playerCannon.amount); i++) {
       addUpgradeToWorld(world, new Upgrade("bullets", bullets: 1));
     }
 
-    addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true));
-
+    if (!playerHyperDrive.enabled) {
+      addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true));
+    }
 
     tagManager.register(TAG_CAMERA, camera);
     tagManager.register(TAG_PLAYER, player);

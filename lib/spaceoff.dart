@@ -13,6 +13,7 @@ const int MAX_HEIGHT = 400;
 const int HUD_HEIGHT = 100;
 const int UNIVERSE_HEIGHT = MAX_HEIGHT * 4;
 const int UNIVERSE_WIDTH = MAX_WIDTH * 2;
+const int MAX_BULLETS = 11;
 const String TAG_CAMERA = "CAMERA";
 const String TAG_PLAYER = "PLAYER";
 const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
