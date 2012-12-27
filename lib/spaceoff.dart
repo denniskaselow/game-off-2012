@@ -29,7 +29,7 @@ Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
 }
 
 num generateRandom(num min, num max) {
-  num randomNumber = min + max * random.nextDouble();
+  num randomNumber = min + (max - min) * random.nextDouble();
   return randomNumber;
 }
 
@@ -43,8 +43,15 @@ void createParticles(World world, Transform transform, num radius, int amount, V
     
     double vAbs = velocity.absolute;
     double vAngle = velocity.angle;
-    double stretchX = vAbs * generateRandom(0.8, 1.2);
-    double stretchY = generateRandom(-0.05, 0.05);
+    double factor = generateRandom(0.8, 2);
+    double stretchX = vAbs * factor;
+    double diff;
+    if (factor < 1) {
+      diff = (factor - 0.8) * 5;
+    } else {
+      diff =  2 - factor;
+    }
+    double stretchY = 0.05 * generateRandom(-diff, diff);
     double vx = cos(vAngle) * stretchX + cos(vAngle + PI/2) * stretchY;
     double vy = sin(vAngle) * stretchX + sin(vAngle + PI/2) * stretchY;
     particle.addComponent(new Velocity(vx, vy));

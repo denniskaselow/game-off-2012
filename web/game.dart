@@ -129,7 +129,7 @@ class Game {
         asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
       }
       asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-      asteroid.addComponent(generateRandomVelocity(0.025 * levelMod, 0.075 * levelMod));
+      asteroid.addComponent(generateRandomVelocity(0.025 * levelMod, 0.1 * levelMod));
       asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
       asteroid.addComponent(new CircularBody(asteroidRadius));
       asteroid.addComponent(new Mass(100 * scale * levelMod));
@@ -181,7 +181,7 @@ class Game {
     double scale = 0.2;
     Entity upgrade = world.createEntity();
     upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-    upgrade.addComponent(generateRandomVelocity(0.025, 0.075));
+    upgrade.addComponent(generateRandomVelocity(0.025, 0.1));
     upgrade.addComponent(new Spatial('upgrade_${upgradeComponent.name}.png', scale: scale));
     upgrade.addComponent(new CircularBody(50 * scale));
     upgrade.addComponent(new Mass(100 * scale));

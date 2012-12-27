@@ -431,7 +431,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       for (int i = 0; i < splitter.parts; i++) {
         num angle = i * anglePerPart;
         Entity asteroid = world.createEntity();
-        asteroid.addComponent(new Transform(transform.x + distanceToCenter * cos(angle), transform.y + distanceToCenter * sin(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+        asteroid.addComponent(new Transform(transform.x + distanceToCenter * cos(angle), transform.y + distanceToCenter * sin(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.35)));
         asteroid.addComponent(new Velocity(absVelocity * TrigUtil.cos(directionAngle + spread * i), absVelocity * TrigUtil.sin(directionAngle + spread * i)));
         num scale = generateRandom(0.2, 0.5);
         asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrtparts));
