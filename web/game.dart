@@ -154,6 +154,7 @@ class Game {
     tagManager.register(TAG_PLAYER, player);
 
     world.addSystem(new PlayerControlSystem(gameCanvas));
+    world.addSystem(new HyperDriveSystem());
     world.addSystem(new AutoPilotControlSystem());
     world.addSystem(new MovementSystem());
     world.addSystem(new UpgradeCollectionSystem());
@@ -195,7 +196,7 @@ class Game {
     lastTime = time;
     world.process();
 
-    if (playerStatus.leaveLevel && !nextLevelIsBeingPrepared) {
+    if (playerHyperDrive.active && !playerHyperDrive.shuttingDown && !nextLevelIsBeingPrepared) {
       prepareNextLevel();
     }
     requestRedraw();
@@ -216,8 +217,7 @@ class Game {
         player = tagManager.getEntity(TAG_PLAYER);
         player.removeComponent(new AutoPilot());
         player.changedInWorld();
-        playerStatus.leaveLevel = false;
-        playerStatus.enterLevel = true;
+        playerHyperDrive.shuttingDown = true;
         nextLevelIsBeingPrepared = false;
       }
     });

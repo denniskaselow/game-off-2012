@@ -73,3 +73,41 @@ class AutoPilotControlSystem extends EntityProcessingSystem {
     }
   }
 }
+
+
+class HyperDriveSystem extends PlayerStatusProcessingSystem {
+  HyperDrive hyperDrive;
+  bool inHyperSpace = false;
+
+  HyperDriveSystem() : super();
+
+  void initialize() {
+    super.initialize();
+    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    hyperDrive = hdMapper.get(player);
+  }
+
+  void processSystem() {
+    double stretch;
+    if (!hyperDrive.shuttingDown) {
+      hyperDrive.hyperSpaceMod += 0.01 + hyperDrive.hyperSpaceMod * 0.005;
+    } else {
+      hyperDrive.hyperSpaceMod -= 0.01 + hyperDrive.hyperSpaceMod * 0.005;
+      if (hyperDrive.hyperSpaceMod < 0.001) {
+        hyperDrive.active = false;
+        hyperDrive.shuttingDown = false;
+      }
+    }
+    if (hyperDrive.hyperSpaceMod > 0.5) {
+      if (!inHyperSpace && !hyperDrive.shuttingDown) {
+        inHyperSpace = true;
+      }
+    } else {
+      if (inHyperSpace) {
+        inHyperSpace = false;
+      }
+    }
+  }
+
+  bool checkProcessing() => hyperDrive.active && !status.destroyed;
+}

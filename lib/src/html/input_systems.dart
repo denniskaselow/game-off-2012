@@ -66,7 +66,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     }
     cannon.shoot = keyPressed[SHOOT] == true;
     if (keyPressed[LEAVE_LEVEL] == true && hyperDrive.enabled) {
-      status.leaveLevel = keyPressed[LEAVE_LEVEL] == true;
+      hyperDrive.active = keyPressed[LEAVE_LEVEL] == true;
       spatial.resource = 'spaceship.png';
       cannon.shoot = false;
       window.on.keyDown.remove(keyDownListener);
@@ -82,5 +82,5 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     keyPressed[e.keyCode] = false;
   }
 
-  bool checkProcessing() => status.health > 0 && !status.leaveLevel && !status.enterLevel;
+  bool checkProcessing() => status.health > 0 && !hyperDrive.active;
 }

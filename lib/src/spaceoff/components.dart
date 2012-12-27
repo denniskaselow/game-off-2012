@@ -60,9 +60,6 @@ class Status extends Component {
   num maxHealth;
   num maxVelocity;
   bool destroyed = false;
-  bool leaveLevel = false;
-  bool enterLevel = false;
-
   Status._hack();
   Status({this.maxHealth : 100, this.maxVelocity : 20}) {
     health = maxHealth;
@@ -200,6 +197,8 @@ class HyperDrive extends Component {
   static Type get type => new HyperDrive._hack().runtimeType;
   HyperDrive._hack();
   bool enabled = false;
+  bool active = false;
+  bool shuttingDown = false;
   double hyperSpaceMod = 0.0;
   HyperDrive();
 }

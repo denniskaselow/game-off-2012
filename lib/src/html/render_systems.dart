@@ -72,12 +72,15 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
   CanvasRenderingContext2D context2d;
   ComponentMapper<CameraPosition> cameraPositionMapper;
+  HyperDrive hyperDrive;
 
   NormalSpaceBackgroundRenderSystem(this.context2d);
 
   void initialize() {
     super.initialize();
     cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
+    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    hyperDrive = hdMapper.get(player);
   }
 
   void processSystem() {
@@ -98,12 +101,11 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
         ..closePath();
   }
 
-  bool checkProcessing() => (!status.leaveLevel && !status.enterLevel) || status.destroyed;
+  bool checkProcessing() => !hyperDrive.active || status.destroyed;
 }
 
 class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem {
   HyperDrive hyperDrive;
-  bool inHyperSpace = false;
 
   HyperSpaceBackgroundRenderSystem(context2d) : super(context2d);
 
@@ -114,46 +116,24 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
   }
 
   void processSystem() {
-    Entity camera = tagManager.getEntity(TAG_CAMERA);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+    var camera = tagManager.getEntity(TAG_CAMERA);
+    var cameraPos = cameraPositionMapper.get(camera);
 
-    double stretch;
-    if (status.leaveLevel) {
-      hyperDrive.hyperSpaceMod += 0.01 + hyperDrive.hyperSpaceMod * 0.005;
-    } else {
-      hyperDrive.hyperSpaceMod -= 0.01 + hyperDrive.hyperSpaceMod * 0.005;
-      if (hyperDrive.hyperSpaceMod < 0.001) {
-        status.enterLevel = false;
-      }
-    }
-    if (hyperDrive.hyperSpaceMod > 0.5) {
-      if (!inHyperSpace && status.leaveLevel) {
-        // TODO everything that's not rendering related has to go somewhere else
-//        player.addComponent(new Sound('non-positional', 'hyperspace'));
-//        player.changedInWorld();
-        inHyperSpace = true;
-      }
-      stretch = hyperDrive.hyperSpaceMod - 0.5;
-      context2d.setTransform(1/(1+stretch/50), 0, 0, 1+stretch, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+stretch/50))), 0);
-      context2d.translate(-cameraPos.x, -cameraPos.y - (20 * stretch));
-      
-      context2d.globalAlpha = max(0.05, 1 - (hyperDrive.hyperSpaceMod - 0.5));
-      context2d..fillStyle = "black"
-          ..beginPath()
-          ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
-          ..fill()
-          ..stroke()
-          ..closePath();
-      context2d.globalAlpha = 1;
-    } else {
-      if (inHyperSpace) {
-        inHyperSpace = false;
-      }
-      renderNormalSpace(cameraPos);
-    }
+    var mod = hyperDrive.hyperSpaceMod;
+    context2d.setTransform(1/(1+mod/50), 0, 0, 1+mod, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+mod/50))), 0);
+    context2d.translate(-cameraPos.x, -cameraPos.y - (20 * mod));
+    
+    context2d.globalAlpha = max(0.05, 1 - (mod));
+    context2d..fillStyle = "black"
+        ..beginPath()
+        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+        ..fill()
+        ..stroke()
+        ..closePath();
+    context2d.globalAlpha = 1;
   }
 
-  bool checkProcessing() => (status.enterLevel || status.leaveLevel) && !status.destroyed;
+  bool checkProcessing() => hyperDrive.active && !status.destroyed;
 }
 
 class BackgroundStarsRenderingSystem extends VoidEntitySystem {
