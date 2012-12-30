@@ -7,12 +7,12 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(new Spatial.hack().runtimeType,[new Transform.hack().runtimeType]).exclude(new Background.hack().runtimeType));
+  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(Spatial.type,[Transform.type]).exclude(Background.type));
 
   void initialize() {
     super.initialize();
-    spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
-    timerMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
+    spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    timerMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer.type, world);
   }
 
   void begin() {
@@ -69,7 +69,74 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   }
 }
 
-class BackgroundRenderSystem extends VoidEntitySystem {
+class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
+  CanvasRenderingContext2D context2d;
+  ComponentMapper<CameraPosition> cameraPositionMapper;
+  HyperDrive hyperDrive;
+
+  NormalSpaceBackgroundRenderSystem(this.context2d);
+
+  void initialize() {
+    super.initialize();
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
+    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    hyperDrive = hdMapper.get(player);
+  }
+
+  void processSystem() {
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+
+    renderNormalSpace(cameraPos);
+  }
+
+  void renderNormalSpace(CameraPosition cameraPos) {
+    context2d.setTransform(1, 0, 0, 1, 0, 0);
+    context2d.translate(-cameraPos.x, -cameraPos.y);
+    context2d..fillStyle = "black"
+        ..beginPath()
+        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+        ..fill()
+        ..stroke()
+        ..closePath();
+  }
+
+  bool checkProcessing() => !hyperDrive.active || status.destroyed;
+}
+
+class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem {
+  HyperDrive hyperDrive;
+
+  HyperSpaceBackgroundRenderSystem(context2d) : super(context2d);
+
+  void initialize() {
+    super.initialize();
+    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    hyperDrive = hdMapper.get(player);
+  }
+
+  void processSystem() {
+    var camera = tagManager.getEntity(TAG_CAMERA);
+    var cameraPos = cameraPositionMapper.get(camera);
+
+    var mod = hyperDrive.hyperSpaceMod;
+    context2d.setTransform(1/(1+mod/50), 0, 0, 1+mod, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+mod/50))), 0);
+    context2d.translate(-cameraPos.x, -cameraPos.y - (20 * mod));
+    
+    context2d.globalAlpha = max(0.05, 1 - (mod));
+    context2d..fillStyle = "black"
+        ..beginPath()
+        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
+        ..fill()
+        ..stroke()
+        ..closePath();
+    context2d.globalAlpha = 1;
+  }
+
+  bool checkProcessing() => hyperDrive.active && !status.destroyed;
+}
+
+class BackgroundStarsRenderingSystem extends VoidEntitySystem {
   const int OVERLAP_WIDTH = 50;
   const int OVERLAP_HEIGHT = 50;
 
@@ -78,18 +145,18 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  BackgroundRenderSystem(this.context2d);
+  BackgroundStarsRenderingSystem(this.context2d);
 
   void initialize() {
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
     tagManager = world.getManager(new TagManager().runtimeType);
     initBackground();
   }
 
   void initBackground() {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
-    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
-    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
+    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform.type, world);
     bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
     var bgContext = bgCanvas.context2d;
 
@@ -111,15 +178,6 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
-
-    context2d.setTransform(1, 0, 0, 1, 0, 0);
-    context2d.translate(-cameraPos.x, -cameraPos.y);
-    context2d..fillStyle = "black"
-        ..beginPath()
-        ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
-        ..fill()
-        ..stroke()
-        ..closePath();
 
     context2d.save();
     try {
@@ -159,6 +217,48 @@ class BackgroundRenderSystem extends VoidEntitySystem {
   }
 }
 
+class ParticleRenderSystem extends EntityProcessingSystem {
+  CanvasRenderingContext2D context2d;
+
+  ComponentMapper<Transform> transformMapper;
+  ComponentMapper<Particle> particleMapper;
+  CameraPosition cameraPos;
+
+  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(Particle.type, [Transform.type]));
+
+  void initialize() {
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    particleMapper = new ComponentMapper<Particle>(Particle.type, world);
+    ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+
+    Entity camera = tagManager.getEntity(TAG_CAMERA);
+    cameraPos = cameraPositionMapper.get(camera);
+  }
+
+  void processEntity(Entity e) {
+
+    Transform t = transformMapper.get(e);
+    Particle p = particleMapper.get(e);
+
+    context2d.save();
+    try {
+      if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && t.x < MAX_WIDTH) {
+        context2d.translate(UNIVERSE_WIDTH, 0);
+      }
+      if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && t.y < MAX_HEIGHT) {
+        context2d.translate(0, UNIVERSE_HEIGHT);
+      }
+      context2d.translate(t.x, t.y);
+
+      context2d.fillStyle = p.color;
+      context2d.fillRect(0, 0, 1, 1);
+    } finally {
+      context2d.restore();
+    }
+  }
+}
+
 class HudRenderSystem extends PlayerStatusProcessingSystem {
   CanvasRenderingContext2D context2d;
 
@@ -190,12 +290,12 @@ class MiniMapRenderSystem extends EntitySystem {
   ComponentMapper<MiniMapRenderable> renderableMapper;
   ComponentMapper<CircularBody> bodyMapper;
 
-  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(new MiniMapRenderable.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
+  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(MiniMapRenderable.type, [Transform.type, CircularBody.type]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    renderableMapper = new ComponentMapper<MiniMapRenderable>(new MiniMapRenderable.hack().runtimeType, world);
-    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    renderableMapper = new ComponentMapper<MiniMapRenderable>(MiniMapRenderable.type, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
   }
 
   void processEntities(ImmutableBag<Entity> entities) {
@@ -237,7 +337,7 @@ class ImageCache {
         action(image);
         loadedImages[imageName] = image;
       });
-      image.src = "resources/${imageName}";
+      image.src = "resources/img/${imageName}";
     } else {
       action(image);
     }

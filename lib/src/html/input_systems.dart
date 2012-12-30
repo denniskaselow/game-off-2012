@@ -1,15 +1,18 @@
 part of html;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
+  /** W. */
   const int ACCELERATE = 87;
+  /** A. */
   const int LEFT = 65;
+  /** D. */
   const int RIGHT = 68;
+  /** J. */
   const int SHOOT = 74;
+  /** L. */
+  const int LEAVE_LEVEL = 76;
 
-  bool accelerate = false;
-  bool turnLeft = false;
-  bool turnRight = false;
-  bool shoot = false;
+  Map<int, bool> keyPressed = new Map<int, bool>();
 
   num targetX = 0;
   num targetY = 0;
@@ -18,74 +21,66 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   Velocity velocity;
   Transform transform;
   Cannon cannon;
+  HyperDrive hyperDrive;
 
   CanvasElement canvas;
 
-  PlayerControlSystem(this.canvas) : super();
+  EventListener keyDownListener;
+  EventListener keyUpListener;
+
+  PlayerControlSystem(this.canvas) : super() {
+    keyDownListener = handleKeyDown;
+    keyUpListener = handleKeyUp;
+  }
 
   void initialize() {
     super.initialize();
-    ComponentMapper<Velocity> velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    ComponentMapper<Cannon> cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
-    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+    var velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    var transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    var spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
 
     spatial = spatialMapper.get(player);
     velocity = velocityMapper.get(player);
     transform = transformMapper.get(player);
     cannon = cannonMapper.get(player);
+    hyperDrive = hyperDriveMapper.get(player);
 
-    window.on.keyDown.add(handleKeyDown);
-    window.on.keyUp.add(handleKeyUp);
+    window.on.keyDown.add(keyDownListener);
+    window.on.keyUp.add(keyUpListener);
   }
 
   void processSystem() {
-    if (accelerate) {
+    if (keyPressed[ACCELERATE] == true) {
       velocity.x += 0.0025 * TrigUtil.cos(transform.angle);
       velocity.y += 0.0025 * TrigUtil.sin(transform.angle);
       spatial.resource = 'spaceship_thrusters.png';
     } else {
       spatial.resource = 'spaceship.png';
     }
-    if (turnLeft) {
+    if (keyPressed[LEFT] == true) {
       transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;
-    } else if(turnRight) {
+    } else if (keyPressed[RIGHT] ==  true) {
       transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
     }
-    if (shoot) {
-      cannon.shoot = true;
-    } else {
+    cannon.shoot = keyPressed[SHOOT] == true;
+    if (keyPressed[LEAVE_LEVEL] == true && hyperDrive.enabled) {
+      hyperDrive.active = keyPressed[LEAVE_LEVEL] == true;
+      spatial.resource = 'spaceship.png';
       cannon.shoot = false;
+      window.on.keyDown.remove(keyDownListener);
+      window.on.keyUp.remove(keyUpListener);
     }
   }
 
   void handleKeyDown(KeyboardEvent e) {
-    int keyCode = e.keyCode;
-    if (keyCode == ACCELERATE) {
-      accelerate = true;
-    } else if (keyCode == LEFT) {
-      turnLeft = true;
-      turnRight = false;
-    } else if (keyCode == RIGHT) {
-      turnLeft = false;
-      turnRight = true;
-    } else if (keyCode == SHOOT) {
-      shoot = true;
-    }
+    keyPressed[e.keyCode] = true;
   }
 
   void handleKeyUp(KeyboardEvent e) {
-    int keyCode = e.keyCode;
-    if (keyCode == ACCELERATE) {
-      accelerate = false;
-    } else if (keyCode == LEFT) {
-      turnLeft = false;
-    } else if (keyCode == RIGHT) {
-      turnRight = false;
-    } else if (keyCode == SHOOT) {
-      shoot = false;
-    }
+    keyPressed[e.keyCode] = false;
   }
 
-  bool checkProcessing() => status.health > 0;
+  bool checkProcessing() => status.health > 0 && !hyperDrive.active;
 }

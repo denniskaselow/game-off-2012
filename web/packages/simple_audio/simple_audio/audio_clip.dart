@@ -32,8 +32,12 @@ class AudioClip {
   bool _hasError = false;
   String _errorString = '';
   bool _isReadyToPlay = false;
+  bool _urlAbsolute = false;
 
   AudioClip._internal(this._manager, this._name, this._url);
+  AudioClip.external(this._manager, this._name, this._url) {
+    _urlAbsolute = true;
+  }
 
   void _empty() {
     _isReadyToPlay = false;
@@ -111,7 +115,11 @@ class AudioClip {
     request.on.load.add((e) => _onRequestSuccess(request, completer));
     request.on.error.add((e) => _onRequestError(request, completer));
     request.on.abort.add((e) => _onRequestError(request, completer));
-    request.open('GET', '${_manager.baseURL}/$url');
+    if (_urlAbsolute) {
+      request.open('GET', url);
+    } else {
+      request.open('GET', '${_manager.baseURL}/$url');
+    }
     request.send();
     return completer.future;
   }

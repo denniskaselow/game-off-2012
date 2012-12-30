@@ -12,11 +12,11 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(new Transform.hack().runtimeType));
+  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf(Transform.type));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
@@ -71,11 +71,11 @@ class MovementSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> positionMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  MovementSystem() : super(Aspect.getAspectForAllOf(new Transform.hack().runtimeType, [new Velocity.hack().runtimeType]));
+  MovementSystem() : super(Aspect.getAspectForAllOf(Transform.type, [Velocity.type]));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
+    positionMapper = new ComponentMapper<Transform>(Transform.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
   }
 
   void processEntity(Entity entity) {
@@ -96,8 +96,8 @@ class CameraSystem extends VoidEntitySystem {
   CameraSystem();
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(new CameraPosition.hack().runtimeType, world);
+    positionMapper = new ComponentMapper<Transform>(Transform.type, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
@@ -119,22 +119,25 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Transform transform;
   CircularBody body;
   Cannon cannon;
+  HyperDrive hyperDrive;
 
-  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(new Upgrade.hack().runtimeType, [new Transform.hack().runtimeType, new CircularBody.hack().runtimeType]));
+  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf(Upgrade.type, [Transform.type, CircularBody.type]));
 
   void initialize() {
     super.initialize();
-    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
-    upgradeMapper = new ComponentMapper<Upgrade>(new Upgrade.hack().runtimeType, world);
-    var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
+    upgradeMapper = new ComponentMapper<Upgrade>(Upgrade.type, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
 
-    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    var statusMapper = new ComponentMapper<Status>(Status.type, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
     Entity player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
     transform = transformMapper.get(player);
     body = bodyMapper.get(player);
     cannon = cannonMapper.get(player);
+    hyperDrive = hyperDriveMapper.get(player);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -143,8 +146,16 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
 
     if (Utils.doCirclesCollide(transform.x, transform.y, body.radius, upgradeTransform.x, upgradeTransform.y, upgradeBody.radius)) {
       Upgrade upgrade = upgradeMapper.get(entity);
-      upgrade.applyToStatus(status);
-      upgrade.applyToCannon(cannon);
+
+      status.maxHealth += upgrade.healthGain;
+      if (upgrade.fillHealth) {
+        status.health = status.maxHealth;
+      }
+      cannon.amount = cannon.amount == MAX_BULLETS ? MAX_BULLETS : cannon.amount + upgrade.bullets;
+      if (upgrade.enableHyperDrive) {
+        hyperDrive.enabled = true;
+      }
+
       entity.deleteFromWorld();
     }
   }
@@ -166,17 +177,17 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<Damage> damageMapper;
   ComponentMapper<ExpirationTimer> expirationMapper;
 
-  CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf(new CircularBody.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
+  CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf(CircularBody.type, [Transform.type, Velocity.type, Mass.type]));
 
   void initialize() {
     super.initialize();
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-    massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
-    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
-    damageMapper = new ComponentMapper<Damage>(new Damage.hack().runtimeType, world);
-    expirationMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    massMapper = new ComponentMapper<Mass>(Mass.type, world);
+    statusMapper = new ComponentMapper<Status>(Status.type, world);
+    damageMapper = new ComponentMapper<Damage>(Damage.type, world);
+    expirationMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer.type, world);
   }
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
@@ -286,13 +297,13 @@ class BulletSpawningSystem extends EntityProcessingSystem {
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
 
-  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(new Cannon.hack().runtimeType, [new Transform.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType]));
+  BulletSpawningSystem() : super(Aspect.getAspectForAllOf(Cannon.type, [Transform.type, Velocity.type, Mass.type]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-    massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
-    cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
+    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    massMapper = new ComponentMapper<Mass>(Mass.type, world);
+    cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
   }
 
   void processEntity(Entity entity) {
@@ -328,7 +339,7 @@ class BulletSpawningSystem extends EntityProcessingSystem {
       bullet.addComponent(new Spatial('bullet_dummy.png'));
       bullet.addComponent(new ExpirationTimer(2500));
       bullet.addComponent(new Damage(cannon.bulletDamage));
-      bullet.addComponent(new Sound('non-positional', 'shoot_sound'));
+      bullet.addComponent(new Sound('non-positional', 'shoot'));
       bullet.addToWorld();
     }
 
@@ -347,11 +358,11 @@ class ExpirationSystem extends EntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
   ComponentMapper<Damage> damageMapper;
 
-  ExpirationSystem() : super(Aspect.getAspectForAllOf(new ExpirationTimer.hack().runtimeType));
+  ExpirationSystem() : super(Aspect.getAspectForAllOf(ExpirationTimer.type));
 
   void initialize() {
-    timerMapper = new ComponentMapper<ExpirationTimer>(new ExpirationTimer.hack().runtimeType, world);
-    damageMapper = new ComponentMapper<Damage>(new Damage.hack().runtimeType, world);
+    timerMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer.type, world);
+    damageMapper = new ComponentMapper<Damage>(Damage.type, world);
 
   }
 
@@ -369,18 +380,6 @@ class ExpirationSystem extends EntityProcessingSystem {
   }
 }
 
-abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
-
-  Entity player;
-  Status status;
-
-  void initialize() {
-    var statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
-    TagManager tagManager = world.getManager(new TagManager().runtimeType);
-    player = tagManager.getEntity(TAG_PLAYER);
-    status = statusMapper.get(player);
-  }
-}
 
 class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
 
@@ -391,16 +390,16 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<Mass> massMapper;
   ComponentMapper<Spatial> spatialMapper;
 
-  SplittingDestructionSystem() : super(Aspect.getAspectForAllOf(new SplitsOnDestruction.hack().runtimeType, [new CircularBody.hack().runtimeType, new Status.hack().runtimeType, new Velocity.hack().runtimeType, new Mass.hack().runtimeType, new Spatial.hack().runtimeType]));
+  SplittingDestructionSystem() : super(Aspect.getAspectForAllOf(SplitsOnDestruction.type, [CircularBody.type, Status.type, Velocity.type, Mass.type, Spatial.type]));
 
   void initialize() {
     super.initialize();
-    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
-    splitterMapper = new ComponentMapper<SplitsOnDestruction>(new SplitsOnDestruction.hack().runtimeType, world);
-    bodyMapper = new ComponentMapper<CircularBody>(new CircularBody.hack().runtimeType, world);
-    velocityMapper = new ComponentMapper<Velocity>(new Velocity.hack().runtimeType, world);
-    massMapper = new ComponentMapper<Mass>(new Mass.hack().runtimeType, world);
-    spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
+    statusMapper = new ComponentMapper<Status>(Status.type, world);
+    splitterMapper = new ComponentMapper<SplitsOnDestruction>(SplitsOnDestruction.type, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    massMapper = new ComponentMapper<Mass>(Mass.type, world);
+    spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -412,18 +411,26 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
       Velocity velocity = velocityMapper.get(entity);
       CircularBody body = bodyMapper.get(entity);
       Spatial spatial = spatialMapper.get(entity);
-      num volume = PI * body.radius * body.radius;
+      num area = PI * body.radius * body.radius;
 
       num anglePerPart = 2 * PI / splitter.parts;
       num sqrtparts = sqrt(splitter.parts);
       num radius = body.radius / sqrtparts;
-      num spread = (2 * PI / 3) / ((splitter.parts - 1) * anglePerPart);
+      num spread = (1 * PI / 6) / ((splitter.parts - 1));
+      num directionAngle = velocity.angle - PI/12;
+      num absVelocity = velocity.absolute;      
+      num distanceToCenter;
+      if (splitter.parts == 2) {
+        distanceToCenter = radius;
+      } else {
+        distanceToCenter = sin((180-anglePerPart)/2) * radius / sin(anglePerPart);        
+      }
+      distanceToCenter += 10;
       for (int i = 0; i < splitter.parts; i++) {
         num angle = i * anglePerPart;
         Entity asteroid = world.createEntity();
-        asteroid.addComponent(new Transform(transform.x + body.radius * sin(angle), transform.y + body.radius * cos(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
-        double changeOfVelocity = sin(PI/6 + angle * spread);
-        asteroid.addComponent(new Velocity(velocity.x * changeOfVelocity, velocity.y * changeOfVelocity));
+        asteroid.addComponent(new Transform(transform.x + distanceToCenter * cos(angle), transform.y + distanceToCenter * sin(angle), angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.35)));
+        asteroid.addComponent(new Velocity(absVelocity * TrigUtil.cos(directionAngle + spread * i), absVelocity * TrigUtil.sin(directionAngle + spread * i)));
         num scale = generateRandom(0.2, 0.5);
         asteroid.addComponent(new Spatial.fromSpatial(spatial, spatial.scale / sqrtparts));
         asteroid.addComponent(new Mass(mass.value / splitter.parts));
@@ -437,57 +444,37 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
         }
         asteroid.addToWorld();
       }
+      createParticles(world, transform, body.radius, 20 * sqrt(area).toInt(), velocity);
+
       entity.deleteFromWorld();
     }
   }
 }
 
-
-
 class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
 
   ComponentMapper<Status> statusMapper;
-  ComponentMapper<DisappearsOnDestruction> splitterMapper;
+  ComponentMapper<CircularBody> bodyMapper;
+  ComponentMapper<Velocity> velocityMapper;
 
-  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(new DisappearsOnDestruction.hack().runtimeType, [new Status.hack().runtimeType]));
+  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf(DisappearsOnDestruction.type, [Status.type, Transform.type, CircularBody.type, Velocity.type]));
 
   void initialize() {
     super.initialize();
-    statusMapper = new ComponentMapper<Status>(new Status.hack().runtimeType, world);
+    statusMapper = new ComponentMapper<Status>(Status.type, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
   }
 
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper.get(entity);
     if (status.health <= 0) {
+      Transform transform = transformMapper.get(entity);
+      CircularBody body = bodyMapper.get(entity);
+      Velocity vel = velocityMapper.get(entity);
+      createParticles(world, transform, body.radius, (PI * body.radius * body.radius).toInt(), vel);
       entity.deleteFromWorld();
     }
   }
-}
-
-class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
-  Cannon cannon;
-  Transform transform;
-  Spatial spatial;
-
-  void initialize() {
-    super.initialize();
-    var cannonMapper = new ComponentMapper<Cannon>(new Cannon.hack().runtimeType, world);
-    var transformMapper = new ComponentMapper<Transform>(new Transform.hack().runtimeType, world);
-    var spatialMapper = new ComponentMapper<Spatial>(new Spatial.hack().runtimeType, world);
-    cannon = cannonMapper.get(player);
-    transform = transformMapper.get(player);
-    spatial = spatialMapper.get(player);
-  }
-
-  void processSystem() {
-    if (!status.destroyed && status.health < 0) {
-      cannon.shoot = false;
-      status.destroyed = true;
-      spatial.resource = 'spaceship.png';
-      transform.rotationRate = 0.1;
-    }
-  }
-
-  bool checkProcessing() => !status.destroyed;
 
 }
