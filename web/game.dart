@@ -187,7 +187,7 @@ class Game {
     upgrade.addComponent(new Spatial('upgrade_${upgradeComponent.name}.png', scale: scale));
     upgrade.addComponent(new CircularBody(50 * scale));
     upgrade.addComponent(new Mass(100 * scale));
-    upgrade.addComponent(new MiniMapRenderable("green"));
+    upgrade.addComponent(new MiniMapRenderable("#00FF00"));
     upgrade.addComponent(upgradeComponent);
     upgrade.addToWorld();
   }

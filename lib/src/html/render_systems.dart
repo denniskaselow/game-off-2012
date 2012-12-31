@@ -122,7 +122,7 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
     var mod = hyperDrive.hyperSpaceMod;
     context2d.setTransform(1/(1+mod/50), 0, 0, 1+mod, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+mod/50))), 0);
     context2d.translate(-cameraPos.x, -cameraPos.y - (20 * mod));
-    
+
     context2d.globalAlpha = max(0.05, 1 - (mod));
     context2d..fillStyle = "black"
         ..beginPath()
@@ -315,7 +315,7 @@ class MiniMapRenderSystem extends EntitySystem {
         context2d.fillStyle = renderable.color;
         context2d.strokeStyle = renderable.color;
         context2d.beginPath();
-        context2d.fillRect(transform.x - body.radius / 2, transform.y - body.radius / 2, body.radius, body.radius);
+        context2d.fillRect(transform.x - body.radius, transform.y - body.radius, body.radius*2, body.radius*2);
         context2d.closePath();
       });
     } finally {
