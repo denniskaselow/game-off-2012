@@ -21,8 +21,8 @@ class Velocity extends Component {
   static Type get type => new Velocity._hack().runtimeType;
   Velocity._hack();
   num x, y;
-  Velocity(this.x, this.y);  
-  double get absolute => FastMath.sqrt(x * x + y * y);
+  Velocity(this.x, this.y);
+  double get absolute => sqrt(x * x + y * y);
   double get angle => atan2(y, x);
 }
 
@@ -186,7 +186,7 @@ class Particle extends Component {
 }
 
 class AutoPilot extends Component {
-  static Type get type => new AutoPilot._hack().runtimeType; 
+  static Type get type => new AutoPilot._hack().runtimeType;
   AutoPilot._hack();
   num angle;
   num velocity;

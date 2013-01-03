@@ -53,8 +53,8 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void processSystem() {
     if (keyPressed[ACCELERATE] == true) {
-      velocity.x += 0.0025 * TrigUtil.cos(transform.angle);
-      velocity.y += 0.0025 * TrigUtil.sin(transform.angle);
+      velocity.x += 0.0025 * FastMath.cos(transform.angle);
+      velocity.y += 0.0025 * FastMath.sin(transform.angle);
       spatial.resource = 'spaceship_thrusters.png';
     } else {
       spatial.resource = 'spaceship.png';
