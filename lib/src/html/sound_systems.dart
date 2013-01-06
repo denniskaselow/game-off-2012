@@ -6,7 +6,7 @@ class SoundSystem extends EntityProcessingSystem {
 
   ComponentMapper<Sound> soundMapper;
 
-  SoundSystem(this.audioManager) : super(Aspect.getAspectForAllOf(Sound.type));
+  SoundSystem(this.audioManager) : super(Aspect.getAspectForAllOf([Sound.type]));
 
   void initialize() {
     soundMapper = new ComponentMapper<Sound>(Sound.type, world);

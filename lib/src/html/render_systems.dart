@@ -7,7 +7,7 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf(Spatial.type,[Transform.type]).exclude(Background.type));
+  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf([Spatial.type, Transform.type]).exclude([Background.type]));
 
   void initialize() {
     super.initialize();
@@ -224,7 +224,7 @@ class ParticleRenderSystem extends EntityProcessingSystem {
   ComponentMapper<Particle> particleMapper;
   CameraPosition cameraPos;
 
-  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(Particle.type, [Transform.type]));
+  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf([Particle.type, Transform.type]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(Transform.type, world);
@@ -290,7 +290,7 @@ class MiniMapRenderSystem extends EntitySystem {
   ComponentMapper<MiniMapRenderable> renderableMapper;
   ComponentMapper<CircularBody> bodyMapper;
 
-  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf(MiniMapRenderable.type, [Transform.type, CircularBody.type]));
+  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf([MiniMapRenderable.type, Transform.type, CircularBody.type]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(Transform.type, world);

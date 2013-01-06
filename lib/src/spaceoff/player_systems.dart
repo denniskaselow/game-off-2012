@@ -48,7 +48,7 @@ class AutoPilotControlSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf(AutoPilot.type, [Transform.type, Velocity.type]));
+  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf([AutoPilot.type, Transform.type, Velocity.type]));
 
   void initialize() {
     autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot.type, world);
