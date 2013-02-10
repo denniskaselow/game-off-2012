@@ -32,11 +32,11 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    var velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
-    var transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
-    var spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
-    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    var velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
+    var transformMapper = new ComponentMapper<Transform>(Transform, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
+    var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
+    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
 
     spatial = spatialMapper.get(player);
     velocity = velocityMapper.get(player);

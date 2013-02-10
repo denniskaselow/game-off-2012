@@ -12,11 +12,11 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf([Transform.type]));
+  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf([Transform]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
+    transformMapper = new ComponentMapper<Transform>(Transform, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
@@ -71,11 +71,11 @@ class MovementSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> positionMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  MovementSystem() : super(Aspect.getAspectForAllOf([Transform.type, Velocity.type]));
+  MovementSystem() : super(Aspect.getAspectForAllOf([Transform, Velocity]));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(Transform.type, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    positionMapper = new ComponentMapper<Transform>(Transform, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
   }
 
   void processEntity(Entity entity) {
@@ -96,8 +96,8 @@ class CameraSystem extends VoidEntitySystem {
   CameraSystem();
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(Transform.type, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
+    positionMapper = new ComponentMapper<Transform>(Transform, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
@@ -121,16 +121,16 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Cannon cannon;
   HyperDrive hyperDrive;
 
-  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf([Upgrade.type, Transform.type, CircularBody.type]));
+  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf([Upgrade, Transform, CircularBody]));
 
   void initialize() {
     super.initialize();
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
-    upgradeMapper = new ComponentMapper<Upgrade>(Upgrade.type, world);
-    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
-    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
+    upgradeMapper = new ComponentMapper<Upgrade>(Upgrade, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
+    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
 
-    var statusMapper = new ComponentMapper<Status>(Status.type, world);
+    var statusMapper = new ComponentMapper<Status>(Status, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
     Entity player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
@@ -177,17 +177,17 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<Damage> damageMapper;
   ComponentMapper<ExpirationTimer> expirationMapper;
 
-  CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf([CircularBody.type, Transform.type, Velocity.type, Mass.type]));
+  CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf([CircularBody, Transform, Velocity, Mass]));
 
   void initialize() {
     super.initialize();
-    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
-    massMapper = new ComponentMapper<Mass>(Mass.type, world);
-    statusMapper = new ComponentMapper<Status>(Status.type, world);
-    damageMapper = new ComponentMapper<Damage>(Damage.type, world);
-    expirationMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer.type, world);
+    transformMapper = new ComponentMapper<Transform>(Transform, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
+    massMapper = new ComponentMapper<Mass>(Mass, world);
+    statusMapper = new ComponentMapper<Status>(Status, world);
+    damageMapper = new ComponentMapper<Damage>(Damage, world);
+    expirationMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer, world);
   }
 
   void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
@@ -297,13 +297,13 @@ class BulletSpawningSystem extends EntityProcessingSystem {
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
 
-  BulletSpawningSystem() : super(Aspect.getAspectForAllOf([Cannon.type, Transform.type, Velocity.type, Mass.type]));
+  BulletSpawningSystem() : super(Aspect.getAspectForAllOf([Cannon, Transform, Velocity, Mass]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
-    massMapper = new ComponentMapper<Mass>(Mass.type, world);
-    cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
+    transformMapper = new ComponentMapper<Transform>(Transform, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
+    massMapper = new ComponentMapper<Mass>(Mass, world);
+    cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
   }
 
   void processEntity(Entity entity) {
@@ -358,11 +358,11 @@ class ExpirationSystem extends EntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
   ComponentMapper<Damage> damageMapper;
 
-  ExpirationSystem() : super(Aspect.getAspectForAllOf([ExpirationTimer.type]));
+  ExpirationSystem() : super(Aspect.getAspectForAllOf([ExpirationTimer]));
 
   void initialize() {
-    timerMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer.type, world);
-    damageMapper = new ComponentMapper<Damage>(Damage.type, world);
+    timerMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer, world);
+    damageMapper = new ComponentMapper<Damage>(Damage, world);
 
   }
 
@@ -390,16 +390,16 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<Mass> massMapper;
   ComponentMapper<Spatial> spatialMapper;
 
-  SplittingDestructionSystem() : super(Aspect.getAspectForAllOf([SplitsOnDestruction.type, CircularBody.type, Status.type, Velocity.type, Mass.type, Spatial.type]));
+  SplittingDestructionSystem() : super(Aspect.getAspectForAllOf([SplitsOnDestruction, CircularBody, Status, Velocity, Mass, Spatial]));
 
   void initialize() {
     super.initialize();
-    statusMapper = new ComponentMapper<Status>(Status.type, world);
-    splitterMapper = new ComponentMapper<SplitsOnDestruction>(SplitsOnDestruction.type, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
-    massMapper = new ComponentMapper<Mass>(Mass.type, world);
-    spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    statusMapper = new ComponentMapper<Status>(Status, world);
+    splitterMapper = new ComponentMapper<SplitsOnDestruction>(SplitsOnDestruction, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
+    massMapper = new ComponentMapper<Mass>(Mass, world);
+    spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -457,13 +457,13 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<CircularBody> bodyMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf([DisappearsOnDestruction.type, Status.type, Transform.type, CircularBody.type, Velocity.type]));
+  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf([DisappearsOnDestruction, Status, Transform, CircularBody, Velocity]));
 
   void initialize() {
     super.initialize();
-    statusMapper = new ComponentMapper<Status>(Status.type, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody.type, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    statusMapper = new ComponentMapper<Status>(Status, world);
+    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
   }
 
   void processEntityOnScreen(Entity entity) {

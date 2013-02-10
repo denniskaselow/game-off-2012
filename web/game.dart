@@ -385,8 +385,8 @@ class DebugSystem extends VoidEntitySystem {
   TagManager tagManager;
 
   void initialize() {
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition.type, world);
-    positionMapper = new ComponentMapper<Transform>(Transform.type, world);
+    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
+    positionMapper = new ComponentMapper<Transform>(Transform, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 

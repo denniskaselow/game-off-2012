@@ -7,7 +7,7 @@ abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
   Status status;
 
   void initialize() {
-    var statusMapper = new ComponentMapper<Status>(Status.type, world);
+    var statusMapper = new ComponentMapper<Status>(Status, world);
     tagManager = world.getManager(new TagManager().runtimeType);
     player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
@@ -18,15 +18,18 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
   Cannon cannon;
   Transform transform;
   Spatial spatial;
+  AutoPilot autoPilot;
 
   void initialize() {
     super.initialize();
-    var cannonMapper = new ComponentMapper<Cannon>(Cannon.type, world);
-    var transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    var spatialMapper = new ComponentMapper<Spatial>(Spatial.type, world);
+    var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
+    var transformMapper = new ComponentMapper<Transform>(Transform, world);
+    var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
+    var autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot, world);
     cannon = cannonMapper.get(player);
     transform = transformMapper.get(player);
     spatial = spatialMapper.get(player);
+    autoPilot = autoPilotMapper.get(player);
   }
 
   void processSystem() {
@@ -35,7 +38,7 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
       status.destroyed = true;
       spatial.resource = 'spaceship.png';
       transform.rotationRate = 0.1;
-      player.removeComponent(new AutoPilot._hack());
+      player.removeComponent(autoPilot);
       player.changedInWorld();
     }
   }
@@ -48,12 +51,12 @@ class AutoPilotControlSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Velocity> velocityMapper;
 
-  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf([AutoPilot.type, Transform.type, Velocity.type]));
+  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf([AutoPilot, Transform, Velocity]));
 
   void initialize() {
-    autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot.type, world);
-    transformMapper = new ComponentMapper<Transform>(Transform.type, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity.type, world);
+    autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot, world);
+    transformMapper = new ComponentMapper<Transform>(Transform, world);
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
   }
 
   void processEntity(Entity e) {
@@ -83,7 +86,7 @@ class HyperDriveSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive.type, world);
+    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
     hyperDrive = hdMapper.get(player);
   }
 
