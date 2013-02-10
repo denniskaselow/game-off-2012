@@ -9,8 +9,8 @@
   <body>
     <h1>GitHub Space Off</h1>
     <div id="canvascontainer">
-      <canvas id="gamecontainer" width="800px" height="400px"></canvas>
-      <canvas id="hudcontainer" width="800px" height="100px"></canvas>
+      <canvas id="gamecontainer" tabindex="1"></canvas>
+      <canvas id="hudcontainer"></canvas>
     </div>
     <div id="info">
       <ul class="tabs">
@@ -48,11 +48,15 @@
 	        <dt>W</dt>
 	        <dd>Accelerate</dd>
 	        <dt>A</dt>
-        <dd>Turn Left</dd>
-        <dt>D</dt>
-        <dd>Turn Right</dd>
-        <dt>J</dt>
-        <dd>Shoot</dd>
+          <dd>Turn Left</dd>
+          <dt>D</dt>
+          <dd>Turn Right</dd>
+          <dt>J</dt>
+          <dd>Shoot</dd>
+          <dt>H</dt>
+          <dd>Enter Hyperspace (once you have collected the hyperdrive upgrade)</dd>
+          <dt>P</dt>
+          <dd>Pause/Unpause Game</dd>
       </dl>
 	    </div>
 	    <div id="credits" class="hidden">
@@ -79,6 +83,6 @@
     </div>
 
     <script type="application/dart" src="web/game.dart"></script>
-    <script src="http://dart.googlecode.com/svn/branches/bleeding_edge/dart/client/dart.js"></script>
+    <script src="packages/browser/dart.js"></script>
   </body>
 </html>

@@ -8,6 +8,16 @@ canvas {
   margin: 0px auto;
 }
 
+canvas#gamecontainer {
+  width: 800px;
+  height: 400px;
+}
+
+canvas#hudcontainer {
+  width: 800px;
+  height: 100px;
+}
+
 h1 {
   text-align: center;
 }

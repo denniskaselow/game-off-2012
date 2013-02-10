@@ -1,5 +1,6 @@
 library html;
 
+import 'dart:async';
 import 'dart:math';
 import 'dart:html' hide Entity;
 import 'package:spaceoff/spaceoff.dart';

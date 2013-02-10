@@ -333,9 +333,9 @@ class ImageCache {
     ImageElement image = loadedImages[imageName];
     if (null == image) {
       image = new ImageElement();
-      image.on.load.add((event) {
-        action(image);
+      image.onLoad.listen((event) {
         loadedImages[imageName] = image;
+        action(image);
       });
       image.src = "resources/img/${imageName}";
     } else {

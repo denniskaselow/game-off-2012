@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html' hide Entity;
 import 'dart:math';
 
@@ -5,25 +6,51 @@ import 'package:spaceoff/html.dart';
 
 void main() {
   initTabbedContent();
-  loadImages();
+  List<Future> imageLoader = loadImages();
 
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
-  window.requestLayoutFrame(() {
+  window.setImmediate(() {
     gameContainer.width = MAX_WIDTH;
     gameContainer.height = MAX_HEIGHT;
     hudContainer.width = MAX_WIDTH;
     hudContainer.height = HUD_HEIGHT;
 
-    Game game = new Game(gameContainer, hudContainer);
-    game.start();
+    Future.wait(imageLoader).then((images) {
+      gameContainer.focus();
+      Game game = new Game(gameContainer, hudContainer);
+      gameContainer.onBlur.listen((data) => game.pause());
+      gameContainer.onFocus.listen((data) => game.unpause());
+      gameContainer.onKeyDown.listen((data) {
+        // P
+        if (data.keyCode == 80) {
+          if (game.paused) {
+            game.unpause();
+          } else {
+            game.pause();
+          }
+        }
+      });
+      game.start();
+    });
   });
 }
 
-void loadImages() {
+List<Future> loadImages() {
    // TODO use http://www.codeandweb.com/texturepacker
-  List<String> images = ['spaceship.png', 'spaceship_thrusters.png', 'hud_dummy.png', 'bullet_dummy.png', 'star_00.png', 'star_01.png', 'star_02.png', 'star_03.png', 'star_04.png', 'star_05.png', 'upgrade_health.png', 'upgrade_bullets.png', 'upgrade_hyperdrive.png'];
-  images.forEach((image) => ImageCache.withImage(image, (element) {}));
+  List<String> images = ['spaceship.png', 'spaceship_thrusters.png', 'hud_dummy.png', 'bullet_dummy.png', 'star_00.png', 'star_01.png', 'star_02.png', 'star_03.png', 'star_04.png', 'star_05.png', 'upgrade_health.png', 'upgrade_bullets.png', 'upgrade_hyperdrive.png', 'asteroid_strip64.png'];
+
+  Completer<World> completer = new Completer<World>();
+
+  List<Future> futures = new List<Future>();
+  images.forEach((image) {
+    Completer completer = new Completer();
+    futures.add(completer.future);
+    ImageCache.withImage(image, (element) {
+      completer.complete(image);
+    });
+  });
+  return futures;
 }
 
 void initTabbedContent() {
@@ -33,7 +60,7 @@ void initTabbedContent() {
     Element tab = query("#$key");
     Element tabContent = query("#$value");
 
-    tab.on.click.add((listener) {
+    tab.onClick.listen((listener) {
       if (key != selectedTab) {
         tab.classes.add("selectedTab");
         tabContent.classes.remove("hidden");
@@ -46,10 +73,12 @@ void initTabbedContent() {
 }
 
 class Game {
+  DivElement pauseOverlay = query("div#pauseoverlay");
   CanvasElement gameCanvas;
   CanvasElement hudCanvas;
   CanvasRenderingContext2D gameContext;
   CanvasRenderingContext2D hudContext;
+  PlayerControlSystem playerControlSystem;
   num lastTime = 0;
   World world;
   AudioManager audioManager;
@@ -60,6 +89,7 @@ class Game {
   double playerScale;
   int currentLevel = 0;
   bool nextLevelIsBeingPrepared = false;
+  bool paused = false;
 
   Game(this.gameCanvas, this.hudCanvas) {
     gameContext = gameCanvas.context2d;
@@ -154,7 +184,8 @@ class Game {
     tagManager.register(TAG_CAMERA, camera);
     tagManager.register(TAG_PLAYER, player);
 
-    world.addSystem(new PlayerControlSystem(gameCanvas));
+    playerControlSystem = new PlayerControlSystem(gameCanvas);
+    world.addSystem(playerControlSystem);
     world.addSystem(new HyperDriveSystem());
     world.addSystem(new AutoPilotControlSystem());
     world.addSystem(new MovementSystem());
@@ -195,12 +226,26 @@ class Game {
   void gameLoop(num time) {
     world.delta = time - lastTime;
     lastTime = time;
-    world.process();
+    if (!paused) {
+      world.process();
 
-    if (playerHyperDrive.active && !playerHyperDrive.shuttingDown && !nextLevelIsBeingPrepared) {
-      prepareNextLevel();
+      if (playerHyperDrive.active && !playerHyperDrive.shuttingDown && !nextLevelIsBeingPrepared) {
+        prepareNextLevel();
+      }
     }
+
     requestRedraw();
+  }
+
+  void pause() {
+    paused = true;
+    if (document.activeElement != gameCanvas) {
+      playerControlSystem.releaseAllKeys();
+    }
+  }
+
+  void unpause() {
+    paused = false;
   }
 
   void prepareNextLevel() {
@@ -230,42 +275,103 @@ class Game {
 
   Future<World> createAndInitWorld(int level) {
     Completer<World> completer = new Completer<World>();
-    window.setTimeout(() {
-      World nextWorld = new World();
-      createWorld(nextWorld, level);
-      completer.complete(nextWorld);
-    }, 8000);
+    completeNextWorld(completer, level);
     return completer.future;
   }
+
+  void completeNextWorld(Completer<World> completer, int level, [int elapsed = 0]) {
+    if (paused) {
+      new Timer(500, (timer) {
+        completeNextWorld(completer, level, elapsed);
+      });
+    } else {
+      if (elapsed < 8000) {
+        new Timer(500, (timer) {
+          completeNextWorld(completer, level, elapsed + 500);
+        });
+      } else {
+        World nextWorld = new World();
+        createWorld(nextWorld, level);
+        completer.complete(nextWorld);
+      }
+    }
+  }
 }
-
-
 
 AudioManager createAudioManager(String location) {
+  AudioManager audioManager;
+  var url = 'resources/sfx/';
+  int slashIndex = location.lastIndexOf('/');
+  if (slashIndex < 0) {
+    url = '/$url';
+  } else {
+    url = '${location.substring(0, slashIndex)}/$url';
+  }
   try {
-    AudioManager audioManager = new AudioManager();
-    int slashIndex = location.lastIndexOf('/');
-    if (slashIndex < 0) {
-      audioManager.baseURL = '';
-    } else {
-      audioManager.baseURL = location.substring(0, slashIndex);
-    }
+    audioManager = new AudioManager(url);
     AudioSource source = audioManager.makeSource('non-positional');
     source.positional = false;
-
-    AudioClip clip = audioManager.makeClip('shoot', 'resources/sfx/shoot.ogg');
-    clip.load();
-//    clip = audioManager.makeClip('hyperspace', 'resources/sfx/hyperspace.ogg');
-//    clip.load();
-
-    return audioManager;
   } catch (e) {
-    // Browser doesn't support AudioContext
+    audioManager = new AudioElementManager(url);
   }
-  return new AudioManagerDummy();
+
+  audioManager.makeClip('shoot', 'shoot.ogg').load();
+
+  return audioManager;
 }
 
-class AudioManagerDummy implements AudioManager {
+class AudioElementManager implements AudioManager {
+  String baseURL;
+  AudioElementManager([this.baseURL = '/']);
+
+  Map<String, AudiElementClip> _clips = new Map<String, AudiElementClip>();
+
+  AudioClip makeClip(String name, String url) {
+    AudioClip clip = _clips[name];
+    if (clip != null) {
+      return clip;
+    }
+    clip = new AudiElementClip._internal(this, name, "$baseURL$url");
+    _clips[name] = clip;
+    return clip;
+  }
+
+  AudioSound playClipFromSource(String sourceName, String clipName, [bool looped=false]) {
+    _clips[clipName].play();
+    return null;
+  }
+
+  dynamic noSuchMethod(InvocationMirror im) {}
+}
+
+class AudiElementClip implements AudioClip {
+  final AudioManager _manager;
+  String _name;
+  String _url;
+  List<AudioElement> audioElements = new List();
+  AudiElementClip._internal(this._manager, this._name, this._url);
+
+  Future<AudioClip> load() {
+    var audioElement = new AudioElement();
+    var completer = new Completer<AudioClip>();
+    audioElement.onLoad.listen((data) => completer.complete(this));
+    audioElement.src = _url;
+    audioElements.add(audioElement);
+    return completer.future;
+  }
+
+  void play() {
+    var playable = audioElements.where((element) => element.ended).iterator;
+    var audioElement;
+    if (playable.moveNext()) {
+      audioElement = playable.current;
+    } else {
+      audioElement = audioElements[0].clone(false);
+      audioElements.add(audioElement);
+    }
+    audioElement.play();
+  }
+
   dynamic noSuchMethod(InvocationMirror im) {}
 }
 

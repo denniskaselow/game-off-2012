@@ -9,8 +9,8 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   const int RIGHT = 68;
   /** J. */
   const int SHOOT = 74;
-  /** L. */
-  const int LEAVE_LEVEL = 76;
+  /** H. */
+  const int HYPERDRIVE = 72;
 
   Map<int, bool> keyPressed = new Map<int, bool>();
 
@@ -25,13 +25,10 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   CanvasElement canvas;
 
-  EventListener keyDownListener;
-  EventListener keyUpListener;
+  StreamSubscription<KeyboardEvent> keyDownSubscription;
+  StreamSubscription<KeyboardEvent> keyUpSubscription;
 
-  PlayerControlSystem(this.canvas) : super() {
-    keyDownListener = handleKeyDown;
-    keyUpListener = handleKeyUp;
-  }
+  PlayerControlSystem(this.canvas);
 
   void initialize() {
     super.initialize();
@@ -47,8 +44,9 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     cannon = cannonMapper.get(player);
     hyperDrive = hyperDriveMapper.get(player);
 
-    window.on.keyDown.add(keyDownListener);
-    window.on.keyUp.add(keyUpListener);
+
+    keyDownSubscription = canvas.onKeyDown.listen(handleKeyDown);
+    keyUpSubscription = canvas.onKeyUp.listen(handleKeyUp);
   }
 
   void processSystem() {
@@ -65,13 +63,17 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
       transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
     }
     cannon.shoot = keyPressed[SHOOT] == true;
-    if (keyPressed[LEAVE_LEVEL] == true && hyperDrive.enabled) {
-      hyperDrive.active = keyPressed[LEAVE_LEVEL] == true;
+    if (keyPressed[HYPERDRIVE] == true && hyperDrive.enabled) {
+      hyperDrive.active = keyPressed[HYPERDRIVE] == true;
       spatial.resource = 'spaceship.png';
       cannon.shoot = false;
-      window.on.keyDown.remove(keyDownListener);
-      window.on.keyUp.remove(keyUpListener);
+      keyDownSubscription.cancel();
+      keyUpSubscription.cancel();
     }
+  }
+
+  void releaseAllKeys() {
+    keyPressed.keys.forEach((key) => keyPressed[key] = false);
   }
 
   void handleKeyDown(KeyboardEvent e) {
