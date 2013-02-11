@@ -5,6 +5,8 @@ homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
   unittest: any
   browser: any
-  dartemis: any
+  dartemis:
+    git: ../dartemis/.git
   simple_audio:
-    git: https://github.com/johnmccutchan/simpleaudio.git
+    git: ../simpleaudio/.git
+#    git: https://github.com/johnmccutchan/simpleaudio.git

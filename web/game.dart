@@ -7,9 +7,9 @@ import 'package:spaceoff/html.dart';
 void main() {
   initTabbedContent();
   List<Future> imageLoader = loadImages();
-
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
+
   window.setImmediate(() {
     gameContainer.width = MAX_WIDTH;
     gameContainer.height = MAX_HEIGHT;
@@ -96,14 +96,14 @@ class Game {
     hudContext = hudCanvas.context2d;
     audioManager = createAudioManager(window.location.href);
     playerScale = 0.5;
-    playerStatus = new Status();
-    playerMass = new Mass(100 * playerScale);
-    playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
-    playerHyperDrive = new HyperDrive();
   }
 
   void start() {
     world = new World();
+    playerStatus = new Status();
+    playerMass = new Mass(100 * playerScale);
+    playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
+    playerHyperDrive = new HyperDrive();
 
     createWorld(world, 0);
 

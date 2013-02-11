@@ -1,80 +1,143 @@
 part of spaceoff;
 
-class Transform extends Component {
+class Transform implements Component {
   num _x, _y, angle, rotationRate;
-  Transform(num x, num y, {this.angle : 0, this.rotationRate : 0}) : _x = x % UNIVERSE_WIDTH, _y = y % UNIVERSE_HEIGHT;
+  Transform._();
+  static Transform _constructor() => new Transform._();
+  factory Transform(num x, num y, {num angle : 0, num rotationRate : 0}) {
+    Transform transform = new Component(Transform, _constructor);
+    transform.x = x;
+    transform.y = y;
+    transform.angle = angle;
+    transform.rotationRate = rotationRate;
+    return transform;
+  }
   num get x => _x;
   num get y => _y;
   set x(num x) => _x = x % UNIVERSE_WIDTH;
   set y(num y) => _y = y % UNIVERSE_HEIGHT;
 }
 
-class CameraPosition extends Transform {
-  CameraPosition({num x: 0, num y: 0}) : super(x, y);
+class CameraPosition implements Component{
+  num _x, _y;
+
+  CameraPosition._();
+  static CameraPosition _constructor() => new CameraPosition._();
+  factory CameraPosition({num x: 0, num y: 0}) {
+    CameraPosition cameraPos = new Component(CameraPosition, _constructor);
+    cameraPos.x = x;
+    cameraPos.y = y;
+    return cameraPos;
+  }
+
+  num get x => _x;
+  num get y => _y;
+  set x(num x) => _x = x % UNIVERSE_WIDTH;
+  set y(num y) => _y = y % UNIVERSE_HEIGHT;
 }
 
-class Velocity extends Component {
+class Velocity implements Component {
   num x, y;
-  Velocity(this.x, this.y);
+  Velocity._();
+  static Velocity _constructor() => new Velocity._();
+  factory Velocity(num x, num y) {
+    Velocity velocity = new Component(Velocity, _constructor);
+    velocity.x = x;
+    velocity.y = y;
+    return velocity;
+  }
   double get absolute => sqrt(x * x + y * y);
   double get angle => atan2(y, x);
 }
 
-class Spatial extends Component {
+class Spatial implements Component {
   String resource;
   bool isSprite;
   num width, height, x, y;
   num scale;
-  Spatial(this.resource, {this.scale : 1}) {
-    isSprite = false;
+  Spatial._();
+  static Spatial _constructor() => new Spatial._();
+  factory Spatial(String resource, {num scale : 1}) {
+    return _create(false, resource, null, null, null, null, scale);
   }
-  Spatial.asSprite(this.resource, this.x, this.y, this.width, this.height, {this.scale : 1}) {
-    isSprite = true;
+  factory Spatial.asSprite(String resource, num x, num y, num width, num height, {num scale : 1}) {
+    return _create(true, resource, x, y, width, height, scale);
   }
-  Spatial.fromSpatial(Spatial spatial, this.scale) : resource = spatial.resource,
-                                                     isSprite = spatial.isSprite,
-                                                     width = spatial.width,
-                                                     height = spatial.height,
-                                                     x = spatial.x,
-                                                     y = spatial.y;
+  factory Spatial.fromSpatial(Spatial otherSpatial, num scale) {
+    return _create(otherSpatial.isSprite, otherSpatial.resource, otherSpatial.x, otherSpatial.y, otherSpatial.width, otherSpatial.height, scale);
+  }
+  static Spatial _create(bool isSprite, String resource, num x, num y, num width, num height, num scale) {
+    Spatial spatial = new Component(Spatial, _constructor);
+    spatial.isSprite = isSprite;
+    spatial.resource = resource;
+    spatial.scale = scale;
+    spatial.x = x;
+    spatial.y = y;
+    spatial.width = width;
+    spatial.height = height;
+    return spatial;
+  }
 }
 
-class Background extends Component {
-  Background();
+class Background implements Component {
+  Background._();
+  static Background _constructor() => new Background._();
+  factory Background() => new Component(Background, _constructor);
 }
 
-class Status extends Component {
-  num health;
-  num maxHealth;
-  num maxVelocity;
+class Status implements Component {
+  num health, maxHealth, maxVelocity;
   bool destroyed = false;
-  Status({this.maxHealth : 100, this.maxVelocity : 20}) {
-    health = maxHealth;
+  Status._();
+  static Status _constructor() => new Status._();
+  factory Status({num maxHealth : 100, num maxVelocity : 20}) {
+    Status status = new Component(Status, _constructor);
+    status.maxHealth = maxHealth;
+    status.maxVelocity = maxVelocity;
+    status.health = maxHealth;
+    return status;
   }
 }
 
-class CircularBody extends Component {
+class CircularBody implements Component {
   num radius;
-
-  CircularBody(this.radius);
+  CircularBody._();
+  static CircularBody _constructor() => new CircularBody._();
+  factory CircularBody(num radius) {
+    CircularBody body = new Component(CircularBody, _constructor);
+    body.radius = radius;
+    return body;
+  }
 }
 
-class Mass extends Component {
+class Mass implements Component {
   num value;
-
-  Mass(this.value);
+  Mass._();
+  static Mass _constructor() => new Mass._();
+  factory Mass(num value) {
+    Mass mass = new Component(Mass, _constructor);
+    mass.value = value;
+    return mass;
+  }
 }
 
-class Cannon extends Component {
-  bool shoot = false;
-  num cooldownTimer = 0;
-  final num cooldownTime;
-  num bulletSpeed;
-  num bulletMass;
-  num bulletDamage;
+class Cannon implements Component {
+  bool shoot;
+  num cooldownTimer, cooldownTime, bulletSpeed, bulletMass, bulletDamage;
   int amount;
-
-  Cannon({this.cooldownTime : 1000, this.bulletSpeed: 0.05, this.bulletMass : 0.1, this.bulletDamage : 5, this.amount: 1});
+  Cannon._();
+  static Cannon _constructor() => new Cannon._();
+  factory Cannon({num cooldownTime : 1000, num bulletSpeed: 0.05, num bulletMass : 0.1, num bulletDamage : 5, int amount: 1}) {
+    Cannon cannon = new Component(Cannon, _constructor);
+    cannon.cooldownTime = cooldownTime;
+    cannon.bulletSpeed = bulletSpeed;
+    cannon.bulletMass = bulletMass;
+    cannon.bulletDamage = bulletDamage;
+    cannon.amount = amount;
+    cannon.shoot = false;
+    cannon.cooldownTimer = 0;
+    return cannon;
+  }
 
   bool get canShoot {
     if (shoot && cooldownTimer <= 0) return true;
@@ -86,11 +149,15 @@ class Cannon extends Component {
   }
 }
 
-class ExpirationTimer extends Component {
-  final num maxTime;
-  num timeLeft;
-  ExpirationTimer(this.maxTime) {
-    timeLeft = maxTime;
+class ExpirationTimer implements Component {
+  num maxTime, timeLeft;
+  ExpirationTimer._();
+  static ExpirationTimer _constructor() => new ExpirationTimer._();
+  factory ExpirationTimer(num maxTime) {
+    ExpirationTimer timer = new Component(ExpirationTimer, _constructor);
+    timer.maxTime = maxTime;
+    timer.timeLeft = maxTime;
+    return timer;
   }
 
   void expireBy(num delta) {
@@ -105,58 +172,111 @@ class ExpirationTimer extends Component {
   num get percentLeft => timeLeft / maxTime;
 }
 
-class MiniMapRenderable extends Component {
+class MiniMapRenderable implements Component {
   String color;
-  MiniMapRenderable(this.color);
+  MiniMapRenderable._();
+  static MiniMapRenderable _constructor() => new MiniMapRenderable._();
+  factory MiniMapRenderable(String color) {
+    MiniMapRenderable renderable = new Component(MiniMapRenderable, _constructor);
+    renderable.color = color;
+    return renderable;
+  }
 }
 
-class Upgrade extends Component {
+class Upgrade implements Component {
   String name;
   bool fillHealth;
   bool enableHyperDrive;
   num healthGain;
-  num bullets;
-  Upgrade(this.name, {this.healthGain : 0, this.fillHealth : false, this.bullets : 0, this.enableHyperDrive : false});
-}
-
-class Damage extends Component {
-  num value;
-  num maxValue;
-  Damage(this.maxValue) {
-    value = maxValue;
+  int bullets;
+  Upgrade._();
+  static Upgrade _constructor() => new Upgrade._();
+  factory Upgrade(String name, {num healthGain : 0, bool fillHealth : false, int bullets : 0, bool enableHyperDrive : false}) {
+    Upgrade upgrade = new Component(Upgrade, _constructor);
+    upgrade.name = name;
+    upgrade.healthGain = healthGain;
+    upgrade.fillHealth = fillHealth;
+    upgrade.bullets = bullets;
+    upgrade.enableHyperDrive = enableHyperDrive;
+    return upgrade;
   }
 }
 
-class SplitsOnDestruction extends Component {
+class Damage implements Component {
+  num value, maxValue;
+  Damage._();
+  static Damage _constructor() => new Damage._();
+  factory Damage(num maxValue) {
+    Damage damage = new Component(Damage, _constructor);
+    damage.maxValue = maxValue;
+    damage.value = maxValue;
+    return damage;
+  }
+}
+
+class SplitsOnDestruction implements Component {
   int parts;
-  SplitsOnDestruction(this.parts);
+  SplitsOnDestruction._();
+  static SplitsOnDestruction _constructor() => new SplitsOnDestruction._();
+  factory SplitsOnDestruction(int parts) {
+    SplitsOnDestruction sod = new Component(SplitsOnDestruction, _constructor);
+    sod.parts = parts;
+    return sod;
+  }
 }
 
-class DisappearsOnDestruction extends Component {
-  DisappearsOnDestruction();
+class DisappearsOnDestruction implements Component {
+  DisappearsOnDestruction._();
+  static DisappearsOnDestruction _constructor() => new DisappearsOnDestruction._();
+  factory DisappearsOnDestruction() => new Component(DisappearsOnDestruction, _constructor);
 }
 
-class Sound extends Component {
-  String source;
-  String clip;
-  Sound(this.source, this.clip);
+class Sound implements Component {
+  String source, clip;
+  Sound._();
+  static Sound _constructor() => new Sound._();
+  factory Sound(String source, String clip) {
+    Sound sound = new Component(Sound, _constructor);
+    sound.source = source;
+    sound.clip = clip;
+    return sound;
+  }
 }
 
-class Particle extends Component {
+class Particle implements Component {
   String color;
-  Particle(this.color);
+  Particle._();
+  static Particle _constructor() => new Particle._();
+  factory Particle(String color) {
+    Particle particle = new Component(Particle, _constructor);
+    particle.color = color;
+    return particle;
+  }
 }
 
-class AutoPilot extends Component {
-  num angle;
-  num velocity;
-  AutoPilot({this.angle, this.velocity});
+class AutoPilot implements Component {
+  num angle, velocity;
+  AutoPilot._();
+  static AutoPilot _constructor() => new AutoPilot._();
+  factory AutoPilot({num angle, num velocity}) {
+    AutoPilot autoPilot = new Component(AutoPilot, _constructor);
+    autoPilot.angle = angle;
+    autoPilot.velocity = velocity;
+    return autoPilot;
+  }
 }
 
-class HyperDrive extends Component {
-  bool enabled = false;
-  bool active = false;
-  bool shuttingDown = false;
-  double hyperSpaceMod = 0.0;
-  HyperDrive();
+class HyperDrive implements Component {
+  bool enabled, active, shuttingDown;
+  double hyperSpaceMod;
+  HyperDrive._();
+  static HyperDrive _constructor() => new HyperDrive._();
+  factory HyperDrive() {
+    HyperDrive autoPilot = new Component(HyperDrive, _constructor);
+    autoPilot.enabled = false;
+    autoPilot.active = false;
+    autoPilot.shuttingDown = false;
+    autoPilot.hyperSpaceMod = 0.0;
+    return autoPilot;
+  }
 }
