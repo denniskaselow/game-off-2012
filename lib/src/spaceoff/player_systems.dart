@@ -18,18 +18,15 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
   Cannon cannon;
   Transform transform;
   Spatial spatial;
-  AutoPilot autoPilot;
 
   void initialize() {
     super.initialize();
     var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
     var transformMapper = new ComponentMapper<Transform>(Transform, world);
     var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
-    var autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot, world);
     cannon = cannonMapper.get(player);
     transform = transformMapper.get(player);
     spatial = spatialMapper.get(player);
-    autoPilot = autoPilotMapper.get(player);
   }
 
   void processSystem() {
@@ -38,7 +35,7 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
       status.destroyed = true;
       spatial.resource = 'spaceship.png';
       transform.rotationRate = 0.1;
-      player.removeComponent(autoPilot);
+      player.removeComponent(AutoPilot);
       player.changedInWorld();
     }
   }

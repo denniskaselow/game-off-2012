@@ -261,7 +261,7 @@ class Game {
         world = nextWorld;
         tagManager = world.getManager(new TagManager().runtimeType);
         player = tagManager.getEntity(TAG_PLAYER);
-        player.removeComponent(new AutoPilot());
+        player.removeComponent(AutoPilot);
         player.changedInWorld();
         playerHyperDrive.shuttingDown = true;
         nextLevelIsBeingPrepared = false;

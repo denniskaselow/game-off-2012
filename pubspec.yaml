@@ -8,5 +8,4 @@ dependencies:
   dartemis:
     git: ../dartemis/.git
   simple_audio:
-    git: ../simpleaudio/.git
-#    git: https://github.com/johnmccutchan/simpleaudio.git
+    git: https://github.com/johnmccutchan/simpleaudio.git

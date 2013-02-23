@@ -15,7 +15,7 @@ class SoundSystem extends EntityProcessingSystem {
   void processEntity(Entity entity) {
     Sound sound = soundMapper.get(entity);
     audioManager.playClipFromSource(sound.source, sound.clip);
-    entity.removeComponent(sound);
+    entity.removeComponent(Sound);
     entity.changedInWorld();
   }
 }
