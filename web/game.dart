@@ -1,14 +1,22 @@
+library game;
+
 import 'dart:async';
 import 'dart:html' hide Entity;
 import 'dart:math';
 
 import 'package:spaceoff/html.dart';
 
+part 'game_assets.dart';
+
 void main() {
   initTabbedContent();
   List<Future> imageLoader = loadImages();
   CanvasElement gameContainer = query('#gamecontainer');
   CanvasElement hudContainer = query('#hudcontainer');
+  Map<String, Sprite> sprites = new Map<String, Sprite>();
+  assets.forEach((key, value) {
+    sprites[key] = new Sprite(assets[key]);
+  });
 
   window.setImmediate(() {
     gameContainer.width = MAX_WIDTH;
@@ -17,8 +25,9 @@ void main() {
     hudContainer.height = HUD_HEIGHT;
 
     Future.wait(imageLoader).then((images) {
+      Atlas atlas = new Atlas(images[0], sprites);
       gameContainer.focus();
-      Game game = new Game(gameContainer, hudContainer);
+      Game game = new Game(gameContainer, hudContainer, atlas);
       gameContainer.onBlur.listen((data) => game.pause());
       gameContainer.onFocus.listen((data) => game.unpause());
       gameContainer.onKeyDown.listen((data) {
@@ -36,18 +45,17 @@ void main() {
   });
 }
 
-List<Future> loadImages() {
-   // TODO use http://www.codeandweb.com/texturepacker
-  List<String> images = ['spaceship.png', 'spaceship_thrusters.png', 'hud_dummy.png', 'bullet_dummy.png', 'star_00.png', 'star_01.png', 'star_02.png', 'star_03.png', 'star_04.png', 'star_05.png', 'upgrade_health.png', 'upgrade_bullets.png', 'upgrade_hyperdrive.png', 'asteroid_strip64.png'];
+List<Future<ImageElement>> loadImages() {
+  List<String> images = ['game_assets.png'];
 
-  Completer<World> completer = new Completer<World>();
+  Completer<ImageElement> completer = new Completer<ImageElement>();
 
   List<Future> futures = new List<Future>();
   images.forEach((image) {
     Completer completer = new Completer();
     futures.add(completer.future);
     ImageCache.withImage(image, (element) {
-      completer.complete(image);
+      completer.complete(element);
     });
   });
   return futures;
@@ -76,6 +84,7 @@ class Game {
   DivElement pauseOverlay = query("div#pauseoverlay");
   CanvasElement gameCanvas;
   CanvasElement hudCanvas;
+  Atlas atlas;
   CanvasRenderingContext2D gameContext;
   CanvasRenderingContext2D hudContext;
   PlayerControlSystem playerControlSystem;
@@ -91,7 +100,7 @@ class Game {
   bool nextLevelIsBeingPrepared = false;
   bool paused = false;
 
-  Game(this.gameCanvas, this.hudCanvas) {
+  Game(this.gameCanvas, this.hudCanvas, this.atlas) {
     gameContext = gameCanvas.context2d;
     hudContext = hudCanvas.context2d;
     audioManager = createAudioManager(window.location.href);
@@ -160,7 +169,11 @@ class Game {
       }
       asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.025 * levelMod, 0.1 * levelMod));
-      asteroid.addComponent(new Spatial.asSprite('asteroid_strip64.png', 0, 0, 128, 128, scale : scale));
+      List<String> resources = new List<String>.fixedLength(64);
+      for (int i = 0; i < 64; i++) {
+        resources[i] = 'asteroid-0-$i.png';
+      }
+      asteroid.addComponent(new Spatial.animated(resources, scale : scale));
       asteroid.addComponent(new CircularBody(asteroidRadius));
       asteroid.addComponent(new Mass(100 * scale * levelMod));
       asteroid.addComponent(new MiniMapRenderable("#333"));
@@ -200,7 +213,7 @@ class Game {
     world.addSystem(new NormalSpaceBackgroundRenderSystem(gameContext));
     world.addSystem(new HyperSpaceBackgroundRenderSystem(gameContext));
     world.addSystem(new BackgroundStarsRenderingSystem(gameContext));
-    world.addSystem(new SpatialRenderingSystem(gameContext));
+    world.addSystem(new SpatialRenderingSystem(gameContext, atlas));
     world.addSystem(new ParticleRenderSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));
     world.addSystem(new HudRenderSystem(hudContext));

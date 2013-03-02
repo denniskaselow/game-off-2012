@@ -3,11 +3,12 @@ part of html;
 class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   CanvasRenderingContext2D context2d;
+  Atlas atlas;
   ComponentMapper<Spatial> spatialMapper;
   ComponentMapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context2d) : super(Aspect.getAspectForAllOf([Spatial, Transform]).exclude([Background]));
+  SpatialRenderingSystem(this.context2d, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]).exclude([Background]));
 
   void initialize() {
     super.initialize();
@@ -22,10 +23,10 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   void processEntityOnScreen(Entity entity) {
     Spatial spatial = spatialMapper.get(entity);
-    ImageCache.withImage(spatial.resource, (image) => drawImage(image, entity, spatial));
+    drawImage(entity, spatial);
   }
 
-  void drawImage(ImageElement image, Entity entity, Spatial spatial) {
+  void drawImage(Entity entity, Spatial spatial) {
     Transform transform = transformMapper.get(entity);
     ExpirationTimer timer = timerMapper.getSafe(entity);
 
@@ -48,15 +49,17 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
       if (null != timer) {
         context2d.globalAlpha = timer.percentLeft;
       }
-      if (spatial.isSprite) {
-        num width = spatial.width * spatial.scale;
-        num height = spatial.height * spatial.scale;
-        context2d.drawImage(image, spatial.x + (transform.angle.round() * 128) % 8192, spatial.y, spatial.width, spatial.height, -width ~/2, -height ~/ 2, width, height);
+      num scale = spatial.scale;
+      if (spatial.isAnimated) {
+        int index = (transform.angle.round() % spatial.resources.length).toInt();
+        Sprite sprite = atlas.sprites[spatial.resources[index]];
+        drawSprite(sprite, scale);
       } else {
-        num width = image.width * spatial.scale;
-        num height = image.height * spatial.scale;
         context2d.rotate(transform.angle);
-        context2d.drawImage(image, -width ~/2, -height ~/ 2, width, height);
+        spatial.resources.forEach((resource) {
+          Sprite sprite = atlas.sprites[resource];
+          drawSprite(sprite, scale);
+        });
       }
 
       context2d.closePath();
@@ -66,6 +69,12 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
     } finally {
       context2d.restore();
     }
+  }
+
+  void drawSprite(Sprite sprite, num scale) {
+    context2d.drawImage(atlas.image, sprite.x, sprite.y, sprite.w, sprite.h,
+                                      sprite.cx * scale, sprite.cy * scale,
+                                      sprite.w * scale, sprite.h * scale);
   }
 }
 
@@ -166,7 +175,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
     groupManager.getEntities(GROUP_BACKGROUND).forEach((entity) {
       Transform transform = transformMapper.get(entity);
       Spatial spatial = spatialMapper.get(entity);
-      ImageCache.withImage(spatial.resource, (image) {
+      ImageCache.withImage(spatial.resources[0], (image) {
         bgContext.beginPath();
         bgContext.drawImage(image, transform.x - image.width ~/ 2, transform.y - image.height ~/ 2, image.width, image.height);
         bgContext.closePath();

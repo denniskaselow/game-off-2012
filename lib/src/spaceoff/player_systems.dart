@@ -33,7 +33,7 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
     if (!status.destroyed && status.health < 0) {
       cannon.shoot = false;
       status.destroyed = true;
-      spatial.resource = 'spaceship.png';
+      spatial.resources = ['spaceship.png'];
       transform.rotationRate = 0.1;
       player.removeComponent(AutoPilot);
       player.changedInWorld();

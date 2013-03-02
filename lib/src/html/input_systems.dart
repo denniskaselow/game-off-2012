@@ -53,9 +53,9 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     if (keyPressed[ACCELERATE] == true) {
       velocity.x += 0.0025 * FastMath.cos(transform.angle);
       velocity.y += 0.0025 * FastMath.sin(transform.angle);
-      spatial.resource = 'spaceship_thrusters.png';
+      spatial.resources = ['spaceship.png', 'spaceship_thrusters.png'];
     } else {
-      spatial.resource = 'spaceship.png';
+      spatial.resources = ['spaceship.png'];
     }
     if (keyPressed[LEFT] == true) {
       transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;
@@ -65,7 +65,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     cannon.shoot = keyPressed[SHOOT] == true;
     if (keyPressed[HYPERDRIVE] == true && hyperDrive.enabled) {
       hyperDrive.active = keyPressed[HYPERDRIVE] == true;
-      spatial.resource = 'spaceship.png';
+      spatial.resources = ['spaceship.png'];
       cannon.shoot = false;
       keyDownSubscription.cancel();
       keyUpSubscription.cancel();

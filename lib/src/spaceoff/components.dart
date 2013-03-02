@@ -51,30 +51,25 @@ class Velocity implements Component {
 }
 
 class Spatial implements Component {
-  String resource;
-  bool isSprite;
-  num width, height, x, y;
+  List<String> resources;
   num scale;
+  bool isAnimated;
   Spatial._();
   static Spatial _constructor() => new Spatial._();
   factory Spatial(String resource, {num scale : 1}) {
-    return _create(false, resource, null, null, null, null, scale);
+    return _create([resource], scale, false);
   }
-  factory Spatial.asSprite(String resource, num x, num y, num width, num height, {num scale : 1}) {
-    return _create(true, resource, x, y, width, height, scale);
+  factory Spatial.animated(List<String> resources, {num scale : 1}) {
+    return _create(resources, scale, true);
   }
   factory Spatial.fromSpatial(Spatial otherSpatial, num scale) {
-    return _create(otherSpatial.isSprite, otherSpatial.resource, otherSpatial.x, otherSpatial.y, otherSpatial.width, otherSpatial.height, scale);
+    return _create(otherSpatial.resources, scale, otherSpatial.isAnimated);
   }
-  static Spatial _create(bool isSprite, String resource, num x, num y, num width, num height, num scale) {
+  static Spatial _create(List<String> resources, num scale, bool isAnimated) {
     Spatial spatial = new Component(Spatial, _constructor);
-    spatial.isSprite = isSprite;
-    spatial.resource = resource;
+    spatial.resources = resources;
     spatial.scale = scale;
-    spatial.x = x;
-    spatial.y = y;
-    spatial.width = width;
-    spatial.height = height;
+    spatial.isAnimated = isAnimated;
     return spatial;
   }
 }
