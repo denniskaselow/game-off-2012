@@ -169,7 +169,7 @@ class Game {
       }
       asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.025 * levelMod, 0.1 * levelMod));
-      List<String> resources = new List<String>.fixedLength(64);
+      List<String> resources = new List<String>(64);
       for (int i = 0; i < 64; i++) {
         resources[i] = 'asteroid-0-$i.png';
       }
@@ -294,12 +294,12 @@ class Game {
 
   void completeNextWorld(Completer<World> completer, int level, [int elapsed = 0]) {
     if (paused) {
-      new Timer(500, (timer) {
+      new Timer(new Duration(milliseconds: 500), () {
         completeNextWorld(completer, level, elapsed);
       });
     } else {
       if (elapsed < 8000) {
-        new Timer(500, (timer) {
+        new Timer(new Duration(milliseconds: 500), () {
           completeNextWorld(completer, level, elapsed + 500);
         });
       } else {

@@ -7,13 +7,13 @@ class Atlas {
 }
 
 class Sprite {
+  Rect src;
+  Rect dst;
   int x, y, w, h, cx, cy;
   Sprite(Map<String, dynamic> singleAsset) {
     _Asset asset = new _Asset(singleAsset);
-    x = asset.frame.x;
-    y = asset.frame.y;
-    w = asset.frame.w;
-    h = asset.frame.h;
+    var frame = asset.frame;
+    var cx, cy;
     if (asset.trimmed) {
       cx = -(asset.sourceSize.w ~/ 2 - asset.spriteSourceSize.x);
       cy = -(asset.sourceSize.h ~/ 2 - asset.spriteSourceSize.y);
@@ -21,6 +21,9 @@ class Sprite {
       cx = -asset.frame.w ~/ 2;
       cy = -asset.frame.h ~/ 2;
     }
+
+    src = new Rect(frame.x, frame.y, frame.w, frame.h);
+    dst = new Rect(cx, cy, frame.w, frame.h);
   }
 }
 
