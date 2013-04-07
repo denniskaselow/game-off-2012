@@ -8,7 +8,7 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context2d, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]).exclude([Background]));
+  SpatialRenderingSystem(this.context2d, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]));
 
   void initialize() {
     super.initialize();
@@ -150,11 +150,12 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
   const int OVERLAP_HEIGHT = 50;
 
   CanvasElement bgCanvas;
+  Atlas atlas;
   CanvasRenderingContext2D context2d;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  BackgroundStarsRenderingSystem(this.context2d);
+  BackgroundStarsRenderingSystem(this.context2d, this.atlas);
 
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
@@ -164,22 +165,23 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
 
   void initBackground() {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
-    ComponentMapper<Spatial> spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
     ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform, world);
     bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
-    var bgContext = bgCanvas.context2d;
+    var bgContext = bgCanvas.context2D;
 
     bgContext.setTransform(1, 0, 0, 1, 0, 0);
     bgContext.translate(OVERLAP_WIDTH, OVERLAP_HEIGHT);
+    Sprite sprite = atlas.sprites['star_00.png'];
+    var star = cq(100, 100)..translate(50, 50)..drawImageToRect(atlas.image, sprite.dst, sourceRect: sprite.src);
+    List<CanvasElement> stars = new List<CanvasElement>(20);
+    for (int i = 0; i < 20; i++) {
+      star.setHsl(hue: random.nextDouble(), saturation: 0.5+random.nextDouble() / 2, lightness: 0.5 + random.nextDouble() / 2);
+      stars[i] = star.copy();
+    }
 
     groupManager.getEntities(GROUP_BACKGROUND).forEach((entity) {
       Transform transform = transformMapper.get(entity);
-      Spatial spatial = spatialMapper.get(entity);
-      ImageCache.withImage(spatial.resources[0], (image) {
-        bgContext.beginPath();
-        bgContext.drawImage(image, transform.x - image.width ~/ 2, transform.y - image.height ~/ 2);
-        bgContext.closePath();
-      });
+      bgContext.drawImage(stars[random.nextInt(20)], transform.x - star.canvas.width ~/ 2, transform.y - star.canvas.height ~/ 2);
       entity.deleteFromWorld();
     });
   }

@@ -1,7 +1,7 @@
 library game;
 
 import 'dart:async';
-import 'dart:html' hide Entity;
+import 'dart:html';
 import 'dart:math';
 
 import 'package:spaceoff/html.dart';
@@ -81,7 +81,6 @@ void initTabbedContent() {
 }
 
 class Game {
-  DivElement pauseOverlay = query("div#pauseoverlay");
   CanvasElement gameCanvas;
   CanvasElement hudCanvas;
   Atlas atlas;
@@ -151,8 +150,6 @@ class Game {
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/10; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
-      star.addComponent(new Spatial('star_0${random.nextInt(6)}.png'));
-      star.addComponent(new Background());
       star.addToWorld();
       groupManager.add(star, GROUP_BACKGROUND);
     }
@@ -212,7 +209,7 @@ class Game {
     world.addSystem(new CameraSystem());
     world.addSystem(new NormalSpaceBackgroundRenderSystem(gameContext));
     world.addSystem(new HyperSpaceBackgroundRenderSystem(gameContext));
-    world.addSystem(new BackgroundStarsRenderingSystem(gameContext));
+    world.addSystem(new BackgroundStarsRenderingSystem(gameContext, atlas));
     world.addSystem(new SpatialRenderingSystem(gameContext, atlas));
     world.addSystem(new ParticleRenderSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));

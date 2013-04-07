@@ -74,12 +74,6 @@ class Spatial implements Component {
   }
 }
 
-class Background implements Component {
-  Background._();
-  static Background _constructor() => new Background._();
-  factory Background() => new Component(Background, _constructor);
-}
-
 class Status implements Component {
   num health, maxHealth, maxVelocity;
   bool destroyed = false;
