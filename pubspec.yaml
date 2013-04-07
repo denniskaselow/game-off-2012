@@ -3,9 +3,9 @@ author: Dennis Kaselow <Dennis.Kaselow+githubgameoff2012@gmail.com>
 description: Entry to the GitHub Game Off 2012
 homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
-  unittest: any
   browser: any
-  dartemis:
-    git: ../dartemis/.git
+  dartemis: any
   simple_audio:
     git: https://github.com/johnmccutchan/simpleaudio.git
+dev_dependencies:
+  unittest: any
