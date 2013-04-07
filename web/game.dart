@@ -321,7 +321,7 @@ AudioManager createAudioManager(String location) {
     url = '${location.substring(0, slashIndex)}/$url';
   }
   try {
-    audioManager = new AudioManager(url);
+    audioManager = new AudioElementManager(url);
     AudioSource source = audioManager.makeSource('non-positional');
     source.positional = false;
   } catch (e) {
