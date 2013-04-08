@@ -337,6 +337,65 @@ class MiniMapRenderSystem extends EntitySystem {
   bool checkProcessing() => true;
 }
 
+class MenuRenderingSystem extends VoidEntitySystem with CameraPosMixin {
+  CanvasRenderingContext2D context;
+  CqWrapper menu;
+  ComponentMapper<MenuItem> miMapper;
+  GroupManager groupManager;
+
+  MenuRenderingSystem(this.context);
+
+  void initialize() {
+    groupManager = world.getManager(new GroupManager().runtimeType);
+    miMapper = new ComponentMapper<MenuItem>(MenuItem, world);
+    menu = cq(MAX_WIDTH, MAX_HEIGHT)
+             ..textBaseline = 'top'
+             ..font = '20px Verdana'
+             ..globalAlpha = 0.5;
+  }
+
+  void processSystem() {
+    context.save();
+    try {
+      menu..clear()
+        ..fillStyle = 'gray'
+        ..fillRect(0, 0, MAX_WIDTH, MAX_HEIGHT)
+        ..roundRect(10, 10, MAX_WIDTH - 20, MAX_HEIGHT - 20, 50, strokeStyle: 'blue', fillStyle: 'red');
+
+      groupManager.getEntities(GROUP_MENU).forEach((entity) {
+        var item = miMapper.get(entity);
+        var bounds = menu.textBoundaries(item.text);
+        var fillStyle = item.hover ? 'gold' : 'white';
+        menu..roundRect(item.x, item.y, item.width, item.height, 20, strokeStyle: 'green', fillStyle: fillStyle)
+            ..gradientText(item.text, item.x + (item.width - bounds.width) ~/ 2,
+                                      item.y + (item.height - bounds.height) ~/ 2,
+                                      [0, 'black', 1, 'blue']);
+      });
+
+      context.translate(getCameraPos(world).x, getCameraPos(world).y);
+      context.drawImage(menu.canvas, 0, 0);
+    } finally {
+      context.restore();
+    }
+  }
+
+  bool checkProcessing() => !gameState.running;
+}
+
+abstract class CameraPosMixin {
+  CameraPosition _cameraPos;
+  CameraPosition getCameraPos(World world) {
+    if (null == _cameraPos) {
+      ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
+      TagManager tagManager = world.getManager(new TagManager().runtimeType);
+
+      Entity camera = tagManager.getEntity(TAG_CAMERA);
+      _cameraPos = cameraPositionMapper.get(camera);
+    }
+    return _cameraPos;
+  }
+}
+
 class ImageCache {
   static final Map<String, ImageElement> loadedImages = new Map<String, ImageElement>();
 

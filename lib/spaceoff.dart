@@ -17,9 +17,18 @@ const int MAX_BULLETS = 11;
 const String TAG_CAMERA = "CAMERA";
 const String TAG_PLAYER = "PLAYER";
 const String GROUP_BACKGROUND = "GROUP_BACKGROUND";
+const String GROUP_MENU = "GROUP_MENU";
 
 final Random random = new Random();
+final GameState gameState = new GameState();
 
+class GameState {
+  int currentLevel = 0;
+  bool nextLevelIsBeingPrepared = false;
+  bool paused = false;
+  bool started = false;
+  bool get running => started && !paused;
+}
 
 Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
   num vel = generateRandom(minSpeed, maxSpeed);

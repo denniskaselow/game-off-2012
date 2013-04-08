@@ -33,7 +33,7 @@ void main() {
       gameContainer.onKeyDown.listen((data) {
         // P
         if (data.keyCode == 80) {
-          if (game.paused) {
+          if (gameState.paused) {
             game.unpause();
           } else {
             game.pause();
@@ -88,37 +88,57 @@ class Game {
   CanvasRenderingContext2D hudContext;
   PlayerControlSystem playerControlSystem;
   num lastTime = 0;
-  World world;
+  World currentWorld;
   AudioManager audioManager;
   Status playerStatus;
   Mass playerMass;
   Cannon playerCannon;
   HyperDrive playerHyperDrive;
   double playerScale;
-  int currentLevel = 0;
-  bool nextLevelIsBeingPrepared = false;
-  bool paused = false;
 
   Game(this.gameCanvas, this.hudCanvas, this.atlas) {
-    gameContext = gameCanvas.context2d;
-    hudContext = hudCanvas.context2d;
+    gameContext = gameCanvas.context2D;
+    hudContext = hudCanvas.context2D;
     audioManager = createAudioManager(window.location.href);
     playerScale = 0.5;
   }
 
   void start() {
-    world = new World();
+    currentWorld = new World();
     playerStatus = new Status();
     playerMass = new Mass(100 * playerScale);
     playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
     playerHyperDrive = new HyperDrive();
 
-    createWorld(world, 0);
+    createWorld(currentWorld, 0);
 
-    world.delta = 16;
-    world.process();
+    currentWorld.delta = 16;
+    currentWorld.process();
 
     gameLoop(16);
+  }
+
+  void pause() {
+    gameState.paused = true;
+    if (document.activeElement != gameCanvas) {
+      playerControlSystem.releaseAllKeys();
+    }
+  }
+
+  void unpause() {
+    gameState.paused = false;
+  }
+
+  void gameLoop(num time) {
+    currentWorld.delta = time - lastTime;
+    lastTime = time;
+    currentWorld.process();
+    if (!gameState.paused) {
+      if (playerHyperDrive.active && !playerHyperDrive.shuttingDown && !gameState.nextLevelIsBeingPrepared) {
+        prepareNextLevel();
+      }
+    }
+    window.animationFrame.then(gameLoop);
   }
 
   void createWorld(World world, int level) {
@@ -147,13 +167,53 @@ class Game {
     camera.addComponent(new CameraPosition());
     camera.addToWorld();
 
+    addStars(world, groupManager);
+    addAsteroids(world, playerX, playerY, playerRadius, levelMod);
+    addUpgrades(world);
+    addMenu(world, groupManager);
+
+    tagManager.register(TAG_CAMERA, camera);
+    tagManager.register(TAG_PLAYER, player);
+
+    playerControlSystem = new PlayerControlSystem(gameCanvas);
+    world.addSystem(playerControlSystem);
+    world.addSystem(new MenuInputSystem(gameCanvas));
+    world.addSystem(new HyperDriveSystem());
+    world.addSystem(new AutoPilotControlSystem());
+    world.addSystem(new MovementSystem());
+    world.addSystem(new UpgradeCollectionSystem());
+    world.addSystem(new CircularCollisionDetectionSystem());
+    world.addSystem(new BulletSpawningSystem());
+    world.addSystem(new SplittingDestructionSystem());
+    world.addSystem(new DisapperearingDestructionSystem());
+    world.addSystem(new PlayerDestructionSystem());
+    world.addSystem(new ExpirationSystem());
+    world.addSystem(new CameraSystem());
+    world.addSystem(new NormalSpaceBackgroundRenderSystem(gameContext));
+    world.addSystem(new HyperSpaceBackgroundRenderSystem(gameContext));
+    world.addSystem(new BackgroundStarsRenderingSystem(gameContext, atlas));
+    world.addSystem(new SpatialRenderingSystem(gameContext, atlas));
+    world.addSystem(new ParticleRenderSystem(gameContext));
+    world.addSystem(new MiniMapRenderSystem(hudContext));
+    world.addSystem(new HudRenderSystem(hudContext));
+    world.addSystem(new SoundSystem(audioManager));
+    world.addSystem(new DebugSystem());
+
+    world.addSystem(new MenuRenderingSystem(gameContext));
+
+    world.initialize();
+  }
+
+  void addStars(World world, GroupManager groupManager) {
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/10; i++) {
       Entity star = world.createEntity();
       star.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
       star.addToWorld();
       groupManager.add(star, GROUP_BACKGROUND);
     }
+  }
 
+  void addAsteroids(World world, double playerX, double playerY, double playerRadius, double levelMod) {
     for (int i = 0; i < sqrt(UNIVERSE_WIDTH * UNIVERSE_HEIGHT)/100; i++) {
       double scale = generateRandom(0.2, 0.5);
       Entity asteroid = world.createEntity();
@@ -178,46 +238,18 @@ class Game {
       asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
       asteroid.addToWorld();
     }
+  }
 
+  void addUpgrades(World world) {
     for (int i = 0; i < 4; i++) {
       addUpgradeToWorld(world, new Upgrade("health", healthGain: 5, fillHealth: true));
     }
-
     for (int i = 0; i < min(1, MAX_BULLETS - playerCannon.amount); i++) {
       addUpgradeToWorld(world, new Upgrade("bullets", bullets: 1));
     }
-
     if (!playerHyperDrive.enabled) {
       addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true));
     }
-
-    tagManager.register(TAG_CAMERA, camera);
-    tagManager.register(TAG_PLAYER, player);
-
-    playerControlSystem = new PlayerControlSystem(gameCanvas);
-    world.addSystem(playerControlSystem);
-    world.addSystem(new HyperDriveSystem());
-    world.addSystem(new AutoPilotControlSystem());
-    world.addSystem(new MovementSystem());
-    world.addSystem(new UpgradeCollectionSystem());
-    world.addSystem(new CircularCollisionDetectionSystem());
-    world.addSystem(new BulletSpawningSystem());
-    world.addSystem(new SplittingDestructionSystem());
-    world.addSystem(new DisapperearingDestructionSystem());
-    world.addSystem(new PlayerDestructionSystem());
-    world.addSystem(new ExpirationSystem());
-    world.addSystem(new CameraSystem());
-    world.addSystem(new NormalSpaceBackgroundRenderSystem(gameContext));
-    world.addSystem(new HyperSpaceBackgroundRenderSystem(gameContext));
-    world.addSystem(new BackgroundStarsRenderingSystem(gameContext, atlas));
-    world.addSystem(new SpatialRenderingSystem(gameContext, atlas));
-    world.addSystem(new ParticleRenderSystem(gameContext));
-    world.addSystem(new MiniMapRenderSystem(hudContext));
-    world.addSystem(new HudRenderSystem(hudContext));
-    world.addSystem(new SoundSystem(audioManager));
-    world.addSystem(new DebugSystem());
-
-    world.initialize();
   }
 
   void addUpgradeToWorld(World world, Upgrade upgradeComponent) {
@@ -233,54 +265,35 @@ class Game {
     upgrade.addToWorld();
   }
 
-  void gameLoop(num time) {
-    world.delta = time - lastTime;
-    lastTime = time;
-    if (!paused) {
-      world.process();
-
-      if (playerHyperDrive.active && !playerHyperDrive.shuttingDown && !nextLevelIsBeingPrepared) {
-        prepareNextLevel();
-      }
+  void addMenu(World world, GroupManager groupManager) {
+    var menuTexts = ['START GAME', 'INSTRUCTIONS', 'CREDITS'];
+    for (int i = 0; i < menuTexts.length; i++) {
+      Entity menuItem = world.createEntity();
+      menuItem.addComponent(new MenuItem(MAX_WIDTH - 350, 50 + i * 70, 300, 50, menuTexts[i], () => gameState.started = true));
+      menuItem.addToWorld();
+      groupManager.add(menuItem, GROUP_MENU);
     }
-
-    requestRedraw();
-  }
-
-  void pause() {
-    paused = true;
-    if (document.activeElement != gameCanvas) {
-      playerControlSystem.releaseAllKeys();
-    }
-  }
-
-  void unpause() {
-    paused = false;
   }
 
   void prepareNextLevel() {
-    nextLevelIsBeingPrepared = true;
-    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    gameState.nextLevelIsBeingPrepared = true;
+    TagManager tagManager = currentWorld.getManager(new TagManager().runtimeType);
     Entity player = tagManager.getEntity(TAG_PLAYER);
     player.addComponent(new AutoPilot(angle: FastMath.THREE_PI_HALVES, velocity: 0.7));
     player.changedInWorld();
 
-    Future<World> nextWorldFuture = createAndInitWorld(++currentLevel);
+    Future<World> nextWorldFuture = createAndInitWorld(++gameState.currentLevel);
     nextWorldFuture.then((nextWorld) {
       if (!playerStatus.destroyed) {
-        world = nextWorld;
-        tagManager = world.getManager(new TagManager().runtimeType);
+        currentWorld = nextWorld;
+        tagManager = currentWorld.getManager(new TagManager().runtimeType);
         player = tagManager.getEntity(TAG_PLAYER);
         player.removeComponent(AutoPilot);
         player.changedInWorld();
         playerHyperDrive.shuttingDown = true;
-        nextLevelIsBeingPrepared = false;
+        gameState.nextLevelIsBeingPrepared = false;
       }
     });
-  }
-
-  void requestRedraw() {
-    window.requestAnimationFrame(gameLoop);
   }
 
   Future<World> createAndInitWorld(int level) {
@@ -290,7 +303,7 @@ class Game {
   }
 
   void completeNextWorld(Completer<World> completer, int level, [int elapsed = 0]) {
-    if (paused) {
+    if (gameState.paused) {
       new Timer(new Duration(milliseconds: 500), () {
         completeNextWorld(completer, level, elapsed);
       });

@@ -261,11 +261,32 @@ class HyperDrive implements Component {
   HyperDrive._();
   static HyperDrive _constructor() => new HyperDrive._();
   factory HyperDrive() {
-    HyperDrive autoPilot = new Component(HyperDrive, _constructor);
-    autoPilot.enabled = false;
-    autoPilot.active = false;
-    autoPilot.shuttingDown = false;
-    autoPilot.hyperSpaceMod = 0.0;
-    return autoPilot;
+    HyperDrive component = new Component(HyperDrive, _constructor);
+    component.enabled = false;
+    component.active = false;
+    component.shuttingDown = false;
+    component.hyperSpaceMod = 0.0;
+    return component;
+  }
+}
+
+typedef void MenuAction();
+class MenuItem implements Component {
+  int x, y, width, height;
+  String text;
+  bool hover;
+  MenuAction action;
+  MenuItem._();
+  static MenuItem _constructor() => new MenuItem._();
+  factory MenuItem(int x, int y, int width, int height, String text, MenuAction action) {
+    MenuItem component = new Component(MenuItem, _constructor);
+    component..x = x
+             ..y = y
+             ..width = width
+             ..height = height
+             ..text = text
+             ..action = action
+             ..hover = false;
+    return component;
   }
 }

@@ -86,6 +86,8 @@ class MovementSystem extends EntityProcessingSystem {
     transform.y += vel.y * world.delta;
     transform.angle += transform.rotationRate;
   }
+
+  bool checkProcessing() => gameState.running;
 }
 
 class CameraSystem extends VoidEntitySystem {
@@ -165,7 +167,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     world.processEntityChanges();
   }
 
-  bool checkProcessing() => status.health > 0;
+  bool checkProcessing() => !gameState.paused && status.health > 0;
 }
 
 class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
@@ -288,6 +290,8 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
       }
     }
   }
+
+  bool checkProcessing() => gameState.running;
 }
 
 class BulletSpawningSystem extends EntityProcessingSystem {
@@ -352,6 +356,8 @@ class BulletSpawningSystem extends EntityProcessingSystem {
     shooterVel.x = getVelocityAfterRecoil(shooterVel.x, cosx);
     shooterVel.y = getVelocityAfterRecoil(shooterVel.y, siny);
   }
+
+  bool checkProcessing() => gameState.running;
 }
 
 class ExpirationSystem extends EntityProcessingSystem {
@@ -378,6 +384,8 @@ class ExpirationSystem extends EntityProcessingSystem {
       }
     }
   }
+
+  bool checkProcessing() => gameState.running;
 }
 
 

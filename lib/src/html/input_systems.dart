@@ -24,6 +24,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   HyperDrive hyperDrive;
 
   CanvasElement canvas;
+  GameState state;
 
   StreamSubscription<KeyboardEvent> keyDownSubscription;
   StreamSubscription<KeyboardEvent> keyUpSubscription;
@@ -84,5 +85,42 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     keyPressed[e.keyCode] = false;
   }
 
-  bool checkProcessing() => status.health > 0 && !hyperDrive.active;
+  bool checkProcessing() => gameState.running && status.health > 0 && !hyperDrive.active;
+}
+
+class MenuInputSystem extends VoidEntitySystem {
+  CanvasElement canvas;
+
+  MenuInputSystem(this.canvas);
+
+  initialize() {
+    GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
+    var miMapper = new ComponentMapper<MenuItem>(MenuItem, world);
+    var items = new List<MenuItem>();
+    groupManager.getEntities(GROUP_MENU).forEach((entity) => items.add(miMapper.get(entity)));
+    canvas.onMouseMove.listen((event) {
+      var pos = CqTools.mousePosition(event);
+      items.forEach((item) {
+        if (pos.x >= item.x && pos.x <= item.x + item.width &&
+            pos.y >= item.y && pos.y <= item.y + item.height) {
+          item.hover = true;
+        } else {
+          item.hover = false;
+        }
+      });
+    });
+    canvas.onMouseDown.listen((event) {
+      var pos = CqTools.mousePosition(event);
+      items.forEach((item) {
+        if (pos.x >= item.x && pos.x <= item.x + item.width &&
+            pos.y >= item.y && pos.y <= item.y + item.height) {
+          item.action();
+        }
+      });
+    });
+  }
+
+  processSystem() {
+    ;
+  }
 }

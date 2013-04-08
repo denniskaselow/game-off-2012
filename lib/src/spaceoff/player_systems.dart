@@ -43,7 +43,7 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
   bool checkProcessing() => !status.destroyed;
 }
 
-class AutoPilotControlSystem extends EntityProcessingSystem {
+class AutoPilotControlSystem extends EntityProcessingSystem  {
   ComponentMapper<AutoPilot> autoPilotMapper;
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Velocity> velocityMapper;
@@ -72,6 +72,8 @@ class AutoPilotControlSystem extends EntityProcessingSystem {
       velocity.y = autoPilot.velocity * sin(autoPilot.angle);
     }
   }
+
+  bool checkProcessing() => gameState.running;
 }
 
 
@@ -109,5 +111,5 @@ class HyperDriveSystem extends PlayerStatusProcessingSystem {
     }
   }
 
-  bool checkProcessing() => hyperDrive.active && !status.destroyed;
+  bool checkProcessing() => hyperDrive.active && !status.destroyed && gameState.running;
 }
