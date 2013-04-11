@@ -97,8 +97,8 @@ class Game {
   double playerScale;
 
   Game(this.gameCanvas, this.hudCanvas, this.atlas) {
-    gameContext = gameCanvas.context2D;
-    hudContext = hudCanvas.context2D;
+    gameContext = gameCanvas.context2d;
+    hudContext = hudCanvas.context2d;
     audioManager = createAudioManager(window.location.href);
     playerScale = 0.5;
   }
@@ -172,8 +172,8 @@ class Game {
     addUpgrades(world);
     addMenu(world, groupManager);
 
-    tagManager.register(TAG_CAMERA, camera);
-    tagManager.register(TAG_PLAYER, player);
+    tagManager.register(camera, TAG_CAMERA);
+    tagManager.register(player, TAG_PLAYER);
 
     playerControlSystem = new PlayerControlSystem(gameCanvas);
     world.addSystem(playerControlSystem);

@@ -20,7 +20,7 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
-  void processEntities(ImmutableBag<Entity> entities) {
+  void processEntities(ReadOnlyBag<Entity> entities) {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
@@ -33,7 +33,7 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
         entitiesOnScreen.add(entity);
       }
     });
-    processEntitiesOnScreen(entitiesOnScreen);
+    processEntitiesOnScreen(entitiesOnScreen.readOnly);
   }
 
   bool isWithtinXRange(Transform pos, CameraPosition camPos) {
@@ -46,7 +46,7 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
     return (distanceY < MAX_RENDER_DISTANCE_Y || distanceY > MIN_RENDER_DISTANCE_Y_BORDER);
   }
 
-  void processEntitiesOnScreen(ImmutableBag<Entity> entities);
+  void processEntitiesOnScreen(ReadOnlyBag<Entity> entities);
 
   bool checkProcessing() => true;
 }
@@ -59,7 +59,7 @@ abstract class OnScreenEntityProcessingSystem extends OnScreenProcessingSystem {
     super.initialize();
   }
 
-  void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
+  void processEntitiesOnScreen(ReadOnlyBag<Entity> entities) {
     entities.forEach((entity) => processEntityOnScreen(entity));
   }
 
@@ -192,7 +192,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     expirationMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer, world);
   }
 
-  void processEntitiesOnScreen(ImmutableBag<Entity> entities) {
+  void processEntitiesOnScreen(ReadOnlyBag<Entity> entities) {
     if (entities.size > 1) {
       for (int i = 0; i < entities.size - 1; i++) {
         Entity e1 = entities[i];

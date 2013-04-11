@@ -167,7 +167,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
     ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform, world);
     bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
-    var bgContext = bgCanvas.context2D;
+    var bgContext = bgCanvas.context2d;
 
     bgContext.setTransform(1, 0, 0, 1, 0, 0);
     bgContext.translate(OVERLAP_WIDTH, OVERLAP_HEIGHT);
@@ -309,7 +309,7 @@ class MiniMapRenderSystem extends EntitySystem {
     bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
   }
 
-  void processEntities(ImmutableBag<Entity> entities) {
+  void processEntities(ReadOnlyBag<Entity> entities) {
     context2d.save();
     context2d.transform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
     try {
