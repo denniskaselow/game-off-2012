@@ -1,4 +1,10 @@
+@font-face {
+    font-family: 'D3Radicalism';
+    src: url('resources/font/d3radicalism.ttf');
+}
+
 body {
+  font-size: 20px;
   background-color: #FDFDFD;
 }
 
@@ -67,11 +73,12 @@ dl {
 }
 
 dt {
+  clear: left;
   float: left;
   width: 50px;
   font-weight: bold;
 }
 
 dd {
-  width: 500px;
+  width: 600px;
 }

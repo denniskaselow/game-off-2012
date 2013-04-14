@@ -290,3 +290,20 @@ class MenuItem implements Component {
     return component;
   }
 }
+
+class ScoreComponent implements Component {
+  num damageScore, killScore;
+  ScoreComponent._();
+  static ScoreComponent _constructor() => new ScoreComponent._();
+  factory ScoreComponent(num damageScore, num killScore) {
+    ScoreComponent component = new Component(ScoreComponent, _constructor);
+    component.damageScore = damageScore;
+    component.killScore = killScore;
+    return component;
+  }
+}
+
+class ScoreCollector implements Component {
+  ScoreCollector._();
+  factory ScoreCollector() => new Component(ScoreCollector, () => new ScoreCollector._());
+}

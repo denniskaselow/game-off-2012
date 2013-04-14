@@ -271,9 +271,20 @@ class ParticleRenderSystem extends EntityProcessingSystem {
 }
 
 class HudRenderSystem extends PlayerStatusProcessingSystem {
+  const LABEL_SCORE = "Score:";
+  const LABEL_LEVEL = "Level:";
   CanvasRenderingContext2D context2d;
+  num scoreX, levelX;
 
   HudRenderSystem(this.context2d);
+
+  void initialize() {
+    super.initialize();
+    var bounds = context2d.measureText(LABEL_SCORE);
+    scoreX = 550 - bounds.width;
+    bounds = context2d.measureText(LABEL_LEVEL);
+    levelX = 550 - bounds.width;
+  }
 
   void processSystem() {
     context2d.save();
@@ -285,12 +296,19 @@ class HudRenderSystem extends PlayerStatusProcessingSystem {
       context2d.fillStyle = "green";
       context2d.fillRect(0, 0, 200 * status.health / status.maxHealth, 15);
       context2d.closePath();
-
     } finally {
       context2d.restore();
     }
 
     ImageCache.withImage("hud_dummy.png", (image) => context2d.drawImage(image, 0, 0));
+    String score = "${gameState.score.toStringAsFixed(0)}";
+    String level = "${(gameState.currentLevel+1).toString()}";
+    context2d.fillText(LABEL_LEVEL, levelX, 11);
+    context2d.fillText(LABEL_SCORE, scoreX, 31);
+    var bounds = context2d.measureText(level);
+    context2d.fillText(level, 680 - bounds.width, 11);
+    bounds = context2d.measureText(score);
+    context2d.fillText(score, 680 - bounds.width, 31);
   }
 }
 
@@ -350,7 +368,7 @@ class MenuRenderingSystem extends VoidEntitySystem with CameraPosMixin {
     miMapper = new ComponentMapper<MenuItem>(MenuItem, world);
     menu = cq(MAX_WIDTH, MAX_HEIGHT)
              ..textBaseline = 'top'
-             ..font = '20px Verdana'
+             ..font = '20px D3Radicalism'
              ..globalAlpha = 0.5;
   }
 

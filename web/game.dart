@@ -25,6 +25,8 @@ void main() {
     hudContainer.height = HUD_HEIGHT;
 
     Future.wait(imageLoader).then((images) {
+      hudContainer.context2d..textBaseline = 'top'
+                            ..font = '20px D3Radicalism';
       Atlas atlas = new Atlas(images[0], sprites);
       gameContainer.focus();
       Game game = new Game(gameContainer, hudContainer, atlas);
@@ -143,6 +145,7 @@ class Game {
 
   void createWorld(World world, int level) {
     double levelMod = pow(1.2, level);
+    gameState.levelMod = levelMod;
     GroupManager groupManager = new GroupManager();
     TagManager tagManager = new TagManager();
     world.addManager(tagManager);
@@ -157,6 +160,7 @@ class Game {
     player.addComponent(new Spatial('spaceship.png', scale: 0.25));
     player.addComponent(new CircularBody(playerRadius));
     player.addComponent(new MiniMapRenderable("#1fe9f6"));
+    player.addComponent(new ScoreComponent(-10, -10));
     player.addComponent(playerStatus);
     player.addComponent(playerMass);
     player.addComponent(playerCannon);
@@ -236,6 +240,7 @@ class Game {
       asteroid.addComponent(new MiniMapRenderable("#333"));
       asteroid.addComponent(new Status(maxHealth : 100 * scale * levelMod));
       asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
+      asteroid.addComponent(new ScoreComponent(10 * scale, 100 * scale * levelMod));
       asteroid.addToWorld();
     }
   }

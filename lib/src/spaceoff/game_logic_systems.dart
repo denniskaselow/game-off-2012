@@ -178,6 +178,8 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<Status> statusMapper;
   ComponentMapper<Damage> damageMapper;
   ComponentMapper<ExpirationTimer> expirationMapper;
+  ComponentMapper<ScoreCollector> scoreCollectorMapper;
+  ComponentMapper<ScoreComponent> scoreComponentMapper;
 
   CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf([CircularBody, Transform, Velocity, Mass]));
 
@@ -190,6 +192,8 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
     statusMapper = new ComponentMapper<Status>(Status, world);
     damageMapper = new ComponentMapper<Damage>(Damage, world);
     expirationMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer, world);
+    scoreCollectorMapper = new ComponentMapper<ScoreCollector>(ScoreCollector, world);
+    scoreComponentMapper = new ComponentMapper<ScoreComponent>(ScoreComponent, world);
   }
 
   void processEntitiesOnScreen(ReadOnlyBag<Entity> entities) {
@@ -263,31 +267,56 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
             v2.x = cos(phi) * v2fxr + cos(phi + PI/2) * v2fyr;
             v2.y = sin(phi) * v2fxr + sin(phi + PI/2) * v2fyr;
 
-            Status s1 = statusMapper.getSafe(e1);
-            Status s2 = statusMapper.getSafe(e2);
-            Damage d1 = damageMapper.getSafe(e1);
-            Damage d2 = damageMapper.getSafe(e2);
-
-            if (null != s1) {
-              s1.health -= (p2.abs() + p1.abs()) / 5;
-              if (null != d2) s1.health -= d2.value;
-            }
-            if (null != s2) {
-              s2.health -= (p2.abs() + p1.abs()) / 5;
-              if (null != d1) s2.health -= d1.value;
-            }
-
-            ExpirationTimer timer1 = expirationMapper.getSafe(e1);
-            ExpirationTimer timer2 = expirationMapper.getSafe(e2);
-            if (null != timer1) {
-              timer1.timeLeft *= 0.8;
-            }
-            if (null != timer2) {
-              timer2.timeLeft *= 0.8;
-            }
+            processDamage(e1, e2, p1, p2);
+            updateExpirationTimers(e1, e2);
           }
         }
       }
+    }
+  }
+
+  void processDamage(Entity e1, Entity e2, num p1, num p2) {
+    Status s1 = statusMapper.getSafe(e1);
+    Status s2 = statusMapper.getSafe(e2);
+    Damage d1 = damageMapper.getSafe(e1);
+    Damage d2 = damageMapper.getSafe(e2);
+    ScoreCollector collect1 = scoreCollectorMapper.getSafe(e1);
+    ScoreCollector collect2 = scoreCollectorMapper.getSafe(e2);
+    ScoreComponent score1 = scoreComponentMapper.getSafe(e1);
+    ScoreComponent score2 = scoreComponentMapper.getSafe(e2);
+
+    calculateHealth(s1, d2, p1, p2);
+    calculateHealth(s2, d1, p1, p2);
+
+    calcuateScore(collect1, score2, s2);
+    calcuateScore(collect2, score1, s1);
+  }
+
+  void calculateHealth(Status status, Damage damage, num p1, num p2) {
+    if (null != status) {
+      status.health -= (p2.abs() + p1.abs()) / 5;
+      if (null != damage) status.health -= damage.value;
+    }
+  }
+
+  void calcuateScore(ScoreCollector collect, ScoreComponent score, Status status) {
+    if (null != collect && null != score) {
+      if (null != status && status.health < 0) {
+        gameState.score += score.killScore;
+      } else {
+        gameState.score += score.damageScore;
+      }
+    }
+  }
+
+  void updateExpirationTimers(Entity e1, Entity e2) {
+    ExpirationTimer timer1 = expirationMapper.getSafe(e1);
+    ExpirationTimer timer2 = expirationMapper.getSafe(e2);
+    if (null != timer1) {
+      timer1.timeLeft *= 0.8;
+    }
+    if (null != timer2) {
+      timer2.timeLeft *= 0.8;
     }
   }
 
@@ -344,6 +373,7 @@ class BulletSpawningSystem extends EntityProcessingSystem {
       bullet.addComponent(new ExpirationTimer(2500));
       bullet.addComponent(new Damage(cannon.bulletDamage));
       bullet.addComponent(new Sound('non-positional', 'shoot'));
+      bullet.addComponent(new ScoreCollector());
       bullet.addToWorld();
     }
 
@@ -445,6 +475,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
         asteroid.addComponent(new MiniMapRenderable("#333"));
         asteroid.addComponent(new Status(maxHealth : status.maxHealth / sqrtparts));
         asteroid.addComponent(new CircularBody(radius));
+        asteroid.addComponent(new ScoreComponent(10 * scale, 100 * scale * gameState.levelMod));
         if (radius > 10) {
           asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
         } else {
@@ -452,7 +483,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
         }
         asteroid.addToWorld();
       }
-      createParticles(world, transform, body.radius, 20 * sqrt(area).toInt(), velocity);
+      createParticles(world, transform, body.radius, 15 * sqrt(area).toInt(), velocity);
 
       entity.deleteFromWorld();
     }

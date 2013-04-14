@@ -24,9 +24,11 @@ final GameState gameState = new GameState();
 
 class GameState {
   int currentLevel = 0;
+  double levelMod = 1.0;
   bool nextLevelIsBeingPrepared = false;
   bool paused = false;
   bool started = false;
+  double score = 0.0;
   bool get running => started && !paused;
 }
 
