@@ -1,11 +1,11 @@
 part of spaceoff;
 
-class Transform implements Component {
+class Transform extends ComponentPoolable {
   num _x, _y, angle, rotationRate;
   Transform._();
   static Transform _constructor() => new Transform._();
   factory Transform(num x, num y, {num angle : 0, num rotationRate : 0}) {
-    Transform transform = new Component(Transform, _constructor);
+    Transform transform = new Poolable.of(Transform, _constructor);
     transform.x = x;
     transform.y = y;
     transform.angle = angle;
@@ -18,13 +18,13 @@ class Transform implements Component {
   set y(num y) => _y = y % UNIVERSE_HEIGHT;
 }
 
-class CameraPosition implements Component{
+class CameraPosition extends ComponentPoolable{
   num _x, _y;
 
   CameraPosition._();
   static CameraPosition _constructor() => new CameraPosition._();
   factory CameraPosition({num x: 0, num y: 0}) {
-    CameraPosition cameraPos = new Component(CameraPosition, _constructor);
+    CameraPosition cameraPos = new Poolable.of(CameraPosition, _constructor);
     cameraPos.x = x;
     cameraPos.y = y;
     return cameraPos;
@@ -36,12 +36,12 @@ class CameraPosition implements Component{
   set y(num y) => _y = y % UNIVERSE_HEIGHT;
 }
 
-class Velocity implements Component {
+class Velocity extends ComponentPoolable {
   num x, y;
   Velocity._();
   static Velocity _constructor() => new Velocity._();
   factory Velocity(num x, num y) {
-    Velocity velocity = new Component(Velocity, _constructor);
+    Velocity velocity = new Poolable.of(Velocity, _constructor);
     velocity.x = x;
     velocity.y = y;
     return velocity;
@@ -50,7 +50,7 @@ class Velocity implements Component {
   double get angle => atan2(y, x);
 }
 
-class Spatial implements Component {
+class Spatial extends ComponentPoolable {
   List<String> resources;
   num scale;
   bool isAnimated;
@@ -66,7 +66,7 @@ class Spatial implements Component {
     return _create(otherSpatial.resources, scale, otherSpatial.isAnimated);
   }
   static Spatial _create(List<String> resources, num scale, bool isAnimated) {
-    Spatial spatial = new Component(Spatial, _constructor);
+    Spatial spatial = new Poolable.of(Spatial, _constructor);
     spatial.resources = resources;
     spatial.scale = scale;
     spatial.isAnimated = isAnimated;
@@ -74,13 +74,13 @@ class Spatial implements Component {
   }
 }
 
-class Status implements Component {
+class Status extends ComponentPoolable {
   num health, maxHealth, maxVelocity;
   bool destroyed = false;
   Status._();
   static Status _constructor() => new Status._();
   factory Status({num maxHealth : 100, num maxVelocity : 20}) {
-    Status status = new Component(Status, _constructor);
+    Status status = new Poolable.of(Status, _constructor);
     status.maxHealth = maxHealth;
     status.maxVelocity = maxVelocity;
     status.health = maxHealth;
@@ -88,36 +88,36 @@ class Status implements Component {
   }
 }
 
-class CircularBody implements Component {
+class CircularBody extends ComponentPoolable {
   num radius;
   CircularBody._();
   static CircularBody _constructor() => new CircularBody._();
   factory CircularBody(num radius) {
-    CircularBody body = new Component(CircularBody, _constructor);
+    CircularBody body = new Poolable.of(CircularBody, _constructor);
     body.radius = radius;
     return body;
   }
 }
 
-class Mass implements Component {
+class Mass extends ComponentPoolable {
   num value;
   Mass._();
   static Mass _constructor() => new Mass._();
   factory Mass(num value) {
-    Mass mass = new Component(Mass, _constructor);
+    Mass mass = new Poolable.of(Mass, _constructor);
     mass.value = value;
     return mass;
   }
 }
 
-class Cannon implements Component {
+class Cannon extends ComponentPoolable {
   bool shoot;
   num cooldownTimer, cooldownTime, bulletSpeed, bulletMass, bulletDamage;
   int amount;
   Cannon._();
   static Cannon _constructor() => new Cannon._();
   factory Cannon({num cooldownTime : 1000, num bulletSpeed: 0.05, num bulletMass : 0.1, num bulletDamage : 5, int amount: 1}) {
-    Cannon cannon = new Component(Cannon, _constructor);
+    Cannon cannon = new Poolable.of(Cannon, _constructor);
     cannon.cooldownTime = cooldownTime;
     cannon.bulletSpeed = bulletSpeed;
     cannon.bulletMass = bulletMass;
@@ -138,12 +138,12 @@ class Cannon implements Component {
   }
 }
 
-class ExpirationTimer implements Component {
+class ExpirationTimer extends ComponentPoolable {
   num maxTime, timeLeft;
   ExpirationTimer._();
   static ExpirationTimer _constructor() => new ExpirationTimer._();
   factory ExpirationTimer(num maxTime) {
-    ExpirationTimer timer = new Component(ExpirationTimer, _constructor);
+    ExpirationTimer timer = new Poolable.of(ExpirationTimer, _constructor);
     timer.maxTime = maxTime;
     timer.timeLeft = maxTime;
     return timer;
@@ -161,18 +161,18 @@ class ExpirationTimer implements Component {
   num get percentLeft => timeLeft / maxTime;
 }
 
-class MiniMapRenderable implements Component {
+class MiniMapRenderable extends ComponentPoolable {
   String color;
   MiniMapRenderable._();
   static MiniMapRenderable _constructor() => new MiniMapRenderable._();
   factory MiniMapRenderable(String color) {
-    MiniMapRenderable renderable = new Component(MiniMapRenderable, _constructor);
+    MiniMapRenderable renderable = new Poolable.of(MiniMapRenderable, _constructor);
     renderable.color = color;
     return renderable;
   }
 }
 
-class Upgrade implements Component {
+class Upgrade extends ComponentPoolable {
   String name;
   bool fillHealth;
   bool enableHyperDrive;
@@ -181,7 +181,7 @@ class Upgrade implements Component {
   Upgrade._();
   static Upgrade _constructor() => new Upgrade._();
   factory Upgrade(String name, {num healthGain : 0, bool fillHealth : false, int bullets : 0, bool enableHyperDrive : false}) {
-    Upgrade upgrade = new Component(Upgrade, _constructor);
+    Upgrade upgrade = new Poolable.of(Upgrade, _constructor);
     upgrade.name = name;
     upgrade.healthGain = healthGain;
     upgrade.fillHealth = fillHealth;
@@ -191,77 +191,77 @@ class Upgrade implements Component {
   }
 }
 
-class Damage implements Component {
+class Damage extends ComponentPoolable {
   num value, maxValue;
   Damage._();
   static Damage _constructor() => new Damage._();
   factory Damage(num maxValue) {
-    Damage damage = new Component(Damage, _constructor);
+    Damage damage = new Poolable.of(Damage, _constructor);
     damage.maxValue = maxValue;
     damage.value = maxValue;
     return damage;
   }
 }
 
-class SplitsOnDestruction implements Component {
+class SplitsOnDestruction extends ComponentPoolable {
   int parts;
   SplitsOnDestruction._();
   static SplitsOnDestruction _constructor() => new SplitsOnDestruction._();
   factory SplitsOnDestruction(int parts) {
-    SplitsOnDestruction sod = new Component(SplitsOnDestruction, _constructor);
+    SplitsOnDestruction sod = new Poolable.of(SplitsOnDestruction, _constructor);
     sod.parts = parts;
     return sod;
   }
 }
 
-class DisappearsOnDestruction implements Component {
+class DisappearsOnDestruction extends ComponentPoolable {
   DisappearsOnDestruction._();
   static DisappearsOnDestruction _constructor() => new DisappearsOnDestruction._();
-  factory DisappearsOnDestruction() => new Component(DisappearsOnDestruction, _constructor);
+  factory DisappearsOnDestruction() => new Poolable.of(DisappearsOnDestruction, _constructor);
 }
 
-class Sound implements Component {
+class Sound extends ComponentPoolable {
   String source, clip;
   Sound._();
   static Sound _constructor() => new Sound._();
   factory Sound(String source, String clip) {
-    Sound sound = new Component(Sound, _constructor);
+    Sound sound = new Poolable.of(Sound, _constructor);
     sound.source = source;
     sound.clip = clip;
     return sound;
   }
 }
 
-class Particle implements Component {
+class Particle extends ComponentPoolable {
   String color;
   Particle._();
   static Particle _constructor() => new Particle._();
   factory Particle(String color) {
-    Particle particle = new Component(Particle, _constructor);
+    Particle particle = new Poolable.of(Particle, _constructor);
     particle.color = color;
     return particle;
   }
 }
 
-class AutoPilot implements Component {
+class AutoPilot extends ComponentPoolable {
   num angle, velocity;
   AutoPilot._();
   static AutoPilot _constructor() => new AutoPilot._();
   factory AutoPilot({num angle, num velocity}) {
-    AutoPilot autoPilot = new Component(AutoPilot, _constructor);
+    AutoPilot autoPilot = new Poolable.of(AutoPilot, _constructor);
     autoPilot.angle = angle;
     autoPilot.velocity = velocity;
     return autoPilot;
   }
 }
 
-class HyperDrive implements Component {
+class HyperDrive extends ComponentPoolable {
   bool enabled, active, shuttingDown;
   double hyperSpaceMod;
   HyperDrive._();
   static HyperDrive _constructor() => new HyperDrive._();
   factory HyperDrive() {
-    HyperDrive component = new Component(HyperDrive, _constructor);
+    HyperDrive component = new Poolable.of(HyperDrive, _constructor);
     component.enabled = false;
     component.active = false;
     component.shuttingDown = false;
@@ -271,7 +271,7 @@ class HyperDrive implements Component {
 }
 
 typedef void MenuAction();
-class MenuItem implements Component {
+class MenuItem extends ComponentPoolable {
   int x, y, width, height;
   String text;
   bool hover;
@@ -279,7 +279,7 @@ class MenuItem implements Component {
   MenuItem._();
   static MenuItem _constructor() => new MenuItem._();
   factory MenuItem(int x, int y, int width, int height, String text, MenuAction action) {
-    MenuItem component = new Component(MenuItem, _constructor);
+    MenuItem component = new Poolable.of(MenuItem, _constructor);
     component..x = x
              ..y = y
              ..width = width
@@ -291,19 +291,19 @@ class MenuItem implements Component {
   }
 }
 
-class ScoreComponent implements Component {
+class ScoreComponent extends ComponentPoolable {
   num damageScore, killScore;
   ScoreComponent._();
   static ScoreComponent _constructor() => new ScoreComponent._();
   factory ScoreComponent(num damageScore, num killScore) {
-    ScoreComponent component = new Component(ScoreComponent, _constructor);
+    ScoreComponent component = new Poolable.of(ScoreComponent, _constructor);
     component.damageScore = damageScore;
     component.killScore = killScore;
     return component;
   }
 }
 
-class ScoreCollector implements Component {
+class ScoreCollector extends ComponentPoolable {
   ScoreCollector._();
-  factory ScoreCollector() => new Component(ScoreCollector, () => new ScoreCollector._());
+  factory ScoreCollector() => new Poolable.of(ScoreCollector, () => new ScoreCollector._());
 }

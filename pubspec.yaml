@@ -4,8 +4,7 @@ description: Entry to the GitHub Game Off 2012
 homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
   browser: any
-  dartemis:
-    git: ../dartemis/.git
+  dartemis: any
   canvas_query: any
   simple_audio:
     git: https://github.com/johnmccutchan/simpleaudio.git

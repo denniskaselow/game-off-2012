@@ -369,7 +369,7 @@ class AudioElementManager implements AudioManager {
     return null;
   }
 
-  dynamic noSuchMethod(InvocationMirror im) {}
+  dynamic noSuchMethod(Invocation im) {}
 }
 
 class AudiElementClip implements AudioClip {
@@ -400,7 +400,7 @@ class AudiElementClip implements AudioClip {
     audioElement.play();
   }
 
-  dynamic noSuchMethod(InvocationMirror im) {}
+  dynamic noSuchMethod(Invocation im) {}
 }
 
 class DebugSystem extends VoidEntitySystem {
