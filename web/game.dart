@@ -174,14 +174,12 @@ class Game {
     addStars(world, groupManager);
     addAsteroids(world, playerX, playerY, playerRadius, levelMod);
     addUpgrades(world);
-    addMenu(world, groupManager);
 
     tagManager.register(camera, TAG_CAMERA);
     tagManager.register(player, TAG_PLAYER);
 
     playerControlSystem = new PlayerControlSystem(gameCanvas);
     world.addSystem(playerControlSystem);
-    world.addSystem(new MenuInputSystem(gameCanvas));
     world.addSystem(new HyperDriveSystem());
     world.addSystem(new AutoPilotControlSystem());
     world.addSystem(new MovementSystem());
@@ -203,7 +201,7 @@ class Game {
     world.addSystem(new SoundSystem(audioManager));
     world.addSystem(new DebugSystem());
 
-    world.addSystem(new MenuRenderingSystem(gameContext));
+    world.addSystem(new MenuSystem(gameCanvas));
 
     world.initialize();
   }
@@ -268,16 +266,6 @@ class Game {
     upgrade.addComponent(new MiniMapRenderable("#00FF00"));
     upgrade.addComponent(upgradeComponent);
     upgrade.addToWorld();
-  }
-
-  void addMenu(World world, GroupManager groupManager) {
-    var menuTexts = ['START GAME', 'INSTRUCTIONS', 'CREDITS'];
-    for (int i = 0; i < menuTexts.length; i++) {
-      Entity menuItem = world.createEntity();
-      menuItem.addComponent(new MenuItem(MAX_WIDTH - 350, 50 + i * 70, 300, 50, menuTexts[i], () => gameState.started = true));
-      menuItem.addToWorld();
-      groupManager.add(menuItem, GROUP_MENU);
-    }
   }
 
   void prepareNextLevel() {

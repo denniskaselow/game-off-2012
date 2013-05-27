@@ -270,27 +270,6 @@ class HyperDrive extends ComponentPoolable {
   }
 }
 
-typedef void MenuAction();
-class MenuItem extends ComponentPoolable {
-  int x, y, width, height;
-  String text;
-  bool hover;
-  MenuAction action;
-  MenuItem._();
-  static MenuItem _constructor() => new MenuItem._();
-  factory MenuItem(int x, int y, int width, int height, String text, MenuAction action) {
-    MenuItem component = new Poolable.of(MenuItem, _constructor);
-    component..x = x
-             ..y = y
-             ..width = width
-             ..height = height
-             ..text = text
-             ..action = action
-             ..hover = false;
-    return component;
-  }
-}
-
 class ScoreComponent extends ComponentPoolable {
   num damageScore, killScore;
   ScoreComponent._();

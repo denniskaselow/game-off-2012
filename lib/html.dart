@@ -13,3 +13,4 @@ part 'src/html/asset_management.dart';
 part 'src/html/input_systems.dart';
 part 'src/html/render_systems.dart';
 part 'src/html/sound_systems.dart';
+part 'src/html/menu.dart';
