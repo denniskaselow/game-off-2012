@@ -2,13 +2,13 @@ part of html;
 
 class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
-  CanvasRenderingContext2D context2d;
+  CanvasRenderingContext2D context;
   Atlas atlas;
   ComponentMapper<Spatial> spatialMapper;
   ComponentMapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context2d, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]));
+  SpatialRenderingSystem(this.context, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]));
 
   void initialize() {
     super.initialize();
@@ -30,24 +30,24 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
     Transform transform = transformMapper.get(entity);
     ExpirationTimer timer = timerMapper.getSafe(entity);
 
-    context2d.save();
+    context.save();
 
     try {
-      context2d.lineWidth = 0.5;
-      context2d.fillStyle = "white";
-      context2d.strokeStyle = "white";
+      context.lineWidth = 0.5;
+      context.fillStyle = "white";
+      context.strokeStyle = "white";
 
-      context2d.beginPath();
+      context.beginPath();
 
       if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && transform.x < MAX_WIDTH) {
-        context2d.translate(UNIVERSE_WIDTH, 0);
+        context.translate(UNIVERSE_WIDTH, 0);
       }
       if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && transform.y < MAX_HEIGHT) {
-        context2d.translate(0, UNIVERSE_HEIGHT);
+        context.translate(0, UNIVERSE_HEIGHT);
       }
-      context2d.translate(transform.x, transform.y);
+      context.translate(transform.x, transform.y);
       if (null != timer) {
-        context2d.globalAlpha = timer.percentLeft;
+        context.globalAlpha = timer.percentLeft;
       }
       num scale = spatial.scale;
       if (spatial.isAnimated) {
@@ -55,35 +55,35 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
         Sprite sprite = atlas.sprites[spatial.resources[index]];
         drawSprite(sprite, scale);
       } else {
-        context2d.rotate(transform.angle);
+        context.rotate(transform.angle);
         spatial.resources.forEach((resource) {
           Sprite sprite = atlas.sprites[resource];
           drawSprite(sprite, scale);
         });
       }
 
-      context2d.closePath();
-      context2d.fill();
+      context.closePath();
+      context.fill();
 
-      context2d.stroke();
+      context.stroke();
     } finally {
-      context2d.restore();
+      context.restore();
     }
   }
 
   void drawSprite(Sprite sprite, num scale) {
     // TODO scale when createing spatial
     Rect dest = new Rect(sprite.dst.left * scale, sprite.dst.top * scale, sprite.dst.width * scale, sprite.dst.height * scale);
-    context2d.drawImageToRect(atlas.image, dest, sourceRect : sprite.src);
+    context.drawImageToRect(atlas.image, dest, sourceRect : sprite.src);
   }
 }
 
 class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
-  CanvasRenderingContext2D context2d;
+  CanvasRenderingContext2D context;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   HyperDrive hyperDrive;
 
-  NormalSpaceBackgroundRenderSystem(this.context2d);
+  NormalSpaceBackgroundRenderSystem(this.context);
 
   void initialize() {
     super.initialize();
@@ -100,9 +100,9 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
   }
 
   void renderNormalSpace(CameraPosition cameraPos) {
-    context2d.setTransform(1, 0, 0, 1, 0, 0);
-    context2d.translate(-cameraPos.x, -cameraPos.y);
-    context2d..fillStyle = "black"
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.translate(-cameraPos.x, -cameraPos.y);
+    context..fillStyle = "black"
         ..beginPath()
         ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
         ..fill()
@@ -116,7 +116,7 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
 class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem {
   HyperDrive hyperDrive;
 
-  HyperSpaceBackgroundRenderSystem(context2d) : super(context2d);
+  HyperSpaceBackgroundRenderSystem(context) : super(context);
 
   void initialize() {
     super.initialize();
@@ -129,17 +129,17 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
     var cameraPos = cameraPositionMapper.get(camera);
 
     var mod = hyperDrive.hyperSpaceMod;
-    context2d.setTransform(1/(1+mod/50), 0, 0, 1+mod, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+mod/50))), 0);
-    context2d.translate(-cameraPos.x, -cameraPos.y - (20 * mod));
+    context.setTransform(1/(1+mod/50), 0, 0, 1+mod, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+mod/50))), 0);
+    context.translate(-cameraPos.x, -cameraPos.y - (20 * mod));
 
-    context2d.globalAlpha = max(0.05, 1 - (mod));
-    context2d..fillStyle = "black"
+    context.globalAlpha = max(0.05, 1 - (mod));
+    context..fillStyle = "black"
         ..beginPath()
         ..rect(cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT)
         ..fill()
         ..stroke()
         ..closePath();
-    context2d.globalAlpha = 1;
+    context.globalAlpha = 1;
   }
 
   bool checkProcessing() => hyperDrive.active && !status.destroyed;
@@ -151,11 +151,11 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
 
   CanvasElement bgCanvas;
   Atlas atlas;
-  CanvasRenderingContext2D context2d;
+  CanvasRenderingContext2D context;
   ComponentMapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  BackgroundStarsRenderingSystem(this.context2d, this.atlas);
+  BackgroundStarsRenderingSystem(this.context, this.atlas);
 
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
@@ -167,7 +167,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
     ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform, world);
     bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
-    var bgContext = bgCanvas.context2d;
+    var bgContext = bgCanvas.context2D;
 
     bgContext.setTransform(1, 0, 0, 1, 0, 0);
     bgContext.translate(OVERLAP_WIDTH, OVERLAP_HEIGHT);
@@ -190,25 +190,25 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
 
-    context2d.save();
+    context.save();
     try {
-      context2d.beginPath();
+      context.beginPath();
       num srcX = cameraPos.x + OVERLAP_WIDTH;
       num srcY = cameraPos.y + OVERLAP_HEIGHT;
       if (cameraPos.x < UNIVERSE_WIDTH - MAX_WIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAX_HEIGHT) {
-        context2d.drawImageScaledFromSource(bgCanvas, srcX, srcY, MAX_WIDTH, MAX_HEIGHT, cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT);
+        context.drawImageScaledFromSource(bgCanvas, srcX, srcY, MAX_WIDTH, MAX_HEIGHT, cameraPos.x, cameraPos.y, MAX_WIDTH, MAX_HEIGHT);
       } else if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && cameraPos.y < UNIVERSE_HEIGHT - MAX_HEIGHT) {
         num overlapWidthLeft = UNIVERSE_WIDTH - cameraPos.x + OVERLAP_WIDTH;
         num overlapWidthRight = MAX_WIDTH - (UNIVERSE_WIDTH - cameraPos.x) + OVERLAP_WIDTH;
         num overlapDestX = UNIVERSE_WIDTH - OVERLAP_WIDTH;
-        context2d.drawImageScaledFromSource(bgCanvas, srcX, srcY, overlapWidthLeft, MAX_HEIGHT, cameraPos.x, cameraPos.y, overlapWidthLeft, MAX_HEIGHT);
-        context2d.drawImageScaledFromSource(bgCanvas, 0, srcY, overlapWidthRight, MAX_HEIGHT, overlapDestX, cameraPos.y, overlapWidthRight, MAX_HEIGHT);
+        context.drawImageScaledFromSource(bgCanvas, srcX, srcY, overlapWidthLeft, MAX_HEIGHT, cameraPos.x, cameraPos.y, overlapWidthLeft, MAX_HEIGHT);
+        context.drawImageScaledFromSource(bgCanvas, 0, srcY, overlapWidthRight, MAX_HEIGHT, overlapDestX, cameraPos.y, overlapWidthRight, MAX_HEIGHT);
       } else if (cameraPos.x < UNIVERSE_WIDTH - MAX_WIDTH && cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT) {
         num overlapHeightTop = UNIVERSE_HEIGHT - cameraPos.y + OVERLAP_HEIGHT;
         num overlapHeightBottom = MAX_HEIGHT - (UNIVERSE_HEIGHT - cameraPos.y) + OVERLAP_HEIGHT;
         num overlapDestY = UNIVERSE_HEIGHT - OVERLAP_HEIGHT;
-        context2d.drawImageScaledFromSource(bgCanvas, srcX, srcY, MAX_WIDTH, overlapHeightTop, cameraPos.x, cameraPos.y, MAX_WIDTH, overlapHeightTop);
-        context2d.drawImageScaledFromSource(bgCanvas, srcX, 0, MAX_WIDTH, overlapHeightBottom, cameraPos.x, overlapDestY, MAX_WIDTH, overlapHeightBottom);
+        context.drawImageScaledFromSource(bgCanvas, srcX, srcY, MAX_WIDTH, overlapHeightTop, cameraPos.x, cameraPos.y, MAX_WIDTH, overlapHeightTop);
+        context.drawImageScaledFromSource(bgCanvas, srcX, 0, MAX_WIDTH, overlapHeightBottom, cameraPos.x, overlapDestY, MAX_WIDTH, overlapHeightBottom);
       } else {
         num overlapWidthLeft = UNIVERSE_WIDTH - cameraPos.x + OVERLAP_WIDTH;
         num overlapWidthRight = MAX_WIDTH - (UNIVERSE_WIDTH - cameraPos.x) + OVERLAP_WIDTH;
@@ -216,26 +216,26 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
         num overlapHeightBottom = MAX_HEIGHT - (UNIVERSE_HEIGHT - cameraPos.y) + OVERLAP_HEIGHT;
         num overlapDestX = UNIVERSE_WIDTH - OVERLAP_WIDTH;
         num overlapDestY = UNIVERSE_HEIGHT - OVERLAP_HEIGHT;
-        context2d.drawImageScaledFromSource(bgCanvas, srcX, srcY, overlapWidthLeft, overlapHeightTop, cameraPos.x, cameraPos.y, overlapWidthLeft, overlapHeightTop);
-        context2d.drawImageScaledFromSource(bgCanvas, 0, srcY, overlapWidthRight, overlapHeightTop, overlapDestX, cameraPos.y, overlapWidthRight, overlapHeightTop);
-        context2d.drawImageScaledFromSource(bgCanvas, srcX, 0, overlapWidthLeft, overlapHeightBottom, cameraPos.x, overlapDestY, overlapWidthLeft, overlapHeightBottom);
-        context2d.drawImageScaledFromSource(bgCanvas, 0, 0, overlapWidthRight, overlapHeightBottom, overlapDestX, overlapDestY, overlapWidthRight, overlapHeightBottom);
+        context.drawImageScaledFromSource(bgCanvas, srcX, srcY, overlapWidthLeft, overlapHeightTop, cameraPos.x, cameraPos.y, overlapWidthLeft, overlapHeightTop);
+        context.drawImageScaledFromSource(bgCanvas, 0, srcY, overlapWidthRight, overlapHeightTop, overlapDestX, cameraPos.y, overlapWidthRight, overlapHeightTop);
+        context.drawImageScaledFromSource(bgCanvas, srcX, 0, overlapWidthLeft, overlapHeightBottom, cameraPos.x, overlapDestY, overlapWidthLeft, overlapHeightBottom);
+        context.drawImageScaledFromSource(bgCanvas, 0, 0, overlapWidthRight, overlapHeightBottom, overlapDestX, overlapDestY, overlapWidthRight, overlapHeightBottom);
       }
-      context2d.closePath();
+      context.closePath();
     } finally {
-      context2d.restore();
+      context.restore();
     }
   }
 }
 
 class ParticleRenderSystem extends EntityProcessingSystem {
-  CanvasRenderingContext2D context2d;
+  CanvasRenderingContext2D context;
 
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<Particle> particleMapper;
   CameraPosition cameraPos;
 
-  ParticleRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf([Particle, Transform]));
+  ParticleRenderSystem(this.context) : super(Aspect.getAspectForAllOf([Particle, Transform]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(Transform, world);
@@ -252,20 +252,20 @@ class ParticleRenderSystem extends EntityProcessingSystem {
     Transform t = transformMapper.get(e);
     Particle p = particleMapper.get(e);
 
-    context2d.save();
+    context.save();
     try {
       if (cameraPos.x > UNIVERSE_WIDTH - MAX_WIDTH && t.x < MAX_WIDTH) {
-        context2d.translate(UNIVERSE_WIDTH, 0);
+        context.translate(UNIVERSE_WIDTH, 0);
       }
       if (cameraPos.y > UNIVERSE_HEIGHT - MAX_HEIGHT && t.y < MAX_HEIGHT) {
-        context2d.translate(0, UNIVERSE_HEIGHT);
+        context.translate(0, UNIVERSE_HEIGHT);
       }
-      context2d.translate(t.x, t.y);
+      context.translate(t.x, t.y);
 
-      context2d.fillStyle = p.color;
-      context2d.fillRect(0, 0, 1, 1);
+      context.fillStyle = p.color;
+      context.fillRect(0, 0, 1, 1);
     } finally {
-      context2d.restore();
+      context.restore();
     }
   }
 }
@@ -273,53 +273,53 @@ class ParticleRenderSystem extends EntityProcessingSystem {
 class HudRenderSystem extends PlayerStatusProcessingSystem {
   const LABEL_SCORE = "Score:";
   const LABEL_LEVEL = "Level:";
-  CanvasRenderingContext2D context2d;
+  CanvasRenderingContext2D context;
   num scoreX, levelX;
 
-  HudRenderSystem(this.context2d);
+  HudRenderSystem(this.context);
 
   void initialize() {
     super.initialize();
-    var bounds = context2d.measureText(LABEL_SCORE);
+    var bounds = context.measureText(LABEL_SCORE);
     scoreX = 550 - bounds.width;
-    bounds = context2d.measureText(LABEL_LEVEL);
+    bounds = context.measureText(LABEL_LEVEL);
     levelX = 550 - bounds.width;
   }
 
   void processSystem() {
-    context2d.save();
-    context2d.transform(1, 0, 0, 1, 90, 12);
+    context.save();
+    context.transform(1, 0, 0, 1, 90, 12);
     try {
-      context2d.beginPath();
-      context2d.fillStyle = "black";
-      context2d.fillRect(0, 0, 200, 15);
-      context2d.fillStyle = "green";
-      context2d.fillRect(0, 0, 200 * status.health / status.maxHealth, 15);
-      context2d.closePath();
+      context.beginPath();
+      context.fillStyle = "black";
+      context.fillRect(0, 0, 200, 15);
+      context.fillStyle = "green";
+      context.fillRect(0, 0, 200 * status.health / status.maxHealth, 15);
+      context.closePath();
     } finally {
-      context2d.restore();
+      context.restore();
     }
 
-    ImageCache.withImage("hud_dummy.png", (image) => context2d.drawImage(image, 0, 0));
+    ImageCache.withImage("hud_dummy.png", (image) => context.drawImage(image, 0, 0));
     String score = "${gameState.score.toStringAsFixed(0)}";
     String level = "${(gameState.currentLevel+1).toString()}";
-    context2d.fillText(LABEL_LEVEL, levelX, 11);
-    context2d.fillText(LABEL_SCORE, scoreX, 31);
-    var bounds = context2d.measureText(level);
-    context2d.fillText(level, 680 - bounds.width, 11);
-    bounds = context2d.measureText(score);
-    context2d.fillText(score, 680 - bounds.width, 31);
+    context.fillText(LABEL_LEVEL, levelX, 11);
+    context.fillText(LABEL_SCORE, scoreX, 31);
+    var bounds = context.measureText(level);
+    context.fillText(level, 680 - bounds.width, 11);
+    bounds = context.measureText(score);
+    context.fillText(score, 680 - bounds.width, 31);
   }
 }
 
 class MiniMapRenderSystem extends EntitySystem {
-  CanvasRenderingContext2D context2d;
+  CanvasRenderingContext2D context;
 
   ComponentMapper<Transform> transformMapper;
   ComponentMapper<MiniMapRenderable> renderableMapper;
   ComponentMapper<CircularBody> bodyMapper;
 
-  MiniMapRenderSystem(this.context2d) : super(Aspect.getAspectForAllOf([MiniMapRenderable, Transform, CircularBody]));
+  MiniMapRenderSystem(this.context) : super(Aspect.getAspectForAllOf([MiniMapRenderable, Transform, CircularBody]));
 
   void initialize() {
     transformMapper = new ComponentMapper<Transform>(Transform, world);
@@ -328,27 +328,27 @@ class MiniMapRenderSystem extends EntitySystem {
   }
 
   void processEntities(ReadOnlyBag<Entity> entities) {
-    context2d.save();
-    context2d.transform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
+    context.save();
+    context.transform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
     try {
-      context2d.fillStyle = "black";
-      context2d.beginPath();
-      context2d.fillRect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT);
-      context2d.closePath();
+      context.fillStyle = "black";
+      context.beginPath();
+      context.fillRect(0, 0, UNIVERSE_WIDTH, UNIVERSE_HEIGHT);
+      context.closePath();
 
       entities.forEach((entity) {
         Transform transform = transformMapper.get(entity);
         MiniMapRenderable renderable = renderableMapper.get(entity);
         CircularBody body = bodyMapper.get(entity);
 
-        context2d.fillStyle = renderable.color;
-        context2d.strokeStyle = renderable.color;
-        context2d.beginPath();
-        context2d.fillRect(transform.x - body.radius, transform.y - body.radius, body.radius*2, body.radius*2);
-        context2d.closePath();
+        context.fillStyle = renderable.color;
+        context.strokeStyle = renderable.color;
+        context.beginPath();
+        context.fillRect(transform.x - body.radius, transform.y - body.radius, body.radius*2, body.radius*2);
+        context.closePath();
       });
     } finally {
-      context2d.restore();
+      context.restore();
     }
   }
 

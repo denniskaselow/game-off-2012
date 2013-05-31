@@ -25,7 +25,7 @@ void main() {
     hudContainer.height = HUD_HEIGHT;
 
     Future.wait(imageLoader).then((images) {
-      hudContainer.context2d..textBaseline = 'top'
+      hudContainer.context2D..textBaseline = 'top'
                             ..font = '20px D3Radicalism';
       Atlas atlas = new Atlas(images[0], sprites);
       gameContainer.focus();
@@ -99,8 +99,8 @@ class Game {
   double playerScale;
 
   Game(this.gameCanvas, this.hudCanvas, this.atlas) {
-    gameContext = gameCanvas.context2d;
-    hudContext = hudCanvas.context2d;
+    gameContext = gameCanvas.context2D;
+    hudContext = hudCanvas.context2D;
     audioManager = createAudioManager(window.location.href);
     playerScale = 0.5;
   }
