@@ -33,8 +33,7 @@ void main() {
       gameContainer.onBlur.listen((data) => game.pause());
       gameContainer.onFocus.listen((data) => game.unpause());
       gameContainer.onKeyDown.listen((data) {
-        // P
-        if (data.keyCode == 80) {
+        if (data.keyCode == KeyCode.P) {
           if (gameState.paused) {
             game.unpause();
           } else {

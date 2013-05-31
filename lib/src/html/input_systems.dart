@@ -1,16 +1,11 @@
 part of html;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
-  /** W. */
-  const int ACCELERATE = 87;
-  /** A. */
-  const int LEFT = 65;
-  /** D. */
-  const int RIGHT = 68;
-  /** J. */
-  const int SHOOT = 74;
-  /** H. */
-  const int HYPERDRIVE = 72;
+  const int ACCELERATE = KeyCode.W;
+  const int LEFT = KeyCode.A;
+  const int RIGHT = KeyCode.D;
+  const int SHOOT = KeyCode.J;
+  const int HYPERDRIVE = KeyCode.H;
 
   Map<int, bool> keyPressed = new Map<int, bool>();
 
@@ -45,7 +40,6 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     cannon = cannonMapper.get(player);
     hyperDrive = hyperDriveMapper.get(player);
 
-
     keyDownSubscription = canvas.onKeyDown.listen(handleKeyDown);
     keyUpSubscription = canvas.onKeyUp.listen(handleKeyUp);
   }
@@ -73,17 +67,9 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     }
   }
 
-  void releaseAllKeys() {
-    keyPressed.keys.forEach((key) => keyPressed[key] = false);
-  }
-
-  void handleKeyDown(KeyboardEvent e) {
-    keyPressed[e.keyCode] = true;
-  }
-
-  void handleKeyUp(KeyboardEvent e) {
-    keyPressed[e.keyCode] = false;
-  }
+  void releaseAllKeys() => keyPressed.keys.forEach((key) => keyPressed[key] = false);
+  void handleKeyDown(KeyboardEvent e) => keyPressed[e.keyCode] = true;
+  void handleKeyUp(KeyboardEvent e) => keyPressed[e.keyCode] = false;
 
   bool checkProcessing() => gameState.running && status.health > 0 && !hyperDrive.active;
 }
