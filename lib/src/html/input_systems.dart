@@ -68,8 +68,12 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   }
 
   void releaseAllKeys() => keyPressed.keys.forEach((key) => keyPressed[key] = false);
-  void handleKeyDown(KeyboardEvent e) => keyPressed[e.keyCode] = true;
-  void handleKeyUp(KeyboardEvent e) => keyPressed[e.keyCode] = false;
+  void handleKeyDown(KeyboardEvent e) {
+    keyPressed[e.keyCode] = true;
+  }
+  void handleKeyUp(KeyboardEvent e) {
+    keyPressed[e.keyCode] = false;
+  }
 
   bool checkProcessing() => gameState.running && status.health > 0 && !hyperDrive.active;
 }

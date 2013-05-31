@@ -201,6 +201,7 @@ class Game {
     world.addSystem(new DebugSystem());
 
     world.addSystem(new MenuSystem(gameCanvas));
+    world.addSystem(new HighscoreSavingSystem(gameState));
 
     world.initialize();
   }

@@ -28,6 +28,7 @@ class GameState {
   bool nextLevelIsBeingPrepared = false;
   bool paused = false;
   bool started = false;
+  bool highScoreSaved = false;
   double score = 0.0;
   bool get running => started && !paused;
 }
