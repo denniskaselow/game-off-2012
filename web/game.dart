@@ -245,24 +245,26 @@ class Game {
 
   void addUpgrades(World world) {
     for (int i = 0; i < 4; i++) {
-      addUpgradeToWorld(world, new Upgrade("health", healthGain: 5, fillHealth: true));
+      addUpgradeToWorld(world, new Upgrade("health", healthGain: 5, fillHealth: true, massGain: 1));
     }
     for (int i = 0; i < min(1, MAX_BULLETS - playerCannon.amount); i++) {
-      addUpgradeToWorld(world, new Upgrade("bullets", bullets: 1));
+      addUpgradeToWorld(world, new Upgrade("bullet_amount", bullets: 1, massGain: 5));
     }
+    addUpgradeToWorld(world, new Upgrade("bullet_strength", bulletDamageGain: 0.5, massGain: 1));
     if (!playerHyperDrive.enabled) {
-      addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true));
+      addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true, massGain: 10));
     }
+    addUpgradeToWorld(world, new Upgrade("thruster", massGain: 2));
   }
 
   void addUpgradeToWorld(World world, Upgrade upgradeComponent) {
-    double scale = 0.2;
+    double scale = 1.0;
     Entity upgrade = world.createEntity();
     upgrade.addComponent(new Transform(random.nextDouble() * UNIVERSE_WIDTH, random.nextDouble() * UNIVERSE_HEIGHT));
     upgrade.addComponent(generateRandomVelocity(0.025, 0.1));
     upgrade.addComponent(new Spatial('upgrade_${upgradeComponent.name}.png', scale: scale));
-    upgrade.addComponent(new CircularBody(50 * scale));
-    upgrade.addComponent(new Mass(100 * scale));
+    upgrade.addComponent(new CircularBody(10 * scale));
+    upgrade.addComponent(new Mass(20 * scale));
     upgrade.addComponent(new MiniMapRenderable("#00FF00"));
     upgrade.addComponent(upgradeComponent);
     upgrade.addToWorld();

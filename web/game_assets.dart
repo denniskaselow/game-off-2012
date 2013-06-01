@@ -3,7 +3,7 @@ part of game;
 var assets = {
 "asteroid-0-0.png":
 {
-  "frame": {"x":688,"y":756,"w":98,"h":100},
+  "frame": {"x":106,"y":810,"w":98,"h":100},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":12,"y":17,"w":98,"h":100},
@@ -11,7 +11,7 @@ var assets = {
 },
 "asteroid-0-1.png":
 {
-  "frame": {"x":394,"y":818,"w":94,"h":114},
+  "frame": {"x":369,"y":754,"w":94,"h":114},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":18,"y":10,"w":94,"h":114},
@@ -35,7 +35,7 @@ var assets = {
 },
 "asteroid-0-12.png":
 {
-  "frame": {"x":558,"y":616,"w":108,"h":106},
+  "frame": {"x":220,"y":696,"w":108,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":7,"y":12,"w":108,"h":106},
@@ -43,7 +43,7 @@ var assets = {
 },
 "asteroid-0-13.png":
 {
-  "frame": {"x":110,"y":706,"w":108,"h":112},
+  "frame": {"x":334,"y":586,"w":108,"h":112},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":6,"y":12,"w":108,"h":112},
@@ -51,7 +51,7 @@ var assets = {
 },
 "asteroid-0-14.png":
 {
-  "frame": {"x":224,"y":494,"w":110,"h":110},
+  "frame": {"x":580,"y":510,"w":110,"h":110},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":3,"y":10,"w":110,"h":110},
@@ -59,7 +59,7 @@ var assets = {
 },
 "asteroid-0-15.png":
 {
-  "frame": {"x":884,"y":652,"w":106,"h":106},
+  "frame": {"x":662,"y":634,"w":106,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":4,"y":9,"w":106,"h":106},
@@ -67,7 +67,7 @@ var assets = {
 },
 "asteroid-0-16.png":
 {
-  "frame": {"x":670,"y":530,"w":108,"h":106},
+  "frame": {"x":0,"y":698,"w":108,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":7,"y":7,"w":108,"h":106},
@@ -99,7 +99,7 @@ var assets = {
 },
 "asteroid-0-2.png":
 {
-  "frame": {"x":208,"y":900,"w":94,"h":116},
+  "frame": {"x":208,"y":902,"w":94,"h":116},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":18,"y":12,"w":94,"h":116},
@@ -115,7 +115,7 @@ var assets = {
 },
 "asteroid-0-21.png":
 {
-  "frame": {"x":594,"y":832,"w":94,"h":110},
+  "frame": {"x":394,"y":868,"w":94,"h":110},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":12,"y":4,"w":94,"h":110},
@@ -123,7 +123,7 @@ var assets = {
 },
 "asteroid-0-22.png":
 {
-  "frame": {"x":586,"y":722,"w":96,"h":110},
+  "frame": {"x":768,"y":656,"w":96,"h":110},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":11,"y":7,"w":96,"h":110},
@@ -131,7 +131,7 @@ var assets = {
 },
 "asteroid-0-23.png":
 {
-  "frame": {"x":778,"y":546,"w":108,"h":104},
+  "frame": {"x":108,"y":706,"w":108,"h":104},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":9,"y":11,"w":108,"h":104},
@@ -171,7 +171,7 @@ var assets = {
 },
 "asteroid-0-28.png":
 {
-  "frame": {"x":560,"y":510,"w":110,"h":106},
+  "frame": {"x":910,"y":564,"w":110,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":6,"y":7,"w":110,"h":106},
@@ -187,7 +187,7 @@ var assets = {
 },
 "asteroid-0-3.png":
 {
-  "frame": {"x":488,"y":804,"w":98,"h":112},
+  "frame": {"x":921,"y":452,"w":98,"h":112},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":15,"y":8,"w":98,"h":112},
@@ -203,7 +203,7 @@ var assets = {
 },
 "asteroid-0-31.png":
 {
-  "frame": {"x":0,"y":698,"w":110,"h":106},
+  "frame": {"x":800,"y":550,"w":110,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":9,"y":4,"w":110,"h":106},
@@ -211,7 +211,7 @@ var assets = {
 },
 "asteroid-0-32.png":
 {
-  "frame": {"x":778,"y":650,"w":106,"h":106},
+  "frame": {"x":442,"y":648,"w":106,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":14,"y":6,"w":106,"h":106},
@@ -227,7 +227,7 @@ var assets = {
 },
 "asteroid-0-34.png":
 {
-  "frame": {"x":302,"y":818,"w":92,"h":116},
+  "frame": {"x":302,"y":884,"w":92,"h":116},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":17,"y":0,"w":92,"h":116},
@@ -251,7 +251,7 @@ var assets = {
 },
 "asteroid-0-37.png":
 {
-  "frame": {"x":338,"y":392,"w":112,"h":96},
+  "frame": {"x":358,"y":392,"w":112,"h":96},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":12,"y":10,"w":112,"h":96},
@@ -259,7 +259,7 @@ var assets = {
 },
 "asteroid-0-38.png":
 {
-  "frame": {"x":448,"y":532,"w":110,"h":98},
+  "frame": {"x":338,"y":488,"w":110,"h":98},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":10,"y":10,"w":110,"h":98},
@@ -267,7 +267,7 @@ var assets = {
 },
 "asteroid-0-39.png":
 {
-  "frame": {"x":0,"y":804,"w":108,"h":108},
+  "frame": {"x":224,"y":588,"w":108,"h":108},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":10,"y":8,"w":108,"h":108},
@@ -315,7 +315,7 @@ var assets = {
 },
 "asteroid-0-44.png":
 {
-  "frame": {"x":338,"y":488,"w":110,"h":110},
+  "frame": {"x":811,"y":440,"w":110,"h":110},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":11,"y":6,"w":110,"h":110},
@@ -323,7 +323,7 @@ var assets = {
 },
 "asteroid-0-45.png":
 {
-  "frame": {"x":222,"y":604,"w":108,"h":114},
+  "frame": {"x":448,"y":534,"w":108,"h":114},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":14,"y":2,"w":108,"h":114},
@@ -331,7 +331,7 @@ var assets = {
 },
 "asteroid-0-46.png":
 {
-  "frame": {"x":701,"y":418,"w":110,"h":112},
+  "frame": {"x":470,"y":422,"w":110,"h":112},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":14,"y":5,"w":110,"h":112},
@@ -339,7 +339,7 @@ var assets = {
 },
 "asteroid-0-47.png":
 {
-  "frame": {"x":488,"y":916,"w":106,"h":108},
+  "frame": {"x":0,"y":804,"w":106,"h":108},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":17,"y":9,"w":106,"h":108},
@@ -347,7 +347,7 @@ var assets = {
 },
 "asteroid-0-48.png":
 {
-  "frame": {"x":811,"y":440,"w":108,"h":106},
+  "frame": {"x":112,"y":600,"w":108,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":14,"y":14,"w":108,"h":106},
@@ -403,7 +403,7 @@ var assets = {
 },
 "asteroid-0-54.png":
 {
-  "frame": {"x":682,"y":636,"w":96,"h":108},
+  "frame": {"x":652,"y":740,"w":96,"h":108},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":21,"y":10,"w":96,"h":108},
@@ -411,7 +411,7 @@ var assets = {
 },
 "asteroid-0-55.png":
 {
-  "frame": {"x":886,"y":546,"w":106,"h":106},
+  "frame": {"x":556,"y":620,"w":106,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":12,"y":11,"w":106,"h":106},
@@ -451,7 +451,7 @@ var assets = {
 },
 "asteroid-0-6.png":
 {
-  "frame": {"x":334,"y":598,"w":110,"h":94},
+  "frame": {"x":224,"y":494,"w":110,"h":94},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":8,"y":21,"w":110,"h":94},
@@ -459,7 +459,7 @@ var assets = {
 },
 "asteroid-0-60.png":
 {
-  "frame": {"x":450,"y":422,"w":110,"h":110},
+  "frame": {"x":701,"y":418,"w":110,"h":110},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":11,"y":11,"w":110,"h":110},
@@ -483,7 +483,7 @@ var assets = {
 },
 "asteroid-0-63.png":
 {
-  "frame": {"x":112,"y":600,"w":110,"h":106},
+  "frame": {"x":690,"y":528,"w":110,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":8,"y":17,"w":110,"h":106},
@@ -491,7 +491,7 @@ var assets = {
 },
 "asteroid-0-7.png":
 {
-  "frame": {"x":919,"y":440,"w":104,"h":106},
+  "frame": {"x":548,"y":726,"w":104,"h":106},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":12,"y":11,"w":104,"h":106},
@@ -499,7 +499,7 @@ var assets = {
 },
 "asteroid-0-8.png":
 {
-  "frame": {"x":418,"y":692,"w":98,"h":112},
+  "frame": {"x":921,"y":340,"w":98,"h":112},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":13,"y":6,"w":98,"h":112},
@@ -539,7 +539,7 @@ var assets = {
 },
 "spaceship_thrusters.png":
 {
-  "frame": {"x":200,"y":818,"w":73,"h":82},
+  "frame": {"x":296,"y":802,"w":73,"h":82},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":0,"y":41,"w":73,"h":82},
@@ -547,33 +547,49 @@ var assets = {
 },
 "star_00.png":
 {
-  "frame": {"x":108,"y":818,"w":92,"h":92},
+  "frame": {"x":204,"y":810,"w":92,"h":92},
   "rotated": false,
   "trimmed": true,
   "spriteSourceSize": {"x":18,"y":18,"w":92,"h":92},
   "sourceSize": {"w":128,"h":128}
 },
-"upgrade_bullets.png":
+"upgrade_bullet_amount.png":
 {
-  "frame": {"x":318,"y":718,"w":100,"h":100},
+  "frame": {"x":338,"y":464,"w":20,"h":20},
   "rotated": false,
   "trimmed": false,
-  "spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
-  "sourceSize": {"w":100,"h":100}
+  "spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+  "sourceSize": {"w":20,"h":20}
+},
+"upgrade_bullet_strength.png":
+{
+  "frame": {"x":338,"y":444,"w":20,"h":20},
+  "rotated": false,
+  "trimmed": false,
+  "spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+  "sourceSize": {"w":20,"h":20}
 },
 "upgrade_health.png":
 {
-  "frame": {"x":218,"y":718,"w":100,"h":100},
+  "frame": {"x":338,"y":424,"w":20,"h":20},
   "rotated": false,
   "trimmed": false,
-  "spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
-  "sourceSize": {"w":100,"h":100}
+  "spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+  "sourceSize": {"w":20,"h":20}
 },
 "upgrade_hyperdrive.png":
 {
-  "frame": {"x":921,"y":340,"w":100,"h":100},
+  "frame": {"x":338,"y":404,"w":20,"h":20},
   "rotated": false,
   "trimmed": false,
-  "spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
-  "sourceSize": {"w":100,"h":100}
+  "spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+  "sourceSize": {"w":20,"h":20}
+},
+"upgrade_thruster.png":
+{
+  "frame": {"x":338,"y":384,"w":20,"h":20},
+  "rotated": false,
+  "trimmed": false,
+  "spriteSourceSize": {"x":0,"y":0,"w":20,"h":20},
+  "sourceSize": {"w":20,"h":20}
 }};

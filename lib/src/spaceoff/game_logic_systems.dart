@@ -122,24 +122,28 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   CircularBody body;
   Cannon cannon;
   HyperDrive hyperDrive;
+  Mass mass;
 
   UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf([Upgrade, Transform, CircularBody]));
 
   void initialize() {
     super.initialize();
+    TagManager tagManager = world.getManager(new TagManager().runtimeType);
+    Entity player = tagManager.getEntity(TAG_PLAYER);
+
     bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
     upgradeMapper = new ComponentMapper<Upgrade>(Upgrade, world);
     var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
     var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
-
     var statusMapper = new ComponentMapper<Status>(Status, world);
-    TagManager tagManager = world.getManager(new TagManager().runtimeType);
-    Entity player = tagManager.getEntity(TAG_PLAYER);
+    var massMapper = new ComponentMapper<Mass>(Mass, world);
+
     status = statusMapper.get(player);
     transform = transformMapper.get(player);
     body = bodyMapper.get(player);
     cannon = cannonMapper.get(player);
     hyperDrive = hyperDriveMapper.get(player);
+    mass = massMapper.get(player);
   }
 
   void processEntityOnScreen(Entity entity) {
@@ -154,9 +158,11 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
         status.health = status.maxHealth;
       }
       cannon.amount = cannon.amount == MAX_BULLETS ? MAX_BULLETS : cannon.amount + upgrade.bullets;
+      cannon.bulletDamage += upgrade.bulletDamageGain;
       if (upgrade.enableHyperDrive) {
         hyperDrive.enabled = true;
       }
+      mass.value += upgrade.massGain;
 
       entity.deleteFromWorld();
     }

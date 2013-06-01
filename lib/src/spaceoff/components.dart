@@ -100,10 +100,10 @@ class CircularBody extends ComponentPoolable {
 }
 
 class Mass extends ComponentPoolable {
-  num value;
+  double value;
   Mass._();
   static Mass _constructor() => new Mass._();
-  factory Mass(num value) {
+  factory Mass(double value) {
     Mass mass = new Poolable.of(Mass, _constructor);
     mass.value = value;
     return mass;
@@ -176,17 +176,20 @@ class Upgrade extends ComponentPoolable {
   String name;
   bool fillHealth;
   bool enableHyperDrive;
-  num healthGain;
+  int healthGain, massGain;
   int bullets;
+  double bulletDamageGain;
   Upgrade._();
   static Upgrade _constructor() => new Upgrade._();
-  factory Upgrade(String name, {num healthGain : 0, bool fillHealth : false, int bullets : 0, bool enableHyperDrive : false}) {
+  factory Upgrade(String name, {int healthGain : 0, int massGain : 0, bool fillHealth : false, int bullets : 0, double bulletDamageGain: 0.0, bool enableHyperDrive : false}) {
     Upgrade upgrade = new Poolable.of(Upgrade, _constructor);
     upgrade.name = name;
     upgrade.healthGain = healthGain;
     upgrade.fillHealth = fillHealth;
     upgrade.bullets = bullets;
     upgrade.enableHyperDrive = enableHyperDrive;
+    upgrade.bulletDamageGain = bulletDamageGain;
+    upgrade.massGain = massGain;
     return upgrade;
   }
 }
