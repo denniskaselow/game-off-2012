@@ -146,8 +146,8 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
 }
 
 class BackgroundStarsRenderingSystem extends VoidEntitySystem {
-  const int OVERLAP_WIDTH = 50;
-  const int OVERLAP_HEIGHT = 50;
+  const int OVERLAP_WIDTH = 64;
+  const int OVERLAP_HEIGHT = 64;
 
   CanvasElement bgCanvas;
   Atlas atlas;
@@ -172,9 +172,9 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
     bgContext.setTransform(1, 0, 0, 1, 0, 0);
     bgContext.translate(OVERLAP_WIDTH, OVERLAP_HEIGHT);
     Sprite sprite = atlas.sprites['star_00.png'];
-    var star = cq(100, 100)..translate(50, 50)..drawImageToRect(atlas.image, sprite.dst, sourceRect: sprite.src);
-    List<CanvasElement> stars = new List<CanvasElement>(20);
-    for (int i = 0; i < 20; i++) {
+    var star = cq(128, 128)..translate(64, 64)..drawImageToRect(atlas.image, sprite.dst, sourceRect: sprite.src);
+    List<CanvasElement> stars = new List<CanvasElement>(32);
+    for (int i = 0; i < 32; i++) {
       star.setHsl(hue: random.nextDouble(), saturation: 0.5+random.nextDouble() / 2, lightness: 0.5 + random.nextDouble() / 2);
       stars[i] = star.copy();
     }
