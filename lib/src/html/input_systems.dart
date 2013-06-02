@@ -14,9 +14,9 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   Spatial spatial;
   Velocity velocity;
-  Transform transform;
   Cannon cannon;
   HyperDrive hyperDrive;
+  Thruster thruster;
 
   CanvasElement canvas;
   GameState state;
@@ -29,16 +29,16 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   void initialize() {
     super.initialize();
     var velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-    var transformMapper = new ComponentMapper<Transform>(Transform, world);
     var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
     var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
     var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
+    var thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
 
     spatial = spatialMapper.get(player);
     velocity = velocityMapper.get(player);
-    transform = transformMapper.get(player);
     cannon = cannonMapper.get(player);
     hyperDrive = hyperDriveMapper.get(player);
+    thruster = thrusterMapper.get(player);
 
     keyDownSubscription = canvas.onKeyDown.listen(handleKeyDown);
     keyUpSubscription = canvas.onKeyUp.listen(handleKeyUp);
@@ -46,22 +46,26 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void processSystem() {
     if (keyPressed[ACCELERATE] == true) {
-      velocity.x += 0.0025 * FastMath.cos(transform.angle);
-      velocity.y += 0.0025 * FastMath.sin(transform.angle);
+      thruster.active = true;
       spatial.resources = ['spaceship.png', 'spaceship_thrusters.png'];
     } else {
+      thruster.active = false;
       spatial.resources = ['spaceship.png'];
     }
     if (keyPressed[LEFT] == true) {
-      transform.angle = (transform.angle - 0.05) % FastMath.TWO_PI;
+      thruster.turn = Thruster.TURN_LEFT;
     } else if (keyPressed[RIGHT] ==  true) {
-      transform.angle = (transform.angle + 0.05) % FastMath.TWO_PI;
+      thruster.turn = Thruster.TURN_RIGHT;
+    } else {
+      thruster.turn = Thruster.TURN_NONE;
     }
     cannon.shoot = keyPressed[SHOOT] == true;
     if (keyPressed[HYPERDRIVE] == true && hyperDrive.enabled) {
       hyperDrive.active = keyPressed[HYPERDRIVE] == true;
       spatial.resources = ['spaceship.png'];
       cannon.shoot = false;
+      thruster.active = false;
+      thruster.turn = Thruster.TURN_NONE;
       keyDownSubscription.cancel();
       keyUpSubscription.cancel();
     }

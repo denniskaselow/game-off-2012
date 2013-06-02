@@ -18,20 +18,25 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
   Cannon cannon;
   Transform transform;
   Spatial spatial;
+  Thruster thruster;
 
   void initialize() {
     super.initialize();
     var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
     var transformMapper = new ComponentMapper<Transform>(Transform, world);
     var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
+    var thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
     cannon = cannonMapper.get(player);
     transform = transformMapper.get(player);
     spatial = spatialMapper.get(player);
+    thruster = thrusterMapper.get(player);
   }
 
   void processSystem() {
     if (!status.destroyed && status.health < 0) {
       cannon.shoot = false;
+      thruster.active = false;
+      thruster.turn = Thruster.TURN_NONE;
       status.destroyed = true;
       spatial.resources = ['spaceship.png'];
       transform.rotationRate = 0.1;

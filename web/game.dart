@@ -63,18 +63,18 @@ List<Future<ImageElement>> loadImages() {
 }
 
 void initTabbedContent() {
-  Map<String, String> tabs = {"tabStory": "story", "tabControls": "controls", "tabCredits": "credits", "tabDebug": "debug"};
-  String selectedTab = "tabStory";
+  Map<String, String> tabs = {'tabStory': 'story', 'tabControls': 'controls', 'tabCredits': 'credits', 'tabDebug': 'debug'};
+  String selectedTab = 'tabStory';
   tabs.forEach((key, value) {
-    Element tab = query("#$key");
-    Element tabContent = query("#$value");
+    Element tab = query('#$key');
+    Element tabContent = query('#$value');
 
     tab.onClick.listen((listener) {
       if (key != selectedTab) {
-        tab.classes.add("selectedTab");
-        tabContent.classes.remove("hidden");
-        query("#$selectedTab").classes.remove("selectedTab");
-        query("#${tabs[selectedTab]}").classes.add("hidden");
+        tab.classes.add('selectedTab');
+        tabContent.classes.remove('hidden');
+        query('#$selectedTab').classes.remove('selectedTab');
+        query('#${tabs[selectedTab]}').classes.add('hidden');
         selectedTab = key;
       }
     });
@@ -95,6 +95,7 @@ class Game {
   Mass playerMass;
   Cannon playerCannon;
   HyperDrive playerHyperDrive;
+  Thruster playerThruster;
   double playerScale;
 
   Game(this.gameCanvas, this.hudCanvas, this.atlas) {
@@ -110,6 +111,7 @@ class Game {
     playerMass = new Mass(100 * playerScale);
     playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
     playerHyperDrive = new HyperDrive();
+    playerThruster = new Thruster();
 
     createWorld(currentWorld, 0);
 
@@ -155,15 +157,16 @@ class Game {
     double playerRadius = 45 * playerScale;
     Entity player = world.createEntity();
     player.addComponent(new Transform(playerX, playerY, angle : -PI/2));
-    player.addComponent(new Velocity(0, 0));
+    player.addComponent(new Velocity(0.0, 0.0));
     player.addComponent(new Spatial('spaceship.png', scale: 0.25));
     player.addComponent(new CircularBody(playerRadius));
-    player.addComponent(new MiniMapRenderable("#1fe9f6"));
+    player.addComponent(new MiniMapRenderable('#1fe9f6'));
     player.addComponent(new ScoreComponent(-10, -10));
     player.addComponent(playerStatus);
     player.addComponent(playerMass);
     player.addComponent(playerCannon);
     player.addComponent(playerHyperDrive);
+    player.addComponent(playerThruster);
     player.addToWorld();
 
     Entity camera = world.createEntity();
@@ -181,6 +184,7 @@ class Game {
     world.addSystem(playerControlSystem);
     world.addSystem(new HyperDriveSystem());
     world.addSystem(new AutoPilotControlSystem());
+    world.addSystem(new ThrusterSystem());
     world.addSystem(new MovementSystem());
     world.addSystem(new UpgradeCollectionSystem());
     world.addSystem(new CircularCollisionDetectionSystem());
@@ -235,7 +239,7 @@ class Game {
       asteroid.addComponent(new Spatial.animated(resources, scale : scale));
       asteroid.addComponent(new CircularBody(asteroidRadius));
       asteroid.addComponent(new Mass(100 * scale * levelMod));
-      asteroid.addComponent(new MiniMapRenderable("#333"));
+      asteroid.addComponent(new MiniMapRenderable('#333'));
       asteroid.addComponent(new Status(maxHealth : 100 * scale * levelMod));
       asteroid.addComponent(new SplitsOnDestruction(generateRandom(2, 4).round().toInt()));
       asteroid.addComponent(new ScoreComponent(10 * scale, 100 * scale * levelMod));
@@ -245,16 +249,16 @@ class Game {
 
   void addUpgrades(World world) {
     for (int i = 0; i < 4; i++) {
-      addUpgradeToWorld(world, new Upgrade("health", healthGain: 5, fillHealth: true, massGain: 1));
+      addUpgradeToWorld(world, new Upgrade('health', healthGain: 5, fillHealth: true, massGain: 1));
     }
     for (int i = 0; i < min(1, MAX_BULLETS - playerCannon.amount); i++) {
-      addUpgradeToWorld(world, new Upgrade("bullet_amount", bullets: 1, massGain: 5));
+      addUpgradeToWorld(world, new Upgrade('bullet_amount', bullets: 1, massGain: 5));
     }
-    addUpgradeToWorld(world, new Upgrade("bullet_strength", bulletDamageGain: 0.5, massGain: 1));
+    addUpgradeToWorld(world, new Upgrade('bullet_strength', bulletDamageGain: 0.5, massGain: 1));
     if (!playerHyperDrive.enabled) {
-      addUpgradeToWorld(world, new Upgrade("hyperdrive", enableHyperDrive: true, massGain: 10));
+      addUpgradeToWorld(world, new Upgrade('hyperdrive', enableHyperDrive: true, massGain: 10));
     }
-    addUpgradeToWorld(world, new Upgrade("thruster", massGain: 2));
+    addUpgradeToWorld(world, new Upgrade('thruster', thrustGain: 0.00004, massGain: 1));
   }
 
   void addUpgradeToWorld(World world, Upgrade upgradeComponent) {
@@ -265,7 +269,7 @@ class Game {
     upgrade.addComponent(new Spatial('upgrade_${upgradeComponent.name}.png', scale: scale));
     upgrade.addComponent(new CircularBody(10 * scale));
     upgrade.addComponent(new Mass(20 * scale));
-    upgrade.addComponent(new MiniMapRenderable("#00FF00"));
+    upgrade.addComponent(new MiniMapRenderable('#00FF00'));
     upgrade.addComponent(upgradeComponent);
     upgrade.addToWorld();
   }
@@ -277,7 +281,7 @@ class Game {
     player.addComponent(new AutoPilot(angle: FastMath.THREE_PI_HALVES, velocity: 0.7));
     player.changedInWorld();
 
-    Future<World> nextWorldFuture = createAndInitWorld(++gameState.currentLevel);
+    Future<World> nextWorldFuture = createAndInitWorld(gameState.currentLevel + 1);
     nextWorldFuture.then((nextWorld) {
       if (!playerStatus.destroyed) {
         currentWorld = nextWorld;
@@ -287,6 +291,7 @@ class Game {
         player.changedInWorld();
         playerHyperDrive.shuttingDown = true;
         gameState.nextLevelIsBeingPrepared = false;
+        gameState.currentLevel++;
       }
     });
   }
@@ -317,17 +322,22 @@ class Game {
 }
 
 class DebugSystem extends VoidEntitySystem {
-  SpanElement fpsElement = query("#fps");
-  SpanElement playerPosElement = query("#playerPos");
-  SpanElement cameraPosElement = query("#cameraPos");
-  SpanElement entityCountElement = query("#entityCount");
+  SpanElement fpsElement = query('#fps');
+  SpanElement playerPosElement = query('#playerPos');
+  SpanElement cameraPosElement = query('#cameraPos');
+  SpanElement entityCountElement = query('#entityCount');
+  SpanElement thrusterElement = query('#playerThrust');
   ComponentMapper<CameraPosition> cameraPositionMapper;
   ComponentMapper<Transform> positionMapper;
+  ComponentMapper<Mass> massMapper;
+  ComponentMapper<Thruster> thrusterMapper;
   TagManager tagManager;
 
   void initialize() {
     cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
     positionMapper = new ComponentMapper<Transform>(Transform, world);
+    thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
+    massMapper = new ComponentMapper<Mass>(Mass, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
@@ -336,11 +346,14 @@ class DebugSystem extends VoidEntitySystem {
     Entity player = tagManager.getEntity(TAG_PLAYER);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
     Transform playerPos = positionMapper.get(player);
+    Thruster thruster = thrusterMapper.get(player);
+    Mass mass = massMapper.get(player);
 
     num fps = 1000 ~/ world.delta;
-    fpsElement.text = "${fps}";
-    cameraPosElement.text = "x: ${cameraPos.x}; y: ${cameraPos.y}";
-    playerPosElement.text = "x: ${playerPos.x}; y: ${playerPos.y}";
-    entityCountElement.text = "${world.entityManager.activeEntityCount}";
+    fpsElement.text = '${fps}';
+    cameraPosElement.text = 'x: ${cameraPos.x}; y: ${cameraPos.y}';
+    playerPosElement.text = 'x: ${playerPos.x}; y: ${playerPos.y}';
+    thrusterElement.text = 'Thrust: ${thruster.thrust}; Mass: ${mass.value}; q: ${100 * sqrt(thruster.thrust / mass.value)}m/s^2';
+    entityCountElement.text = '${world.entityManager.activeEntityCount}';
   }
 }

@@ -67,19 +67,56 @@ abstract class OnScreenEntityProcessingSystem extends OnScreenProcessingSystem {
 
 }
 
+class ThrusterSystem extends EntityProcessingSystem {
+  ComponentMapper<Velocity> velocityMapper;
+  ComponentMapper<Mass> massMapper;
+  ComponentMapper<Thruster> thrusterMapper;
+  ComponentMapper<Transform> transformMapper;
+
+  ThrusterSystem() : super(Aspect.getAspectForAllOf([Thruster, Velocity, Mass, Transform]));
+
+  void initialize() {
+    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
+    massMapper = new ComponentMapper<Mass>(Mass, world);
+    thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
+    transformMapper = new ComponentMapper<Transform>(Transform, world);
+  }
+
+  void processEntity(Entity e) {
+    Thruster thruster = thrusterMapper.get(e);
+
+    if (thruster.active || thruster.turn != Thruster.TURN_NONE) {
+      Transform transform = transformMapper.get(e);
+      Velocity vel = velocityMapper.get(e);
+      Mass mass = massMapper.get(e);
+
+      var change = sqrt(2 * thruster.thrust / mass.value);
+      if (thruster.active) {
+        vel.x += change * FastMath.cos(transform.angle);
+        vel.y += change * FastMath.sin(transform.angle);
+      }
+      if (thruster.turn != Thruster.TURN_NONE) {
+        transform.angle = (transform.angle + change * thruster.turn * 15) % FastMath.TWO_PI;
+      }
+    }
+  }
+
+  bool checkProcessing() => gameState.running;
+}
+
 class MovementSystem extends EntityProcessingSystem {
-  ComponentMapper<Transform> positionMapper;
+  ComponentMapper<Transform> transformMapper;
   ComponentMapper<Velocity> velocityMapper;
 
   MovementSystem() : super(Aspect.getAspectForAllOf([Transform, Velocity]));
 
   void initialize() {
-    positionMapper = new ComponentMapper<Transform>(Transform, world);
+    transformMapper = new ComponentMapper<Transform>(Transform, world);
     velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
   }
 
   void processEntity(Entity entity) {
-    Transform transform = positionMapper.get(entity);
+    Transform transform = transformMapper.get(entity);
     Velocity vel = velocityMapper.get(entity);
 
     transform.x += vel.x * world.delta;
@@ -123,6 +160,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Cannon cannon;
   HyperDrive hyperDrive;
   Mass mass;
+  Thruster thruster;
 
   UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf([Upgrade, Transform, CircularBody]));
 
@@ -137,12 +175,14 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
     var statusMapper = new ComponentMapper<Status>(Status, world);
     var massMapper = new ComponentMapper<Mass>(Mass, world);
+    var thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
 
     status = statusMapper.get(player);
     transform = transformMapper.get(player);
     body = bodyMapper.get(player);
     cannon = cannonMapper.get(player);
     hyperDrive = hyperDriveMapper.get(player);
+    thruster = thrusterMapper.get(player);
     mass = massMapper.get(player);
   }
 
@@ -163,6 +203,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
         hyperDrive.enabled = true;
       }
       mass.value += upgrade.massGain;
+      thruster.thrust += upgrade.thrustGain;
 
       entity.deleteFromWorld();
     }

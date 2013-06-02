@@ -37,10 +37,10 @@ class CameraPosition extends ComponentPoolable{
 }
 
 class Velocity extends ComponentPoolable {
-  num x, y;
+  double x, y;
   Velocity._();
   static Velocity _constructor() => new Velocity._();
-  factory Velocity(num x, num y) {
+  factory Velocity(double x, double y) {
     Velocity velocity = new Poolable.of(Velocity, _constructor);
     velocity.x = x;
     velocity.y = y;
@@ -48,6 +48,24 @@ class Velocity extends ComponentPoolable {
   }
   double get absolute => sqrt(x * x + y * y);
   double get angle => atan2(y, x);
+}
+
+class Thruster extends ComponentPoolable {
+  static const TURN_NONE = 0;
+  static const TURN_LEFT = -1;
+  static const TURN_RIGHT = 1;
+  bool active;
+  double thrust;
+  int turn;
+  Thruster._();
+  static Thruster _constructor() => new Thruster._();
+  factory Thruster({double thrust: 0.0002}) {
+    Thruster thruster = new Poolable.of(Thruster, _constructor);
+    thruster.thrust = thrust;
+    thruster.active = false;
+    thruster.turn = TURN_NONE;
+    return thruster;
+  }
 }
 
 class Spatial extends ComponentPoolable {
@@ -178,10 +196,13 @@ class Upgrade extends ComponentPoolable {
   bool enableHyperDrive;
   int healthGain, massGain;
   int bullets;
-  double bulletDamageGain;
+  double bulletDamageGain, thrustGain;
   Upgrade._();
   static Upgrade _constructor() => new Upgrade._();
-  factory Upgrade(String name, {int healthGain : 0, int massGain : 0, bool fillHealth : false, int bullets : 0, double bulletDamageGain: 0.0, bool enableHyperDrive : false}) {
+  factory Upgrade(String name,
+                {int healthGain : 0, int massGain : 0, bool fillHealth : false,
+                 int bullets : 0, double bulletDamageGain: 0.0, double thrustGain: 0.0,
+                 bool enableHyperDrive : false}) {
     Upgrade upgrade = new Poolable.of(Upgrade, _constructor);
     upgrade.name = name;
     upgrade.healthGain = healthGain;
@@ -190,6 +211,7 @@ class Upgrade extends ComponentPoolable {
     upgrade.enableHyperDrive = enableHyperDrive;
     upgrade.bulletDamageGain = bulletDamageGain;
     upgrade.massGain = massGain;
+    upgrade.thrustGain = thrustGain;
     return upgrade;
   }
 }
