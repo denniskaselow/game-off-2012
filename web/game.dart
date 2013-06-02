@@ -203,7 +203,7 @@ class Game {
     world.addSystem(new SpatialRenderingSystem(gameContext, atlas));
     world.addSystem(new ParticleRenderSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));
-    world.addSystem(new HudRenderSystem(hudContext));
+    world.addSystem(new HudRenderSystem(hudContext, atlas));
     world.addSystem(new SoundSystem(audioManager));
     world.addSystem(new DebugSystem());
 

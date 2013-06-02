@@ -275,8 +275,9 @@ class HudRenderSystem extends PlayerStatusProcessingSystem {
   const LABEL_LEVEL = "Level:";
   CanvasRenderingContext2D context;
   num scoreX, levelX;
+  Atlas atlas;
 
-  HudRenderSystem(this.context);
+  HudRenderSystem(this.context, this.atlas);
 
   void initialize() {
     super.initialize();
@@ -300,7 +301,10 @@ class HudRenderSystem extends PlayerStatusProcessingSystem {
       context.restore();
     }
 
-    ImageCache.withImage("hud_dummy.png", (image) => context.drawImage(image, 0, 0));
+    Sprite sprite = atlas.sprites['hud_dummy.png'];
+    context.translate(-sprite.dst.left, -sprite.dst.top);
+    context.drawImageToRect(atlas.image, sprite.dst, sourceRect: sprite.src);
+    context.translate(sprite.dst.left, sprite.dst.top);
     String score = "${gameState.score.toStringAsFixed(0)}";
     String level = "${(gameState.currentLevel+1).toString()}";
     context.fillText(LABEL_LEVEL, levelX, 11);
