@@ -1,4 +1,10 @@
+@font-face {
+    font-family: 'D3Radicalism';
+    src: url('resources/font/d3radicalism.ttf');
+}
+
 body {
+  font-size: 20px;
   background-color: #FDFDFD;
 }
 
@@ -6,6 +12,16 @@ canvas {
   border: solid 1px black;
   display: block;
   margin: 0px auto;
+}
+
+canvas#gamecontainer {
+  width: 800px;
+  height: 400px;
+}
+
+canvas#hudcontainer {
+  width: 800px;
+  height: 100px;
 }
 
 h1 {
@@ -57,11 +73,12 @@ dl {
 }
 
 dt {
+  clear: left;
   float: left;
   width: 50px;
   font-weight: bold;
 }
 
 dd {
-  width: 500px;
+  width: 600px;
 }
