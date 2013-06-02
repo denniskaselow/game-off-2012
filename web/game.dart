@@ -96,6 +96,7 @@ class Game {
   Cannon playerCannon;
   HyperDrive playerHyperDrive;
   Thruster playerThruster;
+  Turbo playerTurbo;
   double playerScale;
 
   Game(this.gameCanvas, this.hudCanvas, this.atlas) {
@@ -109,9 +110,10 @@ class Game {
     currentWorld = new World();
     playerStatus = new Status();
     playerMass = new Mass(100 * playerScale);
-    playerCannon = new Cannon(cooldownTime : 200, bulletSpeed: 0.5, bulletDamage: 5, amount: 1);
+    playerCannon = new Cannon();
     playerHyperDrive = new HyperDrive();
     playerThruster = new Thruster();
+    playerTurbo = new Turbo();
 
     createWorld(currentWorld, 0);
 
@@ -167,6 +169,7 @@ class Game {
     player.addComponent(playerCannon);
     player.addComponent(playerHyperDrive);
     player.addComponent(playerThruster);
+    player.addComponent(playerTurbo);
     player.addToWorld();
 
     Entity camera = world.createEntity();

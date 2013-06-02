@@ -68,6 +68,33 @@ class Thruster extends ComponentPoolable {
   }
 }
 
+class Turbo extends ComponentPoolable with Cooldown {
+  bool enabled, active;
+  double timeActive, maxTimeActive;
+  double oldVelocityX, oldVelocity, oldVelocityY, turboVelocity;
+  Turbo._();
+  static Turbo _constructor() => new Turbo._();
+  factory Turbo({double cooldownTime: 5000.0, double maxTimeActive : 400.0}) {
+    Turbo turbo = new Poolable.of(Turbo, _constructor);
+    turbo.enabled = true;
+    turbo.active = false;
+    turbo.timeActive = 0.0;
+    turbo.maxTimeActive = maxTimeActive;
+    turbo.cooldownTime = cooldownTime;
+    turbo.cooldownTimer = 0.0;
+    turbo.oldVelocity = null;
+    turbo.oldVelocityX = null;
+    turbo.oldVelocityY = null;
+    turbo.turboVelocity = null;
+    return turbo;
+  }
+
+  bool get canTurboActivate {
+    if (enabled && cooledDown) return true;
+    return false;
+  }
+}
+
 class Spatial extends ComponentPoolable {
   List<String> resources;
   num scale;
@@ -128,31 +155,27 @@ class Mass extends ComponentPoolable {
   }
 }
 
-class Cannon extends ComponentPoolable {
+class Cannon extends ComponentPoolable with Cooldown {
   bool shoot;
-  num cooldownTimer, cooldownTime, bulletSpeed, bulletMass, bulletDamage;
+  double bulletSpeed, bulletMass, bulletDamage;
   int amount;
   Cannon._();
   static Cannon _constructor() => new Cannon._();
-  factory Cannon({num cooldownTime : 1000, num bulletSpeed: 0.05, num bulletMass : 0.1, num bulletDamage : 5, int amount: 1}) {
+  factory Cannon({double cooldownTime : 200.0, double bulletSpeed: 0.5, double bulletMass : 0.1, double bulletDamage : 5.0, int amount: 1}) {
     Cannon cannon = new Poolable.of(Cannon, _constructor);
-    cannon.cooldownTime = cooldownTime;
     cannon.bulletSpeed = bulletSpeed;
     cannon.bulletMass = bulletMass;
     cannon.bulletDamage = bulletDamage;
     cannon.amount = amount;
     cannon.shoot = false;
-    cannon.cooldownTimer = 0;
+    cannon.cooldownTime = cooldownTime;
+    cannon.cooldownTimer = 0.0;
     return cannon;
   }
 
   bool get canShoot {
-    if (shoot && cooldownTimer <= 0) return true;
+    if (shoot && cooledDown) return true;
     return false;
-  }
-
-  void resetCooldown() {
-    cooldownTimer = cooldownTime;
   }
 }
 
@@ -310,4 +333,14 @@ class ScoreComponent extends ComponentPoolable {
 class ScoreCollector extends ComponentPoolable {
   ScoreCollector._();
   factory ScoreCollector() => new Poolable.of(ScoreCollector, () => new ScoreCollector._());
+}
+
+
+// Mixins
+abstract class Cooldown {
+  double cooldownTimer, cooldownTime;
+  bool get cooledDown => cooldownTimer <= 0;
+  void resetCooldown() {
+    cooldownTimer = cooldownTime;
+  }
 }

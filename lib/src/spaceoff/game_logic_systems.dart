@@ -71,32 +71,61 @@ class ThrusterSystem extends EntityProcessingSystem {
   ComponentMapper<Velocity> velocityMapper;
   ComponentMapper<Mass> massMapper;
   ComponentMapper<Thruster> thrusterMapper;
+  ComponentMapper<Turbo> turboMapper;
   ComponentMapper<Transform> transformMapper;
 
-  ThrusterSystem() : super(Aspect.getAspectForAllOf([Thruster, Velocity, Mass, Transform]));
+  ThrusterSystem() : super(Aspect.getAspectForAllOf([Thruster, Velocity, Mass, Transform, Turbo]));
 
   void initialize() {
     velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
     massMapper = new ComponentMapper<Mass>(Mass, world);
     thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
+    turboMapper = new ComponentMapper<Turbo>(Turbo, world);
     transformMapper = new ComponentMapper<Transform>(Transform, world);
   }
 
   void processEntity(Entity e) {
     Thruster thruster = thrusterMapper.get(e);
+    Turbo turbo = turboMapper.get(e);
 
-    if (thruster.active || thruster.turn != Thruster.TURN_NONE) {
+    if (thruster.active || thruster.turn != Thruster.TURN_NONE || turbo.active) {
       Transform transform = transformMapper.get(e);
       Velocity vel = velocityMapper.get(e);
       Mass mass = massMapper.get(e);
 
       var change = sqrt(2 * thruster.thrust / mass.value);
-      if (thruster.active) {
-        vel.x += change * FastMath.cos(transform.angle);
-        vel.y += change * FastMath.sin(transform.angle);
-      }
       if (thruster.turn != Thruster.TURN_NONE) {
         transform.angle = (transform.angle + change * thruster.turn * 15) % FastMath.TWO_PI;
+      }
+      if (turbo.active) {
+        turbo.resetCooldown();
+        if (turbo.oldVelocity == null) {
+          turbo.oldVelocity = sqrt(vel.x * vel.x + vel.y * vel.y);
+          turbo.oldVelocityX = vel.x;
+          turbo.oldVelocityY = vel.y;
+          turbo.turboVelocity = 500 * change;
+        }
+        var ratio = turbo.timeActive / turbo.maxTimeActive;
+        var mod = pow(1-(2*(-0.5 + ratio).abs()), 1.5);
+        var baseVelX = turbo.oldVelocityX * (1 - ratio) + turbo.oldVelocity * FastMath.cos(transform.angle) * ratio;
+        var baseVelY = turbo.oldVelocityY * (1 - ratio) + turbo.oldVelocity * FastMath.sin(transform.angle) * ratio;
+        vel.x = baseVelX + mod * turbo.turboVelocity * FastMath.cos(transform.angle);
+        vel.y = baseVelY + mod * turbo.turboVelocity * FastMath.sin(transform.angle);
+        turbo.timeActive += world.delta;
+        if (turbo.timeActive > turbo.maxTimeActive) {
+          turbo.active = false;
+          turbo.timeActive = 0.0;
+          vel.x = turbo.oldVelocity * FastMath.cos(transform.angle);
+          vel.y = turbo.oldVelocity * FastMath.sin(transform.angle);
+          turbo.oldVelocity = null;
+          turbo.turboVelocity = null;
+        }
+      } else {
+        turbo.cooldownTimer -= world.delta;
+        if (thruster.active) {
+          vel.x += change * FastMath.cos(transform.angle);
+          vel.y += change * FastMath.sin(transform.angle);
+        }
       }
     }
   }
