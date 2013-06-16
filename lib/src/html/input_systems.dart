@@ -6,10 +6,9 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   static const int RIGHT = KeyCode.D;
   static const int SHOOT = KeyCode.J;
   static const int HYPERDRIVE = KeyCode.H;
+  static const int TURBO = KeyCode.SPACE;
 
   Map<int, bool> keyPressed = new Map<int, bool>();
-
-  double timeAccelerated = 0.0, timeNotAccelerated = 0.0;
 
   Spatial spatial;
   Velocity velocity;
@@ -58,23 +57,19 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
     } else {
       if (accelerate) {
         if (!thruster.active) {
-          if (timeAccelerated < 100.0 && timeAccelerated > 0.0
-              && timeNotAccelerated < 100.0 && timeNotAccelerated > 0.0
-              && turbo.canTurboActivate) {
-            turbo.active = true;
-          }
           thruster.active = true;
           spatial.resources = ['spaceship.png', 'spaceship_thrusters.png'];
-          timeAccelerated = 0.0;
         }
-        timeAccelerated += world.delta;
       } else {
         if (thruster.active) {
-          timeNotAccelerated = 0.0;
           thruster.active = false;
           spatial.resources = ['spaceship.png'];
         }
-        timeNotAccelerated += world.delta;
+      }
+      if (activateTurbo) {
+        if (turbo.canTurboActivate) {
+          turbo.active = true;
+        }
       }
       if (turnLeft) {
         thruster.turn = Thruster.TURN_LEFT;
@@ -94,11 +89,14 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   bool get turnRight => keyPressed[RIGHT] == true;
   bool get activateHyperdrive => keyPressed[HYPERDRIVE] == true && hyperDrive.enabled;
   bool get shoot => keyPressed[SHOOT] == true;
+  bool get activateTurbo => keyPressed[TURBO] == true;
 
   void handleKeyDown(KeyboardEvent e) {
+    e.preventDefault();
     keyPressed[e.keyCode] = true;
   }
   void handleKeyUp(KeyboardEvent e) {
+    e.preventDefault();
     keyPressed[e.keyCode] = false;
   }
 
