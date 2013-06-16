@@ -146,8 +146,8 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
 }
 
 class BackgroundStarsRenderingSystem extends VoidEntitySystem {
-  const int OVERLAP_WIDTH = 64;
-  const int OVERLAP_HEIGHT = 64;
+  static const int OVERLAP_WIDTH = 64;
+  static const int OVERLAP_HEIGHT = 64;
 
   CanvasElement bgCanvas;
   Atlas atlas;
@@ -271,8 +271,8 @@ class ParticleRenderSystem extends EntityProcessingSystem {
 }
 
 class HudRenderSystem extends PlayerStatusProcessingSystem {
-  const LABEL_SCORE = "Score:";
-  const LABEL_LEVEL = "Level:";
+  static const LABEL_SCORE = "Score:";
+  static const LABEL_LEVEL = "Level:";
   CanvasRenderingContext2D context;
   num scoreX, levelX;
   Atlas atlas;

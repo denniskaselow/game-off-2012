@@ -1,11 +1,11 @@
 part of html;
 
 class MenuItem {
-  const MENU_ITEM_X = MAX_WIDTH - 350;
-  const MENU_ITEM_Y = 50;
-  const MENU_ITEM_WIDTH = 300;
-  const MENU_ITEM_HEIGHT = 50;
-  const MENU_ITEM_DELTA_Y = 70;
+  static const MENU_ITEM_X = MAX_WIDTH - 350;
+  static const MENU_ITEM_Y = 50;
+  static const MENU_ITEM_WIDTH = 300;
+  static const MENU_ITEM_HEIGHT = 50;
+  static const MENU_ITEM_DELTA_Y = 70;
   static int _idx = 0;
   String label, content;
   Rect rect;

@@ -1,11 +1,11 @@
 part of html;
 
 class PlayerControlSystem extends PlayerStatusProcessingSystem {
-  const int ACCELERATE = KeyCode.W;
-  const int LEFT = KeyCode.A;
-  const int RIGHT = KeyCode.D;
-  const int SHOOT = KeyCode.J;
-  const int HYPERDRIVE = KeyCode.H;
+  static const int ACCELERATE = KeyCode.W;
+  static const int LEFT = KeyCode.A;
+  static const int RIGHT = KeyCode.D;
+  static const int SHOOT = KeyCode.J;
+  static const int HYPERDRIVE = KeyCode.H;
 
   Map<int, bool> keyPressed = new Map<int, bool>();
 
