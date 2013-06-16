@@ -6,7 +6,14 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
   static const int RIGHT = KeyCode.D;
   static const int SHOOT = KeyCode.J;
   static const int HYPERDRIVE = KeyCode.H;
-  static const int TURBO = KeyCode.SPACE;
+  static const int TURBO = KeyCode.E;
+
+  static const int ACCELERATE_2 = KeyCode.UP;
+  static const int LEFT_2 = KeyCode.LEFT;
+  static const int RIGHT_2 = KeyCode.RIGHT;
+  static const int SHOOT_2= KeyCode.CTRL;
+  static const int HYPERDRIVE_2 = KeyCode.SHIFT;
+  static const int TURBO_2 = KeyCode.SPACE;
 
   Map<int, bool> keyPressed = new Map<int, bool>();
 
@@ -47,7 +54,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void processSystem() {
     if (activateHyperdrive) {
-      hyperDrive.active = keyPressed[HYPERDRIVE] == true;
+      hyperDrive.active = true;
       spatial.resources = ['spaceship.png'];
       cannon.shoot = false;
       thruster.active = false;
@@ -67,9 +74,7 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
         }
       }
       if (activateTurbo) {
-        if (turbo.canTurboActivate) {
-          turbo.active = true;
-        }
+        turbo.active = true;
       }
       if (turnLeft) {
         thruster.turn = Thruster.TURN_LEFT;
@@ -84,12 +89,12 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void releaseAllKeys() => keyPressed.keys.forEach((key) => keyPressed[key] = false);
 
-  bool get accelerate => keyPressed[ACCELERATE] == true;
-  bool get turnLeft => keyPressed[LEFT] == true;
-  bool get turnRight => keyPressed[RIGHT] == true;
-  bool get activateHyperdrive => keyPressed[HYPERDRIVE] == true && hyperDrive.enabled;
-  bool get shoot => keyPressed[SHOOT] == true;
-  bool get activateTurbo => keyPressed[TURBO] == true;
+  bool get accelerate => keyPressed[ACCELERATE] == true || keyPressed[ACCELERATE_2] == true;
+  bool get turnLeft => keyPressed[LEFT] == true || keyPressed[LEFT_2] == true;
+  bool get turnRight => keyPressed[RIGHT] == true || keyPressed[RIGHT_2] == true;
+  bool get activateHyperdrive => (keyPressed[HYPERDRIVE] == true  || keyPressed[HYPERDRIVE_2] == true) && hyperDrive.enabled;
+  bool get shoot => keyPressed[SHOOT] == true || keyPressed[SHOOT_2] == true;
+  bool get activateTurbo => (keyPressed[TURBO] == true || keyPressed[TURBO_2] == true) && turbo.canTurboActivate;
 
   void handleKeyDown(KeyboardEvent e) {
     e.preventDefault();
