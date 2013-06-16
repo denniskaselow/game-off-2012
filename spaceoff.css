@@ -72,13 +72,18 @@ dl {
   clear: both;
 }
 
+dl > * {
+  line-height: 25px;
+}
+
 dt {
   clear: left;
   float: left;
-  width: 50px;
+  width: 100px;
   font-weight: bold;
 }
 
 dd {
-  width: 600px;
+  margin-left: 100px;
+  width: 550px;
 }
