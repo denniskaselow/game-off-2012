@@ -73,7 +73,7 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   void drawSprite(Sprite sprite, num scale) {
     // TODO scale when createing spatial
-    Rect dest = new Rect(sprite.dst.left * scale, sprite.dst.top * scale, sprite.dst.width * scale, sprite.dst.height * scale);
+    Rectangle dest = new Rectangle(sprite.dst.left * scale, sprite.dst.top * scale, sprite.dst.width * scale, sprite.dst.height * scale);
     context.drawImageToRect(atlas.image, dest, sourceRect : sprite.src);
   }
 }

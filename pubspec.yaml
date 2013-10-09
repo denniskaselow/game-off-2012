@@ -5,7 +5,8 @@ homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
   browser: any
   dartemis: any
-  canvas_query: any
+  canvas_query:
+    path: ../CanvasQuery
   lawndart: any
   simple_audio:
     git: https://github.com/johnmccutchan/simpleaudio.git

@@ -8,10 +8,10 @@ class MenuItem {
   static const MENU_ITEM_DELTA_Y = 70;
   static int _idx = 0;
   String label, content;
-  Rect rect;
+  Rectangle rect;
   bool hover = false;
   MenuItem(this.label, {this.content}) {
-    rect = new Rect(MENU_ITEM_X, MENU_ITEM_Y + _idx * MENU_ITEM_DELTA_Y, MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT);
+    rect = new Rectangle(MENU_ITEM_X, MENU_ITEM_Y + _idx * MENU_ITEM_DELTA_Y, MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT);
     _idx++;
   }
 }

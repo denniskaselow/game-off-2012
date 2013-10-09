@@ -7,7 +7,7 @@ class HighscoreSavingSystem extends VoidEntitySystem {
   HighscoreSavingSystem(this.gameState);
 
   void initialize() {
-    var tm = world.getManager(TagManager);
+    TagManager tm = world.getManager(TagManager);
     var player = tm.getEntity(TAG_PLAYER);
     playerStatus = player.getComponentByClass(Status);
   }
