@@ -4,26 +4,26 @@ packages:
   args:
     description: args
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   asset_pack:
     description:
       ref: null
-      resolved-ref: "5468e19ac5489bb0bba6f1b06dc6df6c31414d5c"
+      resolved-ref: d535db44176eccb8519645f19d8b9bbb9b0c9853
       url: "https://github.com/johnmccutchan/asset_pack.git"
     source: git
-    version: "0.6.0"
+    version: "0.6.2"
   bot:
     description: bot
     source: hosted
-    version: "0.23.1"
+    version: "0.25.1"
   bot_io:
     description: bot_io
     source: hosted
-    version: "0.23.2"
+    version: "0.25.0"
   browser:
     description: browser
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   canvas_query:
     description:
       path: "F:\\Programming\\workspaces\\dart\\game-off-2012\\../CanvasQuery"
@@ -33,59 +33,61 @@ packages:
   crypto:
     description: crypto
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   dartemis:
-    description: dartemis
-    source: hosted
-    version: "0.4.2"
+    description:
+      path: "F:\\Programming\\workspaces\\dart\\game-off-2012\\../dartemis"
+      relative: true
+    source: path
+    version: "0.5.0-dev"
   hop:
     description: hop
     source: hosted
-    version: "0.25.1"
+    version: "0.27.1"
   html5lib:
     description: html5lib
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   lawndart:
     description: lawndart
     source: hosted
-    version: "0.6.1"
+    version: "0.6.4"
   logging:
     description: logging
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   meta:
     description: meta
     source: hosted
-    version: "0.8.1"
+    version: "0.8.8"
   path:
     description: path
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   simple_audio:
     description:
       ref: null
-      resolved-ref: a00e27966117c99ca7e6d70d733ad4a806521b1a
+      resolved-ref: "0da8ae6ac7fce3935e1b58770112c26c56836ccc"
       url: "https://github.com/johnmccutchan/simpleaudio.git"
     source: git
     version: "0.9.0"
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   unittest:
     description: unittest
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   unmodifiable_collection:
     description: unmodifiable_collection
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"
   utf:
     description: utf
     source: hosted
-    version: "0.8.1"
+    version: "0.9.0"

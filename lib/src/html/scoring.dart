@@ -15,7 +15,7 @@ class HighscoreSavingSystem extends VoidEntitySystem {
   void processSystem() {
     var score = new Highscore(gameState.currentLevel, gameState.score.toInt());
     store = new Store<String>('space-off', 'highscore');
-    store.open().then((_) => store.save(stringify(score), score.dateTime.toString()));
+    store.open().then((_) => store.save(JSON.encode(score), score.dateTime.toString()));
     gameState.highScoreSaved = true;
   }
   bool checkProcessing() => playerStatus.destroyed && !gameState.highScoreSaved;

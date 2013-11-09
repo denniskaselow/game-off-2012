@@ -11,38 +11,36 @@ part 'game_assets.dart';
 void main() {
   initTabbedContent();
   List<Future> imageLoader = loadImages();
-  CanvasElement gameContainer = query('#gamecontainer');
-  CanvasElement hudContainer = query('#hudcontainer');
+  CanvasElement gameContainer = querySelector('#gamecontainer');
+  CanvasElement hudContainer = querySelector('#hudcontainer');
   Map<String, Sprite> sprites = new Map<String, Sprite>();
   assets.forEach((key, value) {
     sprites[key] = new Sprite(assets[key]);
   });
 
-  window.setImmediate(() {
-    gameContainer.width = MAX_WIDTH;
-    gameContainer.height = MAX_HEIGHT;
-    hudContainer.width = MAX_WIDTH;
-    hudContainer.height = HUD_HEIGHT;
+  gameContainer.width = MAX_WIDTH;
+  gameContainer.height = MAX_HEIGHT;
+  hudContainer.width = MAX_WIDTH;
+  hudContainer.height = HUD_HEIGHT;
 
-    Future.wait(imageLoader).then((images) {
-      hudContainer.context2D..textBaseline = 'top'
-                            ..font = '20px D3Radicalism';
-      Atlas atlas = new Atlas(images[0], sprites);
-      gameContainer.focus();
-      Game game = new Game(gameContainer, hudContainer, atlas);
-      gameContainer.onBlur.listen((data) => game.pause());
-      gameContainer.onFocus.listen((data) => game.unpause());
-      gameContainer.onKeyDown.listen((data) {
-        if (data.keyCode == KeyCode.P) {
-          if (gameState.paused) {
-            game.unpause();
-          } else {
-            game.pause();
-          }
+  Future.wait(imageLoader).then((images) {
+    hudContainer.context2D..textBaseline = 'top'
+                          ..font = '20px D3Radicalism';
+    Atlas atlas = new Atlas(images[0], sprites);
+    gameContainer.focus();
+    Game game = new Game(gameContainer, hudContainer, atlas);
+    gameContainer.onBlur.listen((data) => game.pause());
+    gameContainer.onFocus.listen((data) => game.unpause());
+    gameContainer.onKeyDown.listen((data) {
+      if (data.keyCode == KeyCode.P) {
+        if (gameState.paused) {
+          game.unpause();
+        } else {
+          game.pause();
         }
-      });
-      game.start();
+      }
     });
+    game.start();
   });
 }
 
@@ -66,15 +64,15 @@ void initTabbedContent() {
   Map<String, String> tabs = {'tabStory': 'story', 'tabControls': 'controls', 'tabCredits': 'credits', 'tabDebug': 'debug'};
   String selectedTab = 'tabStory';
   tabs.forEach((key, value) {
-    Element tab = query('#$key');
-    Element tabContent = query('#$value');
+    Element tab = querySelector('#$key');
+    Element tabContent = querySelector('#$value');
 
     tab.onClick.listen((listener) {
       if (key != selectedTab) {
         tab.classes.add('selectedTab');
         tabContent.classes.remove('hidden');
-        query('#$selectedTab').classes.remove('selectedTab');
-        query('#${tabs[selectedTab]}').classes.add('hidden');
+        querySelector('#$selectedTab').classes.remove('selectedTab');
+        querySelector('#${tabs[selectedTab]}').classes.add('hidden');
         selectedTab = key;
       }
     });
@@ -325,11 +323,11 @@ class Game {
 }
 
 class DebugSystem extends VoidEntitySystem {
-  SpanElement fpsElement = query('#fps');
-  SpanElement playerPosElement = query('#playerPos');
-  SpanElement cameraPosElement = query('#cameraPos');
-  SpanElement entityCountElement = query('#entityCount');
-  SpanElement thrusterElement = query('#playerThrust');
+  SpanElement fpsElement = querySelector('#fps');
+  SpanElement playerPosElement = querySelector('#playerPos');
+  SpanElement cameraPosElement = querySelector('#cameraPos');
+  SpanElement entityCountElement = querySelector('#entityCount');
+  SpanElement thrusterElement = querySelector('#playerThrust');
   ComponentMapper<CameraPosition> cameraPositionMapper;
   ComponentMapper<Transform> positionMapper;
   ComponentMapper<Mass> massMapper;

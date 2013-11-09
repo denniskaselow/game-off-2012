@@ -3,7 +3,7 @@ library html;
 import 'dart:async';
 import 'dart:math';
 import 'dart:html';
-import 'dart:json';
+import 'dart:convert';
 import 'package:spaceoff/spaceoff.dart';
 export 'package:spaceoff/spaceoff.dart';
 import 'package:simple_audio/simple_audio.dart';
