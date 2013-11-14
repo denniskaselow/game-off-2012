@@ -25,21 +25,17 @@ packages:
     source: hosted
     version: "0.9.0"
   canvas_query:
-    description:
-      path: "F:\\Programming\\workspaces\\dart\\game-off-2012\\../CanvasQuery"
-      relative: true
-    source: path
-    version: "0.2.0-dev"
+    description: canvas_query
+    source: hosted
+    version: "0.2.0"
   crypto:
     description: crypto
     source: hosted
     version: "0.9.0"
   dartemis:
-    description:
-      path: "F:\\Programming\\workspaces\\dart\\game-off-2012\\../dartemis"
-      relative: true
-    source: path
-    version: "0.5.0-dev"
+    description: dartemis
+    source: hosted
+    version: "0.5.1"
   hop:
     description: hop
     source: hosted

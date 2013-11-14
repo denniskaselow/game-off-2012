@@ -1,8 +1,8 @@
 library spaceoff;
 
 import 'dart:math';
-import 'package:dartemis/dartemis.dart';
-export 'package:dartemis/dartemis.dart';
+import 'package:dartemis/dartemis_mirrors.dart';
+export 'package:dartemis/dartemis_mirrors.dart';
 
 part 'src/spaceoff/components.dart';
 part 'src/spaceoff/game_logic_systems.dart';

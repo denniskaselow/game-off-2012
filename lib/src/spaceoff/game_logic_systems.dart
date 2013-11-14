@@ -14,12 +14,6 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
 
   OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf([Transform]));
 
-  void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
-  }
-
   void processEntities(ReadOnlyBag<Entity> entities) {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     CameraPosition cameraPos = cameraPositionMapper.get(camera);
@@ -55,10 +49,6 @@ abstract class OnScreenEntityProcessingSystem extends OnScreenProcessingSystem {
 
   OnScreenEntityProcessingSystem(Aspect aspect) : super(aspect);
 
-  void initialize() {
-    super.initialize();
-  }
-
   void processEntitiesOnScreen(ReadOnlyBag<Entity> entities) {
     entities.forEach((entity) => processEntityOnScreen(entity));
   }
@@ -75,14 +65,6 @@ class ThrusterSystem extends EntityProcessingSystem {
   ComponentMapper<Transform> transformMapper;
 
   ThrusterSystem() : super(Aspect.getAspectForAllOf([Thruster, Velocity, Mass, Transform, Turbo]));
-
-  void initialize() {
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-    massMapper = new ComponentMapper<Mass>(Mass, world);
-    thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
-    turboMapper = new ComponentMapper<Turbo>(Turbo, world);
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-  }
 
   void processEntity(Entity e) {
     Thruster thruster = thrusterMapper.get(e);
@@ -139,11 +121,6 @@ class MovementSystem extends EntityProcessingSystem {
 
   MovementSystem() : super(Aspect.getAspectForAllOf([Transform, Velocity]));
 
-  void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-  }
-
   void processEntity(Entity entity) {
     Transform transform = transformMapper.get(entity);
     Velocity vel = velocityMapper.get(entity);
@@ -162,12 +139,6 @@ class CameraSystem extends VoidEntitySystem {
   TagManager tagManager;
 
   CameraSystem();
-
-  void initialize() {
-    positionMapper = new ComponentMapper<Transform>(Transform, world);
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
-  }
 
   void processSystem() {
     Entity player = tagManager.getEntity(TAG_PLAYER);
@@ -198,8 +169,6 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
     Entity player = tagManager.getEntity(TAG_PLAYER);
 
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
-    upgradeMapper = new ComponentMapper<Upgrade>(Upgrade, world);
     var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
     var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
     var statusMapper = new ComponentMapper<Status>(Status, world);
@@ -258,19 +227,6 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   ComponentMapper<ScoreComponent> scoreComponentMapper;
 
   CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf([CircularBody, Transform, Velocity, Mass]));
-
-  void initialize() {
-    super.initialize();
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-    massMapper = new ComponentMapper<Mass>(Mass, world);
-    statusMapper = new ComponentMapper<Status>(Status, world);
-    damageMapper = new ComponentMapper<Damage>(Damage, world);
-    expirationMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer, world);
-    scoreCollectorMapper = new ComponentMapper<ScoreCollector>(ScoreCollector, world);
-    scoreComponentMapper = new ComponentMapper<ScoreComponent>(ScoreComponent, world);
-  }
 
   void processEntitiesOnScreen(ReadOnlyBag<Entity> entities) {
     if (entities.size > 1) {
@@ -408,13 +364,6 @@ class BulletSpawningSystem extends EntityProcessingSystem {
 
   BulletSpawningSystem() : super(Aspect.getAspectForAllOf([Cannon, Transform, Velocity, Mass]));
 
-  void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-    massMapper = new ComponentMapper<Mass>(Mass, world);
-    cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
-  }
-
   void processEntity(Entity entity) {
     Cannon cannon = cannonMapper.get(entity);
 
@@ -506,16 +455,6 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
 
   SplittingDestructionSystem() : super(Aspect.getAspectForAllOf([SplitsOnDestruction, CircularBody, Status, Velocity, Mass, Spatial]));
 
-  void initialize() {
-    super.initialize();
-    statusMapper = new ComponentMapper<Status>(Status, world);
-    splitterMapper = new ComponentMapper<SplitsOnDestruction>(SplitsOnDestruction, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-    massMapper = new ComponentMapper<Mass>(Mass, world);
-    spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
-  }
-
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper.get(entity);
     if (status.health <= 0) {
@@ -573,13 +512,6 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
   ComponentMapper<Velocity> velocityMapper;
 
   DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf([DisappearsOnDestruction, Status, Transform, CircularBody, Velocity]));
-
-  void initialize() {
-    super.initialize();
-    statusMapper = new ComponentMapper<Status>(Status, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-  }
 
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper.get(entity);

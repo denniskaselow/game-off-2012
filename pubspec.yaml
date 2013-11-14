@@ -4,10 +4,8 @@ description: Entry to the GitHub Game Off 2012
 homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
   browser: any
-  dartemis:
-    path: ../dartemis
-  canvas_query:
-    path: ../CanvasQuery
+  dartemis: any
+  canvas_query: any
   lawndart: any
   simple_audio:
     git: https://github.com/johnmccutchan/simpleaudio.git

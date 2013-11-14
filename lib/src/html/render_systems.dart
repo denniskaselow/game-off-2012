@@ -10,12 +10,6 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   SpatialRenderingSystem(this.context, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]));
 
-  void initialize() {
-    super.initialize();
-    spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
-    timerMapper = new ComponentMapper<ExpirationTimer>(ExpirationTimer, world);
-  }
-
   void begin() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     cameraPos = cameraPositionMapper.get(camera);
@@ -87,7 +81,6 @@ class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
     var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
     hyperDrive = hdMapper.get(player);
   }
@@ -158,8 +151,6 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
   BackgroundStarsRenderingSystem(this.context, this.atlas);
 
   void initialize() {
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
     initBackground();
   }
 
@@ -238,8 +229,6 @@ class ParticleRenderSystem extends EntityProcessingSystem {
   ParticleRenderSystem(this.context) : super(Aspect.getAspectForAllOf([Particle, Transform]));
 
   void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    particleMapper = new ComponentMapper<Particle>(Particle, world);
     ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
 
@@ -324,12 +313,6 @@ class MiniMapRenderSystem extends EntitySystem {
   ComponentMapper<CircularBody> bodyMapper;
 
   MiniMapRenderSystem(this.context) : super(Aspect.getAspectForAllOf([MiniMapRenderable, Transform, CircularBody]));
-
-  void initialize() {
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    renderableMapper = new ComponentMapper<MiniMapRenderable>(MiniMapRenderable, world);
-    bodyMapper = new ComponentMapper<CircularBody>(CircularBody, world);
-  }
 
   void processEntities(ReadOnlyBag<Entity> entities) {
     context.save();

@@ -20,7 +20,7 @@ class MenuSystem extends VoidEntitySystem with CameraPosMixin {
 
   CanvasElement canvas;
   CanvasRenderingContext2D context;
-  CqWrapper overlay;
+  CanvasQuery overlay;
   List<MenuItem> menu = [new MenuItem('START GAME'), new MenuItem('INSTRUCTIONS'), new MenuItem('CREDITS'), new MenuItem('HIGHSCORE')];
 
   MenuSystem(this.canvas) {

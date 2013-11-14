@@ -8,7 +8,6 @@ abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
 
   void initialize() {
     var statusMapper = new ComponentMapper<Status>(Status, world);
-    tagManager = world.getManager(new TagManager().runtimeType);
     player = tagManager.getEntity(TAG_PLAYER);
     status = statusMapper.get(player);
   }
@@ -54,12 +53,6 @@ class AutoPilotControlSystem extends EntityProcessingSystem  {
   ComponentMapper<Velocity> velocityMapper;
 
   AutoPilotControlSystem() : super(Aspect.getAspectForAllOf([AutoPilot, Transform, Velocity]));
-
-  void initialize() {
-    autoPilotMapper = new ComponentMapper<AutoPilot>(AutoPilot, world);
-    transformMapper = new ComponentMapper<Transform>(Transform, world);
-    velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-  }
 
   void processEntity(Entity e) {
     AutoPilot autoPilot = autoPilotMapper.get(e);
