@@ -1,3 +1,6 @@
 packages
 /deploy
 /web/resources/img/orig/*.png
+.idea/
+.pub/
+.packages

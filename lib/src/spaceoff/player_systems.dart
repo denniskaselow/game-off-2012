@@ -7,9 +7,9 @@ abstract class PlayerStatusProcessingSystem extends VoidEntitySystem {
   Status status;
 
   void initialize() {
-    var statusMapper = new ComponentMapper<Status>(Status, world);
+    var statusMapper = new Mapper<Status>(Status, world);
     player = tagManager.getEntity(TAG_PLAYER);
-    status = statusMapper.get(player);
+    status = statusMapper[player];
   }
 }
 
@@ -21,14 +21,14 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
-    var transformMapper = new ComponentMapper<Transform>(Transform, world);
-    var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
-    var thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
-    cannon = cannonMapper.get(player);
-    transform = transformMapper.get(player);
-    spatial = spatialMapper.get(player);
-    thruster = thrusterMapper.get(player);
+    var cannonMapper = new Mapper<Cannon>(Cannon, world);
+    var transformMapper = new Mapper<Transform>(Transform, world);
+    var spatialMapper = new Mapper<Spatial>(Spatial, world);
+    var thrusterMapper = new Mapper<Thruster>(Thruster, world);
+    cannon = cannonMapper[player];
+    transform = transformMapper[player];
+    spatial = spatialMapper[player];
+    thruster = thrusterMapper[player];
   }
 
   void processSystem() {
@@ -48,24 +48,24 @@ class PlayerDestructionSystem extends PlayerStatusProcessingSystem {
 }
 
 class AutoPilotControlSystem extends EntityProcessingSystem  {
-  ComponentMapper<AutoPilot> autoPilotMapper;
-  ComponentMapper<Transform> transformMapper;
-  ComponentMapper<Velocity> velocityMapper;
+  Mapper<AutoPilot> autoPilotMapper;
+  Mapper<Transform> transformMapper;
+  Mapper<Velocity> velocityMapper;
 
   AutoPilotControlSystem() : super(Aspect.getAspectForAllOf([AutoPilot, Transform, Velocity]));
 
   void processEntity(Entity e) {
-    AutoPilot autoPilot = autoPilotMapper.get(e);
-    Transform transform = transformMapper.get(e);
+    AutoPilot autoPilot = autoPilotMapper[e];
+    Transform transform = transformMapper[e];
 
-    double angleDiff = (autoPilot.angle - transform.angle) % FastMath.TWO_PI;
+    double angleDiff = (autoPilot.angle - transform.angle) % (2 * PI);
     if (angleDiff > PI) {
-      angleDiff -= FastMath.TWO_PI;
+      angleDiff -= 2 * PI;
     }
     if (angleDiff.abs() > 0.001) {
       transform.angle += angleDiff * 0.08;
     } else {
-      Velocity velocity = velocityMapper.get(e);
+      Velocity velocity = velocityMapper[e];
       velocity.x = autoPilot.velocity * cos(autoPilot.angle);
       velocity.y = autoPilot.velocity * sin(autoPilot.angle);
     }
@@ -83,12 +83,11 @@ class HyperDriveSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
-    hyperDrive = hdMapper.get(player);
+    var hdMapper = new Mapper<HyperDrive>(HyperDrive, world);
+    hyperDrive = hdMapper[player];
   }
 
   void processSystem() {
-    double stretch;
     if (!hyperDrive.shuttingDown) {
       hyperDrive.hyperSpaceMod += 0.01 + hyperDrive.hyperSpaceMod * 0.005;
     } else {

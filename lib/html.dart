@@ -6,8 +6,6 @@ import 'dart:html';
 import 'dart:convert';
 import 'package:spaceoff/spaceoff.dart';
 export 'package:spaceoff/spaceoff.dart';
-import 'package:simple_audio/simple_audio.dart';
-export 'package:simple_audio/simple_audio.dart';
 import 'package:canvas_query/canvas_query.dart';
 import 'package:lawndart/lawndart.dart';
 

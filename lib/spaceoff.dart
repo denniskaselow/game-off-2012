@@ -1,8 +1,8 @@
 library spaceoff;
 
 import 'dart:math';
-import 'package:dartemis/dartemis_mirrors.dart';
-export 'package:dartemis/dartemis_mirrors.dart';
+import 'package:dartemis/dartemis.dart';
+export 'package:dartemis/dartemis.dart';
 
 part 'src/spaceoff/components.dart';
 part 'src/spaceoff/game_logic_systems.dart';
@@ -35,9 +35,9 @@ class GameState {
 
 Velocity generateRandomVelocity(num minSpeed, num maxSpeed) {
   num vel = generateRandom(minSpeed, maxSpeed);
-  num angle = generateRandom(0, FastMath.TWO_PI);
-  num velx = vel * FastMath.sin(angle);
-  num vely = vel * FastMath.cos(angle);
+  num angle = generateRandom(0, 2 * PI);
+  num velx = vel * sin(angle);
+  num vely = vel * cos(angle);
   return new Velocity(velx, vely);
 }
 
@@ -50,8 +50,8 @@ void createParticles(World world, Transform transform, num radius, int amount, V
   for (int i = 0; i < amount; i++) {
     Entity particle = world.createEntity();
 
-    double offsetX = random.nextDouble() * radius * FastMath.sin(FastMath.TWO_PI * random.nextDouble());
-    double offsetY = random.nextDouble() * radius * FastMath.sin(FastMath.TWO_PI * random.nextDouble());
+    double offsetX = random.nextDouble() * radius * sin(2 * PI * random.nextDouble());
+    double offsetY = random.nextDouble() * radius * sin(2 * PI * random.nextDouble());
     particle.addComponent(new Transform(transform.x + offsetX, transform.y + offsetY));
 
     double vAbs = velocity.absolute;
@@ -72,4 +72,11 @@ void createParticles(World world, Transform transform, num radius, int amount, V
     particle.addComponent(new ExpirationTimer(250 + random.nextInt(500)));
     particle.addToWorld();
   }
+}
+
+bool doCirclesCollide(num x1, num y1, num radius1, num x2, num y2, num radius2) {
+  var dx = x2 - x1;
+  var dy = y2 - y1;
+  var dist = sqrt(dx * dx + dy * dy);
+  return radius1 + radius2 > dist;
 }

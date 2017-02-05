@@ -4,24 +4,24 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
   CanvasRenderingContext2D context;
   Atlas atlas;
-  ComponentMapper<Spatial> spatialMapper;
-  ComponentMapper<ExpirationTimer> timerMapper;
+  Mapper<Spatial> spatialMapper;
+  Mapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
   SpatialRenderingSystem(this.context, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]));
 
   void begin() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    cameraPos = cameraPositionMapper.get(camera);
+    cameraPos = cameraPositionMapper[camera];
   }
 
   void processEntityOnScreen(Entity entity) {
-    Spatial spatial = spatialMapper.get(entity);
+    Spatial spatial = spatialMapper[entity];
     drawImage(entity, spatial);
   }
 
   void drawImage(Entity entity, Spatial spatial) {
-    Transform transform = transformMapper.get(entity);
+    Transform transform = transformMapper[entity];
     ExpirationTimer timer = timerMapper.getSafe(entity);
 
     context.save();
@@ -74,20 +74,20 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
 
 class NormalSpaceBackgroundRenderSystem extends PlayerStatusProcessingSystem {
   CanvasRenderingContext2D context;
-  ComponentMapper<CameraPosition> cameraPositionMapper;
+  Mapper<CameraPosition> cameraPositionMapper;
   HyperDrive hyperDrive;
 
   NormalSpaceBackgroundRenderSystem(this.context);
 
   void initialize() {
     super.initialize();
-    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
-    hyperDrive = hdMapper.get(player);
+    var hdMapper = new Mapper<HyperDrive>(HyperDrive, world);
+    hyperDrive = hdMapper[player];
   }
 
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+    CameraPosition cameraPos = cameraPositionMapper[camera];
 
     renderNormalSpace(cameraPos);
   }
@@ -113,13 +113,13 @@ class HyperSpaceBackgroundRenderSystem extends NormalSpaceBackgroundRenderSystem
 
   void initialize() {
     super.initialize();
-    var hdMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
-    hyperDrive = hdMapper.get(player);
+    var hdMapper = new Mapper<HyperDrive>(HyperDrive, world);
+    hyperDrive = hdMapper[player];
   }
 
   void processSystem() {
     var camera = tagManager.getEntity(TAG_CAMERA);
-    var cameraPos = cameraPositionMapper.get(camera);
+    var cameraPos = cameraPositionMapper[camera];
 
     var mod = hyperDrive.hyperSpaceMod;
     context.setTransform(1/(1+mod/50), 0, 0, 1+mod, MAX_WIDTH / 2 - (MAX_WIDTH / (2 *(1+mod/50))), 0);
@@ -145,7 +145,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
   CanvasElement bgCanvas;
   Atlas atlas;
   CanvasRenderingContext2D context;
-  ComponentMapper<CameraPosition> cameraPositionMapper;
+  Mapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
   BackgroundStarsRenderingSystem(this.context, this.atlas);
@@ -156,7 +156,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
 
   void initBackground() {
     GroupManager groupManager = world.getManager(new GroupManager().runtimeType);
-    ComponentMapper<Transform> transformMapper = new ComponentMapper<Transform>(Transform, world);
+    Mapper<Transform> transformMapper = new Mapper<Transform>(Transform, world);
     bgCanvas = new CanvasElement(width: UNIVERSE_WIDTH + OVERLAP_WIDTH * 2, height: UNIVERSE_HEIGHT + OVERLAP_HEIGHT * 2);
     var bgContext = bgCanvas.context2D;
 
@@ -171,7 +171,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
     }
 
     groupManager.getEntities(GROUP_BACKGROUND).forEach((entity) {
-      Transform transform = transformMapper.get(entity);
+      Transform transform = transformMapper[entity];
       bgContext.drawImage(stars[random.nextInt(20)], transform.x - star.canvas.width ~/ 2, transform.y - star.canvas.height ~/ 2);
       entity.deleteFromWorld();
     });
@@ -179,7 +179,7 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
 
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
+    CameraPosition cameraPos = cameraPositionMapper[camera];
 
     context.save();
     try {
@@ -222,24 +222,24 @@ class BackgroundStarsRenderingSystem extends VoidEntitySystem {
 class ParticleRenderSystem extends EntityProcessingSystem {
   CanvasRenderingContext2D context;
 
-  ComponentMapper<Transform> transformMapper;
-  ComponentMapper<Particle> particleMapper;
+  Mapper<Transform> transformMapper;
+  Mapper<Particle> particleMapper;
   CameraPosition cameraPos;
 
   ParticleRenderSystem(this.context) : super(Aspect.getAspectForAllOf([Particle, Transform]));
 
   void initialize() {
-    ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
+    Mapper<CameraPosition> cameraPositionMapper = new Mapper<CameraPosition>(CameraPosition, world);
     TagManager tagManager = world.getManager(new TagManager().runtimeType);
 
     Entity camera = tagManager.getEntity(TAG_CAMERA);
-    cameraPos = cameraPositionMapper.get(camera);
+    cameraPos = cameraPositionMapper[camera];
   }
 
   void processEntity(Entity e) {
 
-    Transform t = transformMapper.get(e);
-    Particle p = particleMapper.get(e);
+    Transform t = transformMapper[e];
+    Particle p = particleMapper[e];
 
     context.save();
     try {
@@ -308,13 +308,13 @@ class HudRenderSystem extends PlayerStatusProcessingSystem {
 class MiniMapRenderSystem extends EntitySystem {
   CanvasRenderingContext2D context;
 
-  ComponentMapper<Transform> transformMapper;
-  ComponentMapper<MiniMapRenderable> renderableMapper;
-  ComponentMapper<CircularBody> bodyMapper;
+  Mapper<Transform> transformMapper;
+  Mapper<MiniMapRenderable> renderableMapper;
+  Mapper<CircularBody> bodyMapper;
 
   MiniMapRenderSystem(this.context) : super(Aspect.getAspectForAllOf([MiniMapRenderable, Transform, CircularBody]));
 
-  void processEntities(ReadOnlyBag<Entity> entities) {
+  void processEntities(Iterable<Entity> entities) {
     context.save();
     context.transform(80/UNIVERSE_WIDTH, 0, 0, 80/UNIVERSE_HEIGHT, MAX_WIDTH - 90, 10);
     try {
@@ -324,9 +324,9 @@ class MiniMapRenderSystem extends EntitySystem {
       context.closePath();
 
       entities.forEach((entity) {
-        Transform transform = transformMapper.get(entity);
-        MiniMapRenderable renderable = renderableMapper.get(entity);
-        CircularBody body = bodyMapper.get(entity);
+        Transform transform = transformMapper[entity];
+        MiniMapRenderable renderable = renderableMapper[entity];
+        CircularBody body = bodyMapper[entity];
 
         context.fillStyle = renderable.color;
         context.strokeStyle = renderable.color;
@@ -346,11 +346,11 @@ abstract class CameraPosMixin {
   CameraPosition _cameraPos;
   CameraPosition getCameraPos(World world) {
     if (null == _cameraPos) {
-      ComponentMapper<CameraPosition> cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
+      Mapper<CameraPosition> cameraPositionMapper = new Mapper<CameraPosition>(CameraPosition, world);
       TagManager tagManager = world.getManager(new TagManager().runtimeType);
 
       Entity camera = tagManager.getEntity(TAG_CAMERA);
-      _cameraPos = cameraPositionMapper.get(camera);
+      _cameraPos = cameraPositionMapper[camera];
     }
     return _cameraPos;
   }

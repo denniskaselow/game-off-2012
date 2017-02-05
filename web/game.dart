@@ -47,8 +47,6 @@ void main() {
 List<Future<ImageElement>> loadImages() {
   List<String> images = ['game_assets.png'];
 
-  Completer<ImageElement> completer = new Completer<ImageElement>();
-
   List<Future> futures = new List<Future>();
   images.forEach((image) {
     Completer completer = new Completer();
@@ -88,7 +86,7 @@ class Game {
   PlayerControlSystem playerControlSystem;
   num lastTime = 0;
   World currentWorld;
-  AudioManager audioManager;
+//  AudioManager audioManager;
   Status playerStatus;
   Mass playerMass;
   Cannon playerCannon;
@@ -100,7 +98,7 @@ class Game {
   Game(this.gameCanvas, this.hudCanvas, this.atlas) {
     gameContext = gameCanvas.context2D;
     hudContext = hudCanvas.context2D;
-    audioManager = createAudioManager(window.location.href);
+//    audioManager = createAudioManager(window.location.href);
     playerScale = 0.5;
   }
 
@@ -202,11 +200,11 @@ class Game {
     world.addSystem(new ParticleRenderSystem(gameContext));
     world.addSystem(new MiniMapRenderSystem(hudContext));
     world.addSystem(new HudRenderSystem(hudContext, atlas));
-    world.addSystem(new SoundSystem(audioManager));
+//    world.addSystem(new SoundSystem(audioManager));
     world.addSystem(new DebugSystem());
 
     world.addSystem(new MenuSystem(gameCanvas));
-    world.addSystem(new HighscoreSavingSystem(gameState));
+//    world.addSystem(new HighscoreSavingSystem(gameState));
 
     world.initialize();
   }
@@ -227,11 +225,11 @@ class Game {
       double asteroidX = random.nextDouble() * UNIVERSE_WIDTH;
       double asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
       double asteroidRadius = 50 * scale;
-      while (Utils.doCirclesCollide(playerX, playerY, playerRadius * 3, asteroidX, asteroidY, asteroidRadius)) {
+      while (doCirclesCollide(playerX, playerY, playerRadius * 3, asteroidX, asteroidY, asteroidRadius)) {
         asteroidX = random.nextDouble() * UNIVERSE_WIDTH;
         asteroidY = random.nextDouble() * UNIVERSE_HEIGHT;
       }
-      asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * FastMath.TWO_PI, rotationRate: generateRandom(0.15, 0.20)));
+      asteroid.addComponent(new Transform(asteroidX, asteroidY, angle: random.nextDouble() * 2 * PI, rotationRate: generateRandom(0.15, 0.20)));
       asteroid.addComponent(generateRandomVelocity(0.025 * levelMod, 0.1 * levelMod));
       List<String> resources = new List<String>(64);
       for (int i = 0; i < 64; i++) {
@@ -279,7 +277,7 @@ class Game {
     gameState.nextLevelIsBeingPrepared = true;
     TagManager tagManager = currentWorld.getManager(new TagManager().runtimeType);
     Entity player = tagManager.getEntity(TAG_PLAYER);
-    player.addComponent(new AutoPilot(angle: FastMath.THREE_PI_HALVES, velocity: 0.7));
+    player.addComponent(new AutoPilot(angle: 3/2 * PI, velocity: 0.7));
     player.changedInWorld();
 
     Future<World> nextWorldFuture = createAndInitWorld(gameState.currentLevel + 1);
@@ -328,27 +326,27 @@ class DebugSystem extends VoidEntitySystem {
   SpanElement cameraPosElement = querySelector('#cameraPos');
   SpanElement entityCountElement = querySelector('#entityCount');
   SpanElement thrusterElement = querySelector('#playerThrust');
-  ComponentMapper<CameraPosition> cameraPositionMapper;
-  ComponentMapper<Transform> positionMapper;
-  ComponentMapper<Mass> massMapper;
-  ComponentMapper<Thruster> thrusterMapper;
+  Mapper<CameraPosition> cameraPositionMapper;
+  Mapper<Transform> positionMapper;
+  Mapper<Mass> massMapper;
+  Mapper<Thruster> thrusterMapper;
   TagManager tagManager;
 
   void initialize() {
-    cameraPositionMapper = new ComponentMapper<CameraPosition>(CameraPosition, world);
-    positionMapper = new ComponentMapper<Transform>(Transform, world);
-    thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
-    massMapper = new ComponentMapper<Mass>(Mass, world);
+    cameraPositionMapper = new Mapper<CameraPosition>(CameraPosition, world);
+    positionMapper = new Mapper<Transform>(Transform, world);
+    thrusterMapper = new Mapper<Thruster>(Thruster, world);
+    massMapper = new Mapper<Mass>(Mass, world);
     tagManager = world.getManager(new TagManager().runtimeType);
   }
 
   void processSystem() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
     Entity player = tagManager.getEntity(TAG_PLAYER);
-    CameraPosition cameraPos = cameraPositionMapper.get(camera);
-    Transform playerPos = positionMapper.get(player);
-    Thruster thruster = thrusterMapper.get(player);
-    Mass mass = massMapper.get(player);
+    CameraPosition cameraPos = cameraPositionMapper[camera];
+    Transform playerPos = positionMapper[player];
+    Thruster thruster = thrusterMapper[player];
+    Mass mass = massMapper[player];
 
     num fps = 1000 ~/ world.delta;
     fpsElement.text = '${fps}';

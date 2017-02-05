@@ -4,10 +4,13 @@ description: Entry to the GitHub Game Off 2012
 homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
   browser: any
-  dartemis: any
+  dartemis:
+    path: ../dartemis
+  dartemis_transformer:
+    path: ../dartemis_transformer
   canvas_query: any
   lawndart: any
-  simple_audio:
-    git: https://github.com/johnmccutchan/simpleaudio.git
-dev_dependencies:
-  unittest: any
+  dart_to_js_script_rewriter: ^1.0.2
+transformers:
+- dart_to_js_script_rewriter
+- dartemis_transformer

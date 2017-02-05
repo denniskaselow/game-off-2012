@@ -34,19 +34,19 @@ class PlayerControlSystem extends PlayerStatusProcessingSystem {
 
   void initialize() {
     super.initialize();
-    var velocityMapper = new ComponentMapper<Velocity>(Velocity, world);
-    var cannonMapper = new ComponentMapper<Cannon>(Cannon, world);
-    var spatialMapper = new ComponentMapper<Spatial>(Spatial, world);
-    var hyperDriveMapper = new ComponentMapper<HyperDrive>(HyperDrive, world);
-    var thrusterMapper = new ComponentMapper<Thruster>(Thruster, world);
-    var turboMapper = new ComponentMapper<Turbo>(Turbo, world);
+    var velocityMapper = new Mapper<Velocity>(Velocity, world);
+    var cannonMapper = new Mapper<Cannon>(Cannon, world);
+    var spatialMapper = new Mapper<Spatial>(Spatial, world);
+    var hyperDriveMapper = new Mapper<HyperDrive>(HyperDrive, world);
+    var thrusterMapper = new Mapper<Thruster>(Thruster, world);
+    var turboMapper = new Mapper<Turbo>(Turbo, world);
 
-    spatial = spatialMapper.get(player);
-    velocity = velocityMapper.get(player);
-    cannon = cannonMapper.get(player);
-    hyperDrive = hyperDriveMapper.get(player);
-    thruster = thrusterMapper.get(player);
-    turbo = turboMapper.get(player);
+    spatial = spatialMapper[player];
+    velocity = velocityMapper[player];
+    cannon = cannonMapper[player];
+    hyperDrive = hyperDriveMapper[player];
+    thruster = thrusterMapper[player];
+    turbo = turboMapper[player];
 
     keyDownSubscription = canvas.onKeyDown.listen(handleKeyDown);
     keyUpSubscription = canvas.onKeyUp.listen(handleKeyUp);
