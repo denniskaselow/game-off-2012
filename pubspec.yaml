@@ -5,7 +5,9 @@ homepage: https://github.com/denniskaselow/game-off-2012
 dependencies:
   browser: any
   dartemis:
-    path: ../dartemis
+      git:
+        url: git://github.com/denniskaselow/dartemis.git
+        ref: develop
   dartemis_transformer:
     path: ../dartemis_transformer
   canvas_query: any

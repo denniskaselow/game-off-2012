@@ -52,7 +52,7 @@ class AutoPilotControlSystem extends EntityProcessingSystem  {
   Mapper<Transform> transformMapper;
   Mapper<Velocity> velocityMapper;
 
-  AutoPilotControlSystem() : super(Aspect.getAspectForAllOf([AutoPilot, Transform, Velocity]));
+  AutoPilotControlSystem() : super(new Aspect.forAllOf([AutoPilot, Transform, Velocity]));
 
   void processEntity(Entity e) {
     AutoPilot autoPilot = autoPilotMapper[e];

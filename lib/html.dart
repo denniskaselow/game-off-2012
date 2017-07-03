@@ -3,11 +3,9 @@ library html;
 import 'dart:async';
 import 'dart:math';
 import 'dart:html';
-import 'dart:convert';
 import 'package:spaceoff/spaceoff.dart';
 export 'package:spaceoff/spaceoff.dart';
 import 'package:canvas_query/canvas_query.dart';
-import 'package:lawndart/lawndart.dart';
 
 part 'src/html/asset_management.dart';
 part 'src/html/input_systems.dart';

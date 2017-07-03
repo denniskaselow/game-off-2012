@@ -12,7 +12,7 @@ abstract class OnScreenProcessingSystem extends EntitySystem {
   Mapper<CameraPosition> cameraPositionMapper;
   TagManager tagManager;
 
-  OnScreenProcessingSystem(Aspect aspect) : super(aspect.allOf([Transform]));
+  OnScreenProcessingSystem(Aspect aspect) : super(aspect..allOf([Transform]));
 
   void processEntities(Iterable<Entity> entities) {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
@@ -64,7 +64,7 @@ class ThrusterSystem extends EntityProcessingSystem {
   Mapper<Turbo> turboMapper;
   Mapper<Transform> transformMapper;
 
-  ThrusterSystem() : super(Aspect.getAspectForAllOf([Thruster, Velocity, Mass, Transform, Turbo]));
+  ThrusterSystem() : super(new Aspect.forAllOf([Thruster, Velocity, Mass, Transform, Turbo]));
 
   void processEntity(Entity e) {
     Thruster thruster = thrusterMapper[e];
@@ -119,7 +119,7 @@ class MovementSystem extends EntityProcessingSystem {
   Mapper<Transform> transformMapper;
   Mapper<Velocity> velocityMapper;
 
-  MovementSystem() : super(Aspect.getAspectForAllOf([Transform, Velocity]));
+  MovementSystem() : super(new Aspect.forAllOf([Transform, Velocity]));
 
   void processEntity(Entity entity) {
     Transform transform = transformMapper[entity];
@@ -162,7 +162,7 @@ class UpgradeCollectionSystem extends OnScreenEntityProcessingSystem {
   Mass mass;
   Thruster thruster;
 
-  UpgradeCollectionSystem() : super(Aspect.getAspectForAllOf([Upgrade, Transform, CircularBody]));
+  UpgradeCollectionSystem() : super(new Aspect.forAllOf([Upgrade, Transform, CircularBody]));
 
   void initialize() {
     super.initialize();
@@ -226,7 +226,7 @@ class CircularCollisionDetectionSystem extends OnScreenProcessingSystem {
   Mapper<ScoreCollector> scoreCollectorMapper;
   Mapper<ScoreComponent> scoreMapper;
 
-  CircularCollisionDetectionSystem() : super(Aspect.getAspectForAllOf([CircularBody, Transform, Velocity, Mass]));
+  CircularCollisionDetectionSystem() : super(new Aspect.forAllOf([CircularBody, Transform, Velocity, Mass]));
 
   void processEntitiesOnScreen(Iterable<Entity> entities) {
     if (entities.length > 1) {
@@ -361,7 +361,7 @@ class BulletSpawningSystem extends EntityProcessingSystem {
   Mapper<Velocity> velocityMapper;
   Mapper<Mass> massMapper;
 
-  BulletSpawningSystem() : super(Aspect.getAspectForAllOf([Cannon, Transform, Velocity, Mass]));
+  BulletSpawningSystem() : super(new Aspect.forAllOf([Cannon, Transform, Velocity, Mass]));
 
   void processEntity(Entity entity) {
     Cannon cannon = cannonMapper[entity];
@@ -418,7 +418,7 @@ class ExpirationSystem extends EntityProcessingSystem {
   Mapper<ExpirationTimer> timerMapper;
   Mapper<Damage> damageMapper;
 
-  ExpirationSystem() : super(Aspect.getAspectForAllOf([ExpirationTimer]));
+  ExpirationSystem() : super(new Aspect.forAllOf([ExpirationTimer]));
 
   void initialize() {
     timerMapper = new Mapper<ExpirationTimer>(ExpirationTimer, world);
@@ -452,7 +452,7 @@ class SplittingDestructionSystem extends OnScreenEntityProcessingSystem {
   Mapper<Mass> massMapper;
   Mapper<Spatial> spatialMapper;
 
-  SplittingDestructionSystem() : super(Aspect.getAspectForAllOf([SplitsOnDestruction, CircularBody, Status, Velocity, Mass, Spatial]));
+  SplittingDestructionSystem() : super(new Aspect.forAllOf([SplitsOnDestruction, CircularBody, Status, Velocity, Mass, Spatial]));
 
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper[entity];
@@ -510,7 +510,7 @@ class DisapperearingDestructionSystem extends OnScreenEntityProcessingSystem {
   Mapper<CircularBody> bodyMapper;
   Mapper<Velocity> velocityMapper;
 
-  DisapperearingDestructionSystem() : super(Aspect.getAspectForAllOf([DisappearsOnDestruction, Status, Transform, CircularBody, Velocity]));
+  DisapperearingDestructionSystem() : super(new Aspect.forAllOf([DisappearsOnDestruction, Status, Transform, CircularBody, Velocity]));
 
   void processEntityOnScreen(Entity entity) {
     Status status = statusMapper[entity];

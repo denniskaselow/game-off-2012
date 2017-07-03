@@ -8,7 +8,7 @@ class SpatialRenderingSystem extends OnScreenEntityProcessingSystem {
   Mapper<ExpirationTimer> timerMapper;
   CameraPosition cameraPos;
 
-  SpatialRenderingSystem(this.context, this.atlas) : super(Aspect.getAspectForAllOf([Spatial, Transform]));
+  SpatialRenderingSystem(this.context, this.atlas) : super(new Aspect.forAllOf([Spatial, Transform]));
 
   void begin() {
     Entity camera = tagManager.getEntity(TAG_CAMERA);
@@ -226,7 +226,7 @@ class ParticleRenderSystem extends EntityProcessingSystem {
   Mapper<Particle> particleMapper;
   CameraPosition cameraPos;
 
-  ParticleRenderSystem(this.context) : super(Aspect.getAspectForAllOf([Particle, Transform]));
+  ParticleRenderSystem(this.context) : super(new Aspect.forAllOf([Particle, Transform]));
 
   void initialize() {
     Mapper<CameraPosition> cameraPositionMapper = new Mapper<CameraPosition>(CameraPosition, world);
@@ -312,7 +312,7 @@ class MiniMapRenderSystem extends EntitySystem {
   Mapper<MiniMapRenderable> renderableMapper;
   Mapper<CircularBody> bodyMapper;
 
-  MiniMapRenderSystem(this.context) : super(Aspect.getAspectForAllOf([MiniMapRenderable, Transform, CircularBody]));
+  MiniMapRenderSystem(this.context) : super(new Aspect.forAllOf([MiniMapRenderable, Transform, CircularBody]));
 
   void processEntities(Iterable<Entity> entities) {
     context.save();
